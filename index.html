@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta
+      name="description"
+      content="Le Pavillon des Étoiles, décor statique canonique de TAO."
+    />
+    <title>TAO — Pavillon des Étoiles</title>
+    <link rel="stylesheet" href="./styles.css?v=modular-desk-responsive-1" />
+    <link rel="stylesheet" href="./product-experience.css?v=tao-product-v2" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section
+        class="app-view pavilion-screen"
+        data-app-view="pavilion"
+        aria-label="Pavillon des Étoiles"
+      >
+      <div class="pavilion-stage">
+        <div
+          class="pavilion-scene"
+          role="img"
+          aria-label="Intérieur du Pavillon des Étoiles avec son bureau fixe"
+        >
+          <div class="pavilion-scene__backdrop" aria-hidden="true"></div>
+          <img
+            class="pavilion-scene__outside"
+            data-exterior-image
+            data-exterior-state="OUTSIDE_JOUR_CLAIR_FJORD_ALPIN"
+            src="./public/assets/tao/outside/states/OUTSIDE_JOUR_CLAIR_FJORD_ALPIN.png"
+            alt=""
+            width="1536"
+            height="1024"
+            fetchpriority="high"
+            draggable="false"
+          />
+          <img
+            class="pavilion-scene__shelf"
+            data-calibration-target="shelfPatch"
+            src="./public/assets/tao/pavilion/fixtures/ETAGERE_FENETRE_GAUCHE.png"
+            alt=""
+            width="795"
+            height="1978"
+            fetchpriority="high"
+            draggable="false"
+          />
+          <img
+            class="pavilion-scene__interior"
+            src="./public/assets/tao/pavilion/base/PAVILLON_BASE_FENETRES_TRANSPARENTES.png"
+            alt=""
+            width="1536"
+            height="1024"
+            fetchpriority="high"
+            draggable="false"
+          />
+          <div
+            class="pavilion-scene__tao"
+            data-tao-character
+            data-calibration-target="tao"
+            data-pose="TAO_POSE_00_NEUTRE"
+            aria-hidden="true"
+          >
+            <img
+              class="tao-character__image"
+              data-tao-image
+              src="./public/assets/tao/character/poses/TAO_POSE_00_NEUTRE.png"
+              alt=""
+              width="1536"
+              height="1024"
+              draggable="false"
+            />
+          </div>
+          <img
+            class="pavilion-scene__desk pavilion-scene__desk--legacy"
+            data-calibration-legacy-desk
+            src="./public/assets/tao/pavilion/desk/BUREAU_BASE_CARTE_CELESTE.png"
+            alt=""
+            width="1254"
+            height="1254"
+            draggable="false"
+            hidden
+          />
+          <img
+            class="pavilion-scene__desk pavilion-scene__desk--empty"
+            data-calibration-target="desk"
+            src="./public/assets/tao/pavilion/desk/modular/BUREAU_BASE_VIDE.png"
+            alt=""
+            width="1254"
+            height="1254"
+            draggable="false"
+          />
+          <img
+            class="pavilion-scene__desk-component pavilion-scene__desk-component--mat"
+            data-calibration-target="deskMat"
+            src="./public/assets/tao/pavilion/desk/modular/OBJET_BUREAU_TAPIS_CELESTE.png"
+            alt=""
+            width="638"
+            height="348"
+            draggable="false"
+          />
+          <img
+            class="pavilion-scene__desk-component pavilion-scene__desk-component--plant"
+            data-calibration-target="deskPlant"
+            src="./public/assets/tao/pavilion/desk/modular/OBJET_BUREAU_PLANTE.png"
+            alt=""
+            width="392"
+            height="531"
+            draggable="false"
+          />
+          <img
+            class="pavilion-scene__desk-component pavilion-scene__desk-component--lantern-left"
+            data-calibration-target="deskLanternLeft"
+            src="./public/assets/tao/pavilion/desk/modular/OBJET_BUREAU_LANTERNE_GAUCHE.png"
+            alt=""
+            width="261"
+            height="386"
+            draggable="false"
+          />
+          <img
+            class="pavilion-scene__desk-component pavilion-scene__desk-component--bowl"
+            data-calibration-target="deskBowl"
+            src="./public/assets/tao/pavilion/desk/modular/OBJET_BUREAU_BOL.png"
+            alt=""
+            width="255"
+            height="200"
+            draggable="false"
+          />
+          <img
+            class="pavilion-scene__desk-component pavilion-scene__desk-component--books-small"
+            data-calibration-target="deskBooksSmall"
+            src="./public/assets/tao/pavilion/desk/modular/OBJET_BUREAU_LIVRES_PETITS.png"
+            alt=""
+            width="378"
+            height="228"
+            draggable="false"
+          />
+          <img
+            class="pavilion-scene__desk-component pavilion-scene__desk-component--books-large"
+            data-calibration-target="deskBooksLarge"
+            src="./public/assets/tao/pavilion/desk/modular/OBJET_BUREAU_LIVRES_GRANDS.png"
+            alt=""
+            width="393"
+            height="366"
+            draggable="false"
+          />
+          <img
+            class="pavilion-scene__desk-component pavilion-scene__desk-component--lantern-right"
+            data-calibration-target="deskLanternRight"
+            src="./public/assets/tao/pavilion/desk/modular/OBJET_BUREAU_LANTERNE_DROITE.png"
+            alt=""
+            width="258"
+            height="414"
+            draggable="false"
+          />
+          <div class="pavilion-scene__desk-objects" data-desk-objects aria-hidden="true"></div>
+        </div>
+        <div class="tao-conversation">
+          <section class="tao-dialogue" data-tao-dialogue aria-labelledby="tao-dialogue-title">
+            <h1 class="tao-dialogue__speaker" id="tao-dialogue-title">TAO</h1>
+            <div
+              class="tao-dialogue__scroll"
+              data-dialogue-scroll
+              role="region"
+              aria-label="Paroles de TAO"
+              tabindex="0"
+            >
+              <div class="tao-dialogue__content" data-dialogue-content>
+                <p>Je t’écoute.</p>
+              </div>
+            </div>
+          </section>
+          <section class="tao-onboarding" data-onboarding hidden aria-label="Première rencontre avec TAO">
+            <form class="tao-onboarding__form" data-onboarding-form novalidate>
+              <div data-onboarding-control></div>
+              <p class="tao-onboarding__error" data-onboarding-error role="alert" hidden></p>
+            </form>
+          </section>
+        </div>
+      </div>
+      </section>
+
+      <section class="app-view product-view" data-app-view="today" aria-label="Guidance taoïste quotidienne" hidden>
+        <div class="product-page" data-today-root aria-live="polite"></div>
+      </section>
+
+      <section class="app-view theme-view" data-app-view="theme" aria-label="Mon thème taoïste" hidden>
+        <div class="theme-view__content" data-bazi-root aria-live="polite"></div>
+      </section>
+
+      <section class="app-view app-placeholder" data-app-view="yijing" aria-labelledby="yijing-title" hidden>
+        <div class="app-placeholder__content app-placeholder__content--narrow">
+          <p class="app-placeholder__eyebrow">Espace en préparation</p>
+          <h1 id="yijing-title">YI JING</h1>
+          <p class="app-placeholder__intro">Lorsque tu seras prêt, nous pourrons interroger le Yi Jing.</p>
+          <article class="future-card future-card--centered">
+            <h2>Consultation future</h2>
+            <p>Aucun tirage, pièce, hexagramme ou interprétation n’est généré pendant cette étape.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="app-view product-view" data-app-view="profiles" aria-label="Gestion des profils" hidden>
+        <div class="product-page product-page--narrow" data-profiles-root aria-live="polite"></div>
+      </section>
+    </main>
+
+    <nav class="main-navigation" data-main-navigation aria-label="Navigation principale" hidden>
+      <a class="main-navigation__item" data-navigation-target="today" href="#today">
+        <span class="main-navigation__icon nav-icon--today" aria-hidden="true"></span>
+        <span class="main-navigation__label">AUJOURD’HUI</span>
+      </a>
+      <a class="main-navigation__item" data-navigation-target="theme" href="#theme">
+        <span class="main-navigation__icon nav-icon--theme" aria-hidden="true"></span>
+        <span class="main-navigation__label">MON THÈME</span>
+      </a>
+      <a class="main-navigation__item main-navigation__item--pavilion" data-navigation-target="pavilion" href="#pavilion">
+        <span class="main-navigation__icon nav-icon--pavilion" aria-hidden="true"></span>
+        <span class="main-navigation__label">LE PAVILLON</span>
+      </a>
+      <a class="main-navigation__item" data-navigation-target="yijing" href="#yijing">
+        <span class="main-navigation__icon nav-icon--yijing" aria-hidden="true"></span>
+        <span class="main-navigation__label">YI JING</span>
+      </a>
+      <a class="main-navigation__item" data-navigation-target="profiles" href="#profiles">
+        <span class="main-navigation__icon nav-icon--profiles" aria-hidden="true"></span>
+        <span class="main-navigation__label">PROFILS</span>
+      </a>
+    </nav>
+    <aside class="pose-debug" data-pose-debug hidden aria-label="Test des postures TAO">
+      <label for="pose-select">Posture de test</label>
+      <select id="pose-select" data-pose-select></select>
+      <output data-pose-label for="pose-select">00 NEUTRE — idle</output>
+      <label for="narrative-select">État narratif</label>
+      <select id="narrative-select" data-narrative-select></select>
+      <output data-narrative-label for="narrative-select">IDLE → TAO_POSE_00_NEUTRE</output>
+      <label for="dialogue-select">Texte de test</label>
+      <select id="dialogue-select" data-dialogue-select>
+        <option value="short">Court</option>
+        <option value="medium">Moyen</option>
+        <option value="long">Long</option>
+      </select>
+      <output data-dialogue-label for="dialogue-select">Texte court</output>
+    </aside>
+    <aside class="scene-debug" data-scene-debug hidden aria-label="Test des calques de la scène">
+      <header>
+        <strong>SCÈNE — ÉTAPES 8 &amp; 9</strong>
+        <small>Contrôles techniques sans automatisation</small>
+      </header>
+      <section class="scene-debug__section" data-exterior-debug></section>
+      <section class="scene-debug__section" data-desk-debug></section>
+    </aside>
+    <aside class="calibration-panel" data-calibration-panel hidden aria-label="Calibration visuelle de la scène"></aside>
+    <script type="module" src="./tao-character.js"></script>
+    <script type="module" src="./tao-dialogue.js"></script>
+    <script type="module" src="./exterior-states.js?v=outside-framing-controls-4"></script>
+    <script type="module" src="./desk-objects.js"></script>
+    <script type="module" src="./onboarding.js"></script>
+    <script type="module" src="./today-view.js?v=tao-product-v3"></script>
+    <script type="module" src="./bazi-theme.js?v=tao-product-v1"></script>
+    <script type="module" src="./profiles-view.js?v=tao-product-v2"></script>
+    <script type="module" src="./app-navigation.js?v=tao-product-v1"></script>
+    <script type="module" src="./scene-calibration.js?v=modular-desk-responsive-1"></script>
+  </body>
+</html>
