@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "status": "canonical_user_validated_2026-08-12",
+  "calibrationReference": { "width": 1080, "height": 720, "ratio": "3:2" },
+  "legacyDesk": "/assets/tao/pavilion/desk/BUREAU_BASE_CARTE_CELESTE.png",
+  "canonicalCalibration": {
+    "tao": { "translateX": -105, "translateY": 74, "scale": 1.33, "renderWidth": 51.8, "zIndex": 31, "opacity": 1 },
+    "desk": { "translateX": -5, "translateY": 42, "scale": 1.22, "renderWidth": 84.18, "zIndex": 30, "opacity": 1 },
+    "deskMat": { "translateX": -46, "translateY": 142, "scale": 1.79, "renderWidth": 35.99, "zIndex": 30, "opacity": 1 },
+    "deskPlant": { "translateX": -82, "translateY": 12, "scale": 2.39, "renderWidth": 10.44, "zIndex": 33, "opacity": 1 },
+    "deskLanternLeft": { "translateX": -123, "translateY": 162, "scale": 1.09, "renderWidth": 14, "zIndex": 42, "opacity": 1 },
+    "deskBowl": { "translateX": 251, "translateY": 80, "scale": 1.38, "renderWidth": 10.79, "zIndex": 51, "opacity": 1 },
+    "deskBooksSmall": { "translateX": 59, "translateY": 285, "scale": 1.61, "renderWidth": 21.52, "zIndex": 88, "opacity": 1 },
+    "deskBooksLarge": { "translateX": -89, "translateY": 108, "scale": 1.35, "renderWidth": 22, "zIndex": 65, "opacity": 1 },
+    "deskLanternRight": { "translateX": 78, "translateY": 101, "scale": 1.17, "renderWidth": 19.01, "zIndex": 65, "opacity": 1 },
+    "shelfPatch": { "translateX": 6, "translateY": 15, "scale": 1.16, "renderWidth": 10.52, "zIndex": 9, "opacity": 1 }
+  },
+  "emptyDesk": {
+    "id": "BUREAU_BASE_VIDE",
+    "file": "/assets/tao/pavilion/desk/modular/BUREAU_BASE_VIDE.png",
+    "alpha": true
+  },
+  "components": [
+    { "id": "deskMat", "label": "Tapis central", "file": "/assets/tao/pavilion/desk/modular/OBJET_BUREAU_TAPIS_CELESTE.png", "alpha": true },
+    { "id": "deskPlant", "label": "Plante", "file": "/assets/tao/pavilion/desk/modular/OBJET_BUREAU_PLANTE.png", "alpha": true },
+    { "id": "deskLanternLeft", "label": "Lanterne gauche", "file": "/assets/tao/pavilion/desk/modular/OBJET_BUREAU_LANTERNE_GAUCHE.png", "alpha": true },
+    { "id": "deskBowl", "label": "Bol", "file": "/assets/tao/pavilion/desk/modular/OBJET_BUREAU_BOL.png", "alpha": true },
+    { "id": "deskBooksSmall", "label": "Petits livres", "file": "/assets/tao/pavilion/desk/modular/OBJET_BUREAU_LIVRES_PETITS.png", "alpha": true },
+    { "id": "deskBooksLarge", "label": "Grands livres", "file": "/assets/tao/pavilion/desk/modular/OBJET_BUREAU_LIVRES_GRANDS.png", "alpha": true },
+    { "id": "deskLanternRight", "label": "Lanterne droite", "file": "/assets/tao/pavilion/desk/modular/OBJET_BUREAU_LANTERNE_DROITE.png", "alpha": true }
+  ]
+}
