@@ -95,6 +95,21 @@ export function saveProfile(profile, { setActive = true } = {}) {
   return profile;
 }
 
+export function deleteProfile(profileId) {
+  const profiles = getProfiles();
+  const target = profiles.find(({ id }) => id === profileId);
+  if (!target) return false;
+  if (target.relationship === "self") throw new Error("Le profil principal ne peut pas être supprimé.");
+  const remaining = profiles.filter(({ id }) => id !== profileId);
+  localStorage.setItem(PROFILES_KEY, JSON.stringify(remaining));
+  if (localStorage.getItem(ACTIVE_PROFILE_KEY) === profileId) {
+    const fallback = remaining.find(({ relationship }) => relationship === "self") ?? remaining[0];
+    if (fallback) localStorage.setItem(ACTIVE_PROFILE_KEY, fallback.id);
+    else localStorage.removeItem(ACTIVE_PROFILE_KEY);
+  }
+  return true;
+}
+
 export function loadOnboardingDraft() {
   const draft = readJson(ONBOARDING_DRAFT_KEY, {});
   return draft && typeof draft === "object" && !Array.isArray(draft) ? draft : {};

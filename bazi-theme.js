@@ -5,6 +5,9 @@ import { element, formatBirthDate, formatPlace } from "./tao-ui.js";
 import { setTaoNarrativeState } from "./tao-narrative.js";
 import { formatPercent, getConcept, t } from "./locales/index.js";
 import { glossaryDisclosure } from "./locales/glossary-ui.js";
+import { branchRelations, visibleTenGods } from "./bazi-insights.mjs?v=1.0.1";
+import { createSectionNavigation, focusRequestedSection, markProductSection } from "./section-navigation.js";
+import { parseAppRoute } from "./navigation-routes.mjs";
 
 const root = document.querySelector("[data-bazi-root]");
 const debugEnabled = new URLSearchParams(location.search).get("debug") === "bazi";
@@ -13,6 +16,12 @@ const elementData = (key) => getConcept("bazi.elements", key);
 const polarityData = (key) => getConcept("bazi.polarities", key);
 const stemData = (key) => getConcept("bazi.heavenlyStems", key);
 const branchData = (key) => getConcept("bazi.earthlyBranches", key);
+const THEME_SECTIONS = Object.freeze([
+  { id: "overview", label: "Vue d’ensemble" }, { id: "pillars", label: "Quatre Piliers" },
+  { id: "elements", label: "Cinq Éléments" }, { id: "structure", label: "Troncs & Branches" },
+  { id: "ten-gods", label: "Dix Dieux" }, { id: "cycles", label: "Cycles" }, { id: "life", label: "Lecture de vie" },
+]);
+const PILLAR_LABELS = Object.freeze({ year: "Année", month: "Mois", day: "Jour", hour: "Heure" });
 
 function header(profile) {
   const node = element("header", { className: "product-header theme-header" });
@@ -155,6 +164,90 @@ function reading(result) {
   return section;
 }
 
+function groupSection(id, ...children) {
+  const section = markProductSection(element("section", { className: "product-depth-section" }), "theme", id);
+  section.append(...children);
+  return section;
+}
+
+function hiddenStems(result) {
+  const section = element("section", { className: "product-card" });
+  section.append(element("p", { className: "product-eyebrow", text: "Sous la surface" }), element("h2", { text: t("bazi.labels.hiddenStems") }), element("p", { text: getConcept("bazi", "hiddenStems").explanation }));
+  const grid = element("div", { className: "insight-grid" });
+  for (const [pillarId, pillar] of Object.entries(result.pillars)) {
+    if (!pillar.determined) continue;
+    const branch = getConcept("bazi.hiddenStems.branches", pillar.branch.key);
+    const card = element("article", { className: "insight-card" });
+    card.append(element("span", { text: PILLAR_LABELS[pillarId] }), element("strong", { text: branch.label }));
+    const list = element("ul");
+    branch.stems.forEach((stem) => list.append(element("li", { text: `${stemData(stem).label} — ${stemData(stem).french}` })));
+    card.append(list);
+    grid.append(card);
+  }
+  section.append(grid);
+  return section;
+}
+
+function interactions(result) {
+  const section = element("section", { className: "product-card" });
+  section.append(element("p", { className: "product-eyebrow", text: "Relations visibles" }), element("h2", { text: "Combinaisons et oppositions" }));
+  const found = branchRelations(result);
+  if (!found.length) section.append(element("p", { text: "Aucune combinaison Liu He ni opposition Chong n’apparaît entre les Branches principales visibles." }));
+  for (const relation of found) {
+    const concept = getConcept("bazi.interactions", relation.type === "combination" ? "liu_he" : "clash");
+    const [left, right] = relation.branches;
+    const item = element("article", { className: "relation-card" });
+    item.append(element("strong", { text: concept.label }), element("p", { text: `${PILLAR_LABELS[left.pillarId]} · ${branchData(left.key).label} ↔ ${PILLAR_LABELS[right.pillarId]} · ${branchData(right.key).label}` }), element("small", { text: concept.explanation }));
+    section.append(item);
+  }
+  const waiting = element("p", { className: "method-note", text: "Punitions, dommages et ruptures : moteur détaillé en attente. TAO n’affiche aucune relation non calculée." });
+  section.append(waiting);
+  return section;
+}
+
+function tenGods(result) {
+  const section = element("section", { className: "product-card" });
+  section.append(element("p", { className: "product-eyebrow", text: "Relations au Maître du Jour" }), element("h2", { text: t("bazi.labels.tenGods") }), element("p", { text: "Ces appellations décrivent la relation des Troncs visibles avec ton Maître du Jour ; elles ne sont ni des personnes ni des prédictions." }));
+  const grid = element("div", { className: "insight-grid" });
+  for (const insight of visibleTenGods(result)) {
+    const localized = getConcept("bazi.tenGods", insight.tenGod);
+    const stem = stemData(insight.stem.key);
+    const card = element("article", { className: "insight-card" });
+    card.append(element("span", { text: PILLAR_LABELS[insight.pillarId] }), element("strong", { text: localized.label }), element("small", { text: `${localized.pinyin} · ${localized.hanzi}` }), element("p", { text: `${stem.label} — ${localized.definition}` }));
+    grid.append(card);
+  }
+  section.append(grid);
+  return section;
+}
+
+function cyclesAndTimeline(result) {
+  const section = element("section", { className: "product-card" });
+  section.append(element("p", { className: "product-eyebrow", text: "Chronologie" }), element("h2", { text: t("bazi.labels.daYun") }), element("p", { text: "Le thème natal est disponible. Le calcul des piliers décennaux, de leur âge de départ et des transitions n’est pas encore intégré." }));
+  const status = element("aside", { className: "engine-status", attributes: { role: "note" } });
+  status.append(element("strong", { text: "Moteur en attente" }), element("p", { text: "Aucune décennie ni période remarquable n’est affichée sans calcul déterministe vérifié." }));
+  section.append(status, cycle(result));
+  return section;
+}
+
+function lifeReading(result) {
+  const section = element("section", { className: "product-card" });
+  section.append(element("p", { className: "product-eyebrow", text: "Lecture thématique" }), element("h2", { text: "Ce que le thème permet déjà d’explorer" }), element("p", { text: "Ces portes de lecture s’appuient actuellement sur le Maître du Jour, les éléments visibles et l’équilibre Yin / Yang. Elles resteront nuancées jusqu’à l’arrivée des cycles complets." }));
+  const grid = element("div", { className: "topic-grid" });
+  const master = stemData(result.dayMaster.key);
+  for (const [title, copy] of [
+    ["Personnalité", `${master.french} sert de centre de lecture : une qualité à cultiver, pas une étiquette définitive.`],
+    ["Relations", "Les Dix Dieux et les relations entre Branches donnent des repères de coopération, d’expression et de limites."],
+    ["Activité & créativité", "La répartition visible des éléments permet d’observer les ressources déjà présentes et celles à soutenir."],
+    ["Évolution personnelle", "Les tendances natales décrivent un terrain. Les périodes de vie demanderont le futur moteur de cycles."],
+  ]) {
+    const card = element("article", { className: "insight-card" });
+    card.append(element("strong", { text: title }), element("p", { text: copy }));
+    grid.append(card);
+  }
+  section.append(grid);
+  return section;
+}
+
 function renderError(message) {
   root.replaceChildren();
   const panel = element("section", { className: "product-card product-error", attributes: { role: "alert" } });
@@ -171,7 +264,18 @@ export async function renderActiveBaziTheme() {
   }
   try {
     const result = getCachedBazi(profile) ?? setCachedBazi(profile, calculateBazi(profile));
-    root.replaceChildren(header(profile), dayMaster(result), pillars(result), elements(result), yinYang(result), reading(result), cycle(), glossaryDisclosure(["dayMaster", "fourPillars", "heavenlyStem", "earthlyBranch", "fiveElements", "yinYang", "tenGods", "hiddenStems"], "Glossaire de TAO"));
+    const route = parseAppRoute(location.hash);
+    root.replaceChildren(
+      header(profile),
+      createSectionNavigation("theme", THEME_SECTIONS, "Explorer Mon thème"),
+      groupSection("overview", dayMaster(result), reading(result)),
+      groupSection("pillars", pillars(result)),
+      groupSection("elements", elements(result), yinYang(result)),
+      groupSection("structure", hiddenStems(result), interactions(result)),
+      groupSection("ten-gods", tenGods(result)),
+      groupSection("cycles", cyclesAndTimeline(result)),
+      groupSection("life", lifeReading(result), glossaryDisclosure(["dayMaster", "fourPillars", "heavenlyStem", "earthlyBranch", "fiveElements", "yinYang", "tenGods", "hiddenStems"], "Glossaire de TAO")),
+    );
     if (result.warnings.length) {
       const warning = element("aside", { className: "product-card product-warning", attributes: { role: "note" } });
       result.warnings.forEach(() => warning.append(element("p", { text: t("bazi.ui.timezoneWarning") })));
@@ -183,6 +287,7 @@ export async function renderActiveBaziTheme() {
       details.append(element("summary", { text: t("bazi.ui.rawData") }), element("pre", { text: JSON.stringify({ profile, result }, null, 2) }));
       root.append(details);
     }
+    focusRequestedSection(root, "theme", route.section, { scroll: route.section !== "overview" });
     await setTaoNarrativeState("explaining");
     root.dispatchEvent(new CustomEvent("tao:bazi-rendered", { detail: { profileId: profile.id, result } }));
     return result;
@@ -197,9 +302,9 @@ window.addEventListener("tao:view-change", (event) => {
   if (event.detail?.view === "theme") renderActiveBaziTheme();
 });
 window.addEventListener("tao:profile-created", () => {
-  if (location.hash === "#theme") renderActiveBaziTheme();
+  if (location.hash.startsWith("#theme")) renderActiveBaziTheme();
 });
 window.addEventListener("tao:profile-changed", () => {
-  if (location.hash === "#theme") renderActiveBaziTheme();
+  if (location.hash.startsWith("#theme")) renderActiveBaziTheme();
 });
-if (location.hash === "#theme") renderActiveBaziTheme();
+if (location.hash.startsWith("#theme")) renderActiveBaziTheme();

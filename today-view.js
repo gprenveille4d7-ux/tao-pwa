@@ -8,6 +8,8 @@ import { setTaoDailyBrief } from "./tao-dialogue.js";
 import { setTaoNarrativeState } from "./tao-narrative.js";
 import { formatPercent, getConcept, t } from "./locales/index.js";
 import { glossaryDisclosure } from "./locales/glossary-ui.js";
+import { createSectionNavigation, focusRequestedSection, markProductSection } from "./section-navigation.js";
+import { parseAppRoute } from "./navigation-routes.mjs";
 
 const root = document.querySelector("[data-today-root]");
 const GENERATES = Object.freeze({ wood: "fire", fire: "earth", earth: "metal", metal: "water", water: "wood" });
@@ -15,6 +17,13 @@ const CONTROLS = Object.freeze({ wood: "earth", earth: "water", water: "fire", f
 const elementData = (key) => getConcept("bazi.elements", key);
 const stemData = (key) => getConcept("bazi.heavenlyStems", key);
 const branchData = (key) => getConcept("bazi.earthlyBranches", key);
+const TODAY_SECTIONS = Object.freeze([
+  { id: "guidance", label: "Guidance" },
+  { id: "energies", label: "Énergies" },
+  { id: "personal", label: "Vous & aujourd’hui" },
+  { id: "cycles", label: "Cycles" },
+  { id: "nature", label: "Ciel & nature" },
+]);
 
 function solarTermId(pinyin) {
   return String(pinyin).trim().toLowerCase().replace(/\s+/g, "_");
@@ -169,7 +178,7 @@ function createDetailedGuidance(result, natalTheme) {
   const branch = branchData(result.dayEnergy.branch.key);
   section.append(
     domainCard(t("guidance.detailed.support"), t("guidance.status.supportive"), t("guidance.detailed.supportCopy", { support: elementData(supportKey).of, dominant: dominant.withArticle, day: dayElement.of })),
-    domainCard(t("guidance.detailed.attention"), t("guidance.status.toModerate"), t("guidance.detailed.attentionCopy", { attention: elementData(attentionKey).label, quieter: quieter.label })),
+    domainCard(t("guidance.detailed.attention"), t("guidance.status.toModerate"), t("guidance.detailed.attentionCopy", { attention: elementData(attentionKey).withArticle, quieter: `L’élément ${quieter.label}` })),
     domainCard(t("guidance.detailed.relationships"), t(`guidance.status.${result.domains.relations}`), t(`guidance.detailed.relationshipCopy.${result.domains.relations}`, { animal: branch.animal, echoes: result.domains.branchEchoes })),
     domainCard(t("guidance.detailed.action"), t(`guidance.status.${result.domains.action}`), t(`guidance.detailed.actionCopy.${result.domains.action}`, { day: dayElement.label, master: master.french })),
     domainCard(t("guidance.detailed.creativity"), t(`guidance.status.${result.domains.creativity}`), t(`guidance.detailed.creativityCopy.${result.domains.creativity}`, { day: dayElement.label })),
@@ -211,6 +220,36 @@ function createDetails(result) {
   return details;
 }
 
+function groupSection(id, ...children) {
+  const section = markProductSection(element("section", { className: "product-depth-section" }), "today", id);
+  section.append(...children);
+  return section;
+}
+
+function createCycles(result) {
+  const section = element("section", { className: "product-card" });
+  section.append(sectionHeader("Repères temporels", "Les cycles autour de cette journée", "TAO distingue ici ce que le moteur calcule déjà de ce qui demande encore un moteur dédié."));
+  const grid = element("div", { className: "cycle-snapshot" });
+  for (const [label, pillar] of [["Année", result.pillars.year], ["Mois", result.pillars.month], ["Jour", result.pillars.day]]) {
+    const card = element("article");
+    card.append(element("span", { text: label }), element("strong", { text: pillar.chinese }), element("small", { text: pillar.label }));
+    grid.append(card);
+  }
+  const waiting = element("aside", { className: "engine-status", attributes: { role: "note" } });
+  waiting.append(element("strong", { text: "Cycle personnel · Da Yun" }), element("p", { text: "Moteur en attente. Aucun grand cycle n’est inventé tant que son calcul déterministe n’est pas branché." }));
+  section.append(grid, waiting);
+  return section;
+}
+
+function createNature(result) {
+  const section = element("section", { className: "product-depth-stack" });
+  section.append(createSeason(result));
+  const astronomy = element("section", { className: "product-card engine-status" });
+  astronomy.append(sectionHeader("Repère astronomique", "Lune et événements célestes"), element("p", { text: "Ces données ne sont pas calculées dans la version actuelle. Elles resteront séparées des repères BaZi lorsqu’un moteur astronomique local sera disponible." }));
+  section.append(astronomy);
+  return section;
+}
+
 function renderError(message) {
   root.replaceChildren(element("section", { className: "product-card product-error", text: message, attributes: { role: "alert" } }));
 }
@@ -241,7 +280,17 @@ export async function renderTodayView() {
       element("h1", { text: formatLongDate(result.date, result.timeZone) }),
       element("p", { className: "product-lead", text: t("guidance.greeting", { firstName: profile.firstName }) }),
     );
-    root.replaceChildren(header, createOverview(result), createDayEnergy(result), createDetailedGuidance(result, natalTheme), createResonance(result, natalTheme), createElementBalance(result), createGuidance(result), createSeason(result), createDetails(result), glossaryDisclosure(["dayMaster", "fiveElements", "yinYang", "jieQi", "generationCycle", "controlCycle"], "Glossaire de TAO"));
+    const route = parseAppRoute(location.hash);
+    root.replaceChildren(
+      header,
+      createSectionNavigation("today", TODAY_SECTIONS, "Explorer Aujourd’hui"),
+      groupSection("guidance", createOverview(result), createDetailedGuidance(result, natalTheme), createGuidance(result)),
+      groupSection("energies", createDayEnergy(result), createElementBalance(result), createDetails(result)),
+      groupSection("personal", createResonance(result, natalTheme)),
+      groupSection("cycles", createCycles(result)),
+      groupSection("nature", createNature(result), glossaryDisclosure(["dayMaster", "fiveElements", "yinYang", "jieQi", "generationCycle", "controlCycle"], "Glossaire de TAO")),
+    );
+    focusRequestedSection(root, "today", route.section, { scroll: route.section !== "guidance" });
     await setTaoNarrativeState("observing");
     return result;
   } catch (error) {
@@ -282,7 +331,7 @@ window.addEventListener("tao:view-change", (event) => {
   if (event.detail?.view === "pavilion") updatePavilionDialogue();
 });
 window.addEventListener("tao:profile-changed", () => {
-  if (location.hash === "#today") renderTodayView();
+  if (location.hash.startsWith("#today")) renderTodayView();
 });
 
-if (location.hash === "#today") renderTodayView();
+if (location.hash.startsWith("#today")) renderTodayView();

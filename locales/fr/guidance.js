@@ -43,7 +43,7 @@ export const guidance = Object.freeze({
     rhythm: "Rythme personnel",
     retreat: "Moment de recul",
     supportCopy: "L’énergie {support} nourrit symboliquement celle {day}. Dans la lecture combinée, {dominant} forme aussi un appui disponible : utilise-le comme une ressource, sans chercher à le renforcer à tout prix.",
-    attentionCopy: "Le cycle de contrôle met le {attention} en regard de l’énergie du jour. Le {quieter}, plus discret dans la lecture combinée, mérite d’être ménagé par des gestes simples plutôt que compensé brutalement.",
+    attentionCopy: "Le cycle de contrôle met {attention} en regard de l’énergie du jour. {quieter}, plus discret dans la lecture combinée, mérite d’être ménagé par des gestes simples plutôt que compensé brutalement.",
     relationshipCopy: Object.freeze({
       fluid: "Les polarités du jour et de ton thème se complètent. Dans les échanges, écoute la nuance avant de répondre : la branche du {animal} favorise une présence souple.",
       sensitive: "La branche du {animal} fait écho à {echoes} composante de ton thème. Les relations peuvent résonner plus vivement : distingue ce qui appartient au présent de ce qui réveille une habitude.",

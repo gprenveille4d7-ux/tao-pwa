@@ -50,3 +50,15 @@ test("une modification conserve l’identifiant stable", async () => {
   assert.equal(store.getActiveProfile().id, "stable-id");
   assert.equal(store.getActiveProfile().firstName, "Lucie");
 });
+
+test("un proche peut être supprimé sans supprimer le profil principal", async () => {
+  globalThis.localStorage = memoryStorage();
+  const store = await import(`../profile-store.js?test=${Date.now()}-delete`);
+  store.saveProfile(profile("self-id", "Alice", "self"));
+  store.saveProfile(profile("friend-id", "Marcel", "friend"), { setActive: false });
+  store.setActiveProfile("friend-id");
+  assert.equal(store.deleteProfile("friend-id"), true);
+  assert.equal(store.getProfiles().length, 1);
+  assert.equal(store.getActiveProfile().id, "self-id");
+  assert.throws(() => store.deleteProfile("self-id"), /principal/);
+});

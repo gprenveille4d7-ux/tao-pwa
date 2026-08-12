@@ -36,3 +36,13 @@ PHASES LUNAIRES — **REPORTÉES**
 - Étape 8 : 11 objets sont disponibles manuellement ; sept extractions sont classées C et doivent être refaites dans Photoshop avant toute réintégration.
 - Étape 9 : aucune limite critique détectée ; la validation visuelle finale appartient à l’utilisateur.
 - Étape 10 : le calcul solaire V1 est limité aux années 1800–2200, utilise l’heure civile IANA sans correction au temps solaire vrai et demande encore la validation fonctionnelle de l’utilisateur.
+# ARBORESCENCE FONCTIONNELLE — 12 AOÛT 2026
+
+**ÉTAT : IMPLÉMENTÉE — VALIDATION UTILISATEUR ATTENDUE**
+
+- cinq espaces principaux conservés ;
+- sous-routes et navigation secondaire mobile ajoutées ;
+- Aujourd’hui, Mon thème, Pavillon, Yi Jing et Profils structurés en profondeurs de lecture ;
+- Dix Dieux visibles et relations principales calculés sans modifier le moteur BaZi ;
+- bibliothèque pédagogique Yi Jing et favoris locaux ajoutés ;
+- Da Yun, compatibilité avancée et astronomie explicitement laissés en état « moteur en attente ».

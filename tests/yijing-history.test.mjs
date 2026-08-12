@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { deleteYijingReading, getYijingHistory, saveYijingReading } from "../yijing-history.js";
+import { deleteYijingReading, getYijingHistory, saveYijingReading, toggleYijingFavorite } from "../yijing-history.js";
 
 function memoryStorage() {
   const values = new Map();
@@ -14,8 +14,9 @@ test("l’historique sépare les profils, conserve la guidance et supprime sur d
   assert.equal(getYijingHistory().length, 2);
   assert.equal(getYijingHistory({ profileId: "a" }).length, 1);
   assert.equal(getYijingHistory({ profileId: "a" })[0].guidance.essential[0], "Lecture A");
+  assert.equal(toggleYijingFavorite(first.id), true);
+  assert.equal(getYijingHistory({ profileId: "a" })[0].favorite, true);
   assert.equal(deleteYijingReading(first.id), true);
   assert.equal(getYijingHistory({ profileId: "a" }).length, 0);
   delete globalThis.localStorage;
 });
-

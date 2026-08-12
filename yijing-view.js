@@ -4,13 +4,18 @@ import { getCachedBazi, setCachedBazi } from "./bazi-cache.mjs";
 import { element } from "./tao-ui.js";
 import { formatDate, getConcept, t } from "./locales/index.js";
 import { setTaoPose } from "./tao-character.js";
-import { TRIGRAMS } from "./yijing-data.mjs?v=1.0.1";
+import { HEXAGRAMS, TRIGRAMS } from "./yijing-data.mjs?v=1.0.1";
 import { castThreeCoins, createCasting, interpretLineValue, resolveCasting } from "./yijing-engine.mjs?v=1.0.1";
 import { createYijingGuidance } from "./yijing-guidance.mjs?v=1.0.1";
-import { deleteYijingReading, getYijingHistory, saveYijingReading } from "./yijing-history.js";
+import { deleteYijingReading, getYijingHistory, saveYijingReading, toggleYijingFavorite } from "./yijing-history.js";
+import { createSectionNavigation, focusRequestedSection, markProductSection } from "./section-navigation.js";
+import { parseAppRoute } from "./navigation-routes.mjs";
 
 const root = document.querySelector("[data-yijing-root]");
 const state = { phase: "question", question: "", lines: [], result: null, guidance: null, savedId: null };
+const YIJING_SECTIONS = Object.freeze([
+  { id: "consult", label: "Consulter" }, { id: "history", label: "Mes tirages" }, { id: "learn", label: "Apprendre" },
+]);
 
 function render() {
   renderYijingView();
@@ -265,7 +270,7 @@ function openHistory(entry) {
 function historySection() {
   const profile = getActiveProfile();
   const readings = getYijingHistory({ profileId: profile?.id });
-  const section = element("section", { className: "product-section yijing-history" });
+  const section = markProductSection(element("section", { className: "product-section yijing-history" }), "yijing", "history");
   section.append(sectionHeader(t("yijing.history.kicker"), t("yijing.history.title"), t("yijing.history.help")));
   if (!readings.length) { section.append(element("p", { className: "empty-state", text: t("yijing.history.empty") })); return section; }
   const list = element("div", { className: "yijing-history__list" });
@@ -273,7 +278,10 @@ function historySection() {
     const card = element("article", { className: "product-card yijing-history__item" });
     card.append(element("p", { className: "product-eyebrow", text: formatDate(entry.createdAt.slice(0, 10)) }), element("h3", { text: entry.question }), element("p", { text: t("yijing.history.summary", { primary: entry.primaryNumber, transformed: entry.transformedNumber ? ` → ${entry.transformedNumber}` : "" }) }));
     const actions = element("div", { className: "product-actions" });
-    actions.append(button(t("yijing.history.open"), () => openHistory(entry)), button(t("yijing.history.delete"), () => {
+    actions.append(button(entry.favorite ? "★ Favori" : "☆ Ajouter aux favoris", () => {
+      toggleYijingFavorite(entry.id);
+      render();
+    }), button(t("yijing.history.open"), () => openHistory(entry)), button(t("yijing.history.delete"), () => {
       if (!window.confirm(t("yijing.history.confirmDelete"))) return;
       deleteYijingReading(entry.id);
       if (state.savedId === entry.id) state.savedId = null;
@@ -286,15 +294,53 @@ function historySection() {
   return section;
 }
 
+function learningSection() {
+  const section = markProductSection(element("section", { className: "product-section yijing-learning" }), "yijing", "learn");
+  section.append(sectionHeader("Bibliothèque", "Apprendre le Yi Jing", "Une lecture progressive : comprendre le geste avant d’approfondir les 64 figures."));
+  const topics = [
+    ["Yin et Yang", "Un trait plein représente le Yang ; un trait interrompu représente le Yin. Leur alternance décrit une dynamique, pas un verdict."],
+    ["Les six traits", "L’hexagramme se construit du bas vers le haut. La première ligne tirée reste toujours la ligne inférieure."],
+    ["Les traits mutants", "Le vieux Yin (6) devient Yang ; le vieux Yang (9) devient Yin. Les valeurs 7 et 8 restent stables."],
+    ["Poser une question", "Privilégie une situation, une décision ou une manière d’agir plutôt qu’une demande fermée de type oui ou non."],
+  ];
+  const topicGrid = element("div", { className: "topic-grid" });
+  topics.forEach(([title, copy]) => {
+    const card = element("article", { className: "insight-card" });
+    card.append(element("strong", { text: title }), element("p", { text: copy }));
+    topicGrid.append(card);
+  });
+  const trigrams = element("details", { className: "product-disclosure" });
+  trigrams.append(element("summary", { text: "Les huit trigrammes" }));
+  const trigramGrid = element("div", { className: "knowledge-grid product-disclosure__content" });
+  Object.values(TRIGRAMS).forEach((trigram) => {
+    const card = element("article", { className: "knowledge-card" });
+    card.append(element("span", { text: trigram.symbol }), element("strong", { text: trigram.french }), element("small", { text: `${trigram.pinyin} · ${trigram.hanzi}` }), element("p", { text: `${trigram.image} — ${trigram.quality}` }));
+    trigramGrid.append(card);
+  });
+  trigrams.append(trigramGrid);
+  const library = element("details", { className: "product-disclosure" });
+  library.append(element("summary", { text: "Les 64 hexagrammes" }));
+  const list = element("ol", { className: "hexagram-library product-disclosure__content" });
+  HEXAGRAMS.forEach((hexagram) => {
+    const item = element("li");
+    item.append(element("strong", { text: `${hexagram.number}. ${hexagram.french}` }), element("small", { text: `${hexagram.pinyin} · ${hexagram.hanzi}` }));
+    list.append(item);
+  });
+  library.append(list);
+  section.append(topicGrid, trigrams, library);
+  return section;
+}
+
 export function renderYijingView() {
   if (!root) return;
-  const content = [createPageHeader()];
-  if (state.phase === "question") content.push(questionCard());
-  if (state.phase === "confirm") content.push(confirmationCard());
-  if (state.phase === "casting") content.push(castingCard());
-  if (state.phase === "result") content.push(resultView());
-  content.push(historySection());
-  root.replaceChildren(...content);
+  const route = parseAppRoute(location.hash);
+  const consult = markProductSection(element("section", { className: "product-depth-section" }), "yijing", "consult");
+  if (state.phase === "question") consult.append(questionCard());
+  if (state.phase === "confirm") consult.append(confirmationCard());
+  if (state.phase === "casting") consult.append(castingCard());
+  if (state.phase === "result") consult.append(resultView());
+  root.replaceChildren(createPageHeader(), createSectionNavigation("yijing", YIJING_SECTIONS, "Explorer Yi Jing"), consult, historySection(), learningSection());
+  focusRequestedSection(root, "yijing", route.section, { scroll: route.section !== "consult" });
 }
 
 window.addEventListener("tao:view-change", (event) => {
@@ -302,5 +348,5 @@ window.addEventListener("tao:view-change", (event) => {
   setTaoPose("TAO_POSE_05_YI_JING").catch(() => {});
   renderYijingView();
 });
-window.addEventListener("tao:profile-changed", () => { if (location.hash === "#yijing") renderYijingView(); });
-if (location.hash === "#yijing") renderYijingView();
+window.addEventListener("tao:profile-changed", () => { if (location.hash.startsWith("#yijing")) renderYijingView(); });
+if (location.hash.startsWith("#yijing")) renderYijingView();

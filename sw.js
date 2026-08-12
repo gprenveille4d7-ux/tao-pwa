@@ -1,11 +1,18 @@
-const CACHE_VERSION = "tao-shell-2026-08-12-v5";
+const CACHE_VERSION = "tao-shell-2026-08-12-v6";
 const SHELL = [
   "./",
   "./index.html",
   "./styles.css?v=nebula-mobile-1",
-  "./product-experience.css?v=tao-product-v3",
+  "./product-experience.css?v=tao-tree-1",
   "./locales/index.js",
-  "./yijing-view.js?v=tao-yijing-3",
+  "./navigation-routes.mjs",
+  "./section-navigation.js",
+  "./app-navigation.js?v=tao-tree-1",
+  "./today-view.js?v=tao-tree-1",
+  "./bazi-theme.js?v=tao-tree-2",
+  "./profiles-view.js?v=tao-tree-1",
+  "./yijing-view.js?v=tao-tree-1",
+  "./pavilion-portals.js?v=tao-tree-1",
   "./yijing-engine.mjs?v=1.0.1",
   "./yijing-data.mjs?v=1.0.1",
 ];

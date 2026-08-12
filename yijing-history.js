@@ -34,7 +34,16 @@ export function deleteYijingReading(id) {
   return after.length !== before.length;
 }
 
+export function toggleYijingFavorite(id) {
+  const readings = parseHistory();
+  const target = readings.find((entry) => entry.id === id);
+  if (!target) return null;
+  const favorite = !target.favorite;
+  const next = readings.map((entry) => entry.id === id ? { ...entry, favorite } : entry);
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
+  return favorite;
+}
+
 export function clearYijingHistoryForTests() {
   localStorage.removeItem(HISTORY_KEY);
 }
-

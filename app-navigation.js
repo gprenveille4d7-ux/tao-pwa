@@ -1,7 +1,7 @@
 import { getActiveProfile } from "./profile-store.js";
 import { formatDate, formatPlace, localizeDocument, t } from "./locales/index.js";
+import { DEFAULT_VIEW, parseAppRoute } from "./navigation-routes.mjs";
 
-const DEFAULT_VIEW = "pavilion";
 const VIEW_TITLES = Object.freeze({
   today: t("common.navigation.today"),
   theme: t("common.navigation.theme"),
@@ -26,12 +26,11 @@ function renderActiveProfile(profile) {
   if (profileTime) profileTime.textContent = profile.birthTimeKnown ? profile.birthTime : t("profiles.fields.unknownTime");
 }
 
-function requestedView() {
-  const id = location.hash.slice(1);
-  return Object.hasOwn(VIEW_TITLES, id) ? id : DEFAULT_VIEW;
+function requestedRoute() {
+  return parseAppRoute(location.hash);
 }
 
-function showView(id) {
+function showView(id, section = null) {
   const safeId = Object.hasOwn(VIEW_TITLES, id) ? id : DEFAULT_VIEW;
 
   for (const view of views) {
@@ -47,7 +46,8 @@ function showView(id) {
   if (safeId === "profiles") renderActiveProfile(getActiveProfile());
   document.body.dataset.currentView = safeId;
   document.title = `TAO — ${VIEW_TITLES[safeId]}`;
-  window.dispatchEvent(new CustomEvent("tao:view-change", { detail: { view: safeId } }));
+  const routeSection = section ?? parseAppRoute(`#${safeId}`).section;
+  window.dispatchEvent(new CustomEvent("tao:view-change", { detail: { view: safeId, section: routeSection } }));
 }
 
 function revealNavigation(profile) {
@@ -84,17 +84,18 @@ function initializeMainNavigation() {
     return;
   }
 
-  const view = requestedView();
-  if (!location.hash || view !== location.hash.slice(1)) {
+  const route = requestedRoute();
+  if (!location.hash) {
     openDefaultView();
     return;
   }
-  showView(view);
+  showView(route.view, route.section);
 }
 
 window.addEventListener("hashchange", () => {
   if (navigation.hidden || !getActiveProfile()) return;
-  showView(requestedView());
+  const route = requestedRoute();
+  showView(route.view, route.section);
 });
 
 window.addEventListener("tao:profile-created", (event) => {
@@ -108,7 +109,8 @@ window.addEventListener("tao:profile-changed", (event) => {
   const profile = getActiveProfile();
   if (!profile || (event.detail?.profileId && event.detail.profileId !== profile.id)) return;
   revealNavigation(profile);
-  showView(requestedView());
+  const route = requestedRoute();
+  showView(route.view, route.section);
 });
 
 initializeMainNavigation();

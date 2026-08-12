@@ -1,5 +1,6 @@
 import {
   createProfileId,
+  deleteProfile,
   getActiveProfile,
   getProfiles,
   saveProfile,
@@ -11,9 +12,14 @@ import { clearDailyCacheForProfile } from "./daily-cache.mjs";
 import { searchBirthPlaces } from "./geocoding.js";
 import { element, formatBirthDate, formatPlace } from "./tao-ui.js";
 import { getConcept, t } from "./locales/index.js";
+import { createSectionNavigation, focusRequestedSection, markProductSection } from "./section-navigation.js";
+import { parseAppRoute } from "./navigation-routes.mjs";
 
 const root = document.querySelector("[data-profiles-root]");
 const RELATIONSHIPS = ["other", "family", "friend", "partner", "child", "parent"];
+const PROFILE_SECTIONS = Object.freeze([
+  { id: "me", label: "Mon profil" }, { id: "people", label: "Mes proches" }, { id: "compatibility", label: "Compatibilité" },
+]);
 let searchTimer = null;
 let searchController = null;
 
@@ -67,7 +73,16 @@ function otherProfiles(profiles, activeId) {
     use.addEventListener("click", () => activate(profile.id));
     const edit = element("button", { className: "product-button product-button--quiet", text: t("profiles.actions.edit"), attributes: { type: "button" } });
     edit.addEventListener("click", () => openEditor(profile));
-    actions.append(use, edit);
+    const remove = element("button", { className: "product-button product-button--quiet product-button--danger", text: "Supprimer", attributes: { type: "button" } });
+    remove.addEventListener("click", () => {
+      if (!window.confirm(`Supprimer le profil de ${profile.firstName} ? Ses données locales seront retirées.`)) return;
+      deleteProfile(profile.id);
+      clearCachedBazi(profile.id);
+      clearDailyCacheForProfile(profile.id);
+      renderProfilesView();
+      window.dispatchEvent(new CustomEvent("tao:profile-changed", { detail: { profileId: getActiveProfile()?.id, deletedProfileId: profile.id } }));
+    });
+    actions.append(use, edit, remove);
     card.append(text, actions);
     list.append(card);
   }
@@ -223,15 +238,26 @@ export function renderProfilesView() {
   pageHeader.append(element("p", { className: "product-eyebrow", text: t("profiles.page.eyebrow") }), element("h1", { text: t("profiles.page.title") }), element("p", { className: "product-lead", text: t("profiles.page.lead") }));
   const add = element("button", { className: "product-button product-button--add", text: t("profiles.actions.addPerson"), attributes: { type: "button" } });
   add.addEventListener("click", () => openEditor());
-  const compare = element("section", { className: "product-card compare-card", attributes: { "aria-disabled": "true" } });
-  compare.append(element("div", { html: `<p class="product-eyebrow">${t("profiles.compare.eyebrow")}</p><h2>${t("profiles.compare.title")}</h2><p>${t("profiles.compare.copy")}</p>` }));
-  root.replaceChildren(pageHeader, activeCard(active), add, otherProfiles(getProfiles(), active.id), compare);
+  const compare = element("section", { className: "product-card compare-card" });
+  compare.append(element("div", { html: `<p class="product-eyebrow">${t("profiles.compare.eyebrow")}</p><h2>${t("profiles.compare.title")}</h2><p>La comparaison qualitative est préparée, mais son moteur n’est pas encore branché. TAO n’affichera aucun pourcentage arbitraire.</p>` }));
+  const status = element("aside", { className: "engine-status", attributes: { role: "note" } });
+  status.append(element("strong", { text: "Moteur en attente" }), element("p", { text: "Les Maîtres du Jour, éléments et piliers de chaque profil sont déjà conservés séparément." }));
+  compare.append(status);
+  const me = markProductSection(element("section", { className: "product-depth-section" }), "profiles", "me");
+  me.append(activeCard(active));
+  const people = markProductSection(element("section", { className: "product-depth-section" }), "profiles", "people");
+  people.append(add, otherProfiles(getProfiles(), active.id));
+  const compatibility = markProductSection(element("section", { className: "product-depth-section" }), "profiles", "compatibility");
+  compatibility.append(compare);
+  const route = parseAppRoute(location.hash);
+  root.replaceChildren(pageHeader, createSectionNavigation("profiles", PROFILE_SECTIONS, "Explorer Profils"), me, people, compatibility);
+  focusRequestedSection(root, "profiles", route.section, { scroll: route.section !== "me" });
 }
 
 window.addEventListener("tao:view-change", (event) => {
   if (event.detail?.view === "profiles") renderProfilesView();
 });
 window.addEventListener("tao:profile-created", () => {
-  if (location.hash === "#profiles") renderProfilesView();
+  if (location.hash.startsWith("#profiles")) renderProfilesView();
 });
-if (location.hash === "#profiles") renderProfilesView();
+if (location.hash.startsWith("#profiles")) renderProfilesView();
