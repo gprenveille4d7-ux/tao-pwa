@@ -1,4 +1,4 @@
-const CACHE_VERSION = "tao-shell-2026-08-12-v6";
+const CACHE_VERSION = "tao-shell-2026-08-12-v7";
 const SHELL = [
   "./",
   "./index.html",
