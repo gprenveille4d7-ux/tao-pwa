@@ -1,0 +1,28 @@
+{
+  "family": "tao_character_poses",
+  "behaviorEnabled": true,
+  "narrativeControlEnabled": true,
+  "automaticScenarioEngineEnabled": false,
+  "mappingStatus": "canonical_phase_3",
+  "canonicalPoseCount": 13,
+  "variantPoseCount": 2,
+  "poses": {
+    "TAO_POSE_00_NEUTRE": { "label": "00 — NEUTRE", "file": "/assets/tao/character/poses/TAO_POSE_00_NEUTRE.png", "role": "idle", "rarity": "common", "mappingConfidence": "high" },
+    "TAO_POSE_01_ACCUEIL": { "label": "01 — ACCUEIL", "file": "/assets/tao/character/poses/TAO_POSE_01_ACCUEIL.png", "role": "welcome", "rarity": "common", "mappingConfidence": "medium" },
+    "TAO_POSE_02_OBSERVATION": { "label": "02 — OBSERVATION", "file": "/assets/tao/character/poses/TAO_POSE_02_OBSERVATION.png", "role": "observation", "rarity": "common", "mappingConfidence": "high" },
+    "TAO_POSE_03_REFLEXION": { "label": "03 — RÉFLEXION", "file": "/assets/tao/character/poses/TAO_POSE_03_REFLEXION.png", "role": "reflection", "rarity": "common", "mappingConfidence": "high" },
+    "TAO_POSE_04_CARTE_CELESTE": { "label": "04 — CARTE CÉLESTE", "file": "/assets/tao/character/poses/TAO_POSE_04_CARTE_CELESTE.png", "role": "celestial_map", "rarity": "common", "mappingConfidence": "low" },
+    "TAO_POSE_05_YI_JING": { "label": "05 — YI JING", "file": "/assets/tao/character/poses/TAO_POSE_05_YI_JING.png", "role": "yi_jing", "rarity": "common", "mappingConfidence": "medium" },
+    "TAO_POSE_06_LECTURE": { "label": "06 — LECTURE", "file": "/assets/tao/character/poses/TAO_POSE_06_LECTURE.png", "role": "reading", "rarity": "common", "mappingConfidence": "low" },
+    "TAO_POSE_07_EXPLICATION": { "label": "07 — EXPLICATION", "file": "/assets/tao/character/poses/TAO_POSE_07_EXPLICATION.png", "role": "explanation", "rarity": "common", "mappingConfidence": "medium" },
+    "TAO_POSE_08_CONTEMPLATION": { "label": "08 — CONTEMPLATION", "file": "/assets/tao/character/poses/TAO_POSE_08_CONTEMPLATION.png", "role": "contemplation", "rarity": "common", "mappingConfidence": "medium" },
+    "TAO_POSE_09_EVENEMENT_RARE": { "label": "09 — ÉVÉNEMENT RARE", "file": "/assets/tao/character/poses/TAO_POSE_09_EVENEMENT_RARE.png", "role": "rare_event", "rarity": "rare", "mappingConfidence": "low" },
+    "TAO_POSE_10_CLIN_OEIL": { "label": "10 — CLIN D’ŒIL", "file": "/assets/tao/character/poses/TAO_POSE_10_CLIN_OEIL.png", "role": "wink", "rarity": "uncommon", "mappingConfidence": "medium" },
+    "TAO_POSE_11_REVEUSE": { "label": "11 — RÊVEUSE", "file": "/assets/tao/character/poses/TAO_POSE_11_REVEUSE.png", "role": "dreaming", "rarity": "common", "mappingConfidence": "high" },
+    "TAO_POSE_12_REGARDE_DEHORS": { "label": "12 — REGARDE DEHORS", "file": "/assets/tao/character/poses/TAO_POSE_12_REGARDE_DEHORS.png", "role": "looking_outside", "rarity": "common", "mappingConfidence": "high" }
+  },
+  "variants": {
+    "TAO_POSE_ALT_01_INTERROGATION": { "label": "Interrogation", "file": "/assets/tao/character/poses/TAO_POSE_ALT_01_INTERROGATION.png", "role": "interrogation", "category": "variant", "automaticMapping": false },
+    "TAO_POSE_ALT_02_CONCENTRATION": { "label": "Concentration", "file": "/assets/tao/character/poses/TAO_POSE_ALT_02_CONCENTRATION.png", "role": "concentration", "category": "variant", "automaticMapping": false }
+  }
+}
