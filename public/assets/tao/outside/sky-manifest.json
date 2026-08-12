@@ -1,0 +1,39 @@
+{
+  "family": "outside_sky",
+  "version": 3,
+  "behaviorEnabled": true,
+  "manualSelectionEnabled": true,
+  "automaticBehaviorEnabled": false,
+  "runtimeStatus": "technical_complete_pending_user_validation",
+  "defaultState": "OUTSIDE_JOUR_CLAIR_FJORD_ALPIN",
+  "assets": [
+    { "id": "EXTERIEUR_PLANCHE_20_AMBIANCES_FJORD", "file": "/assets/tao/outside/state-sheets/EXTERIEUR_PLANCHE_20_AMBIANCES_FJORD.png", "category": "daytime_weather_celestial", "variability": "variable", "format": "canonical_contact_sheet", "stateCount": 20, "splittable": false },
+    { "id": "EXTERIEUR_PLANCHE_20_AMBIANCES_PAVILLON", "file": "/assets/tao/outside/state-sheets/EXTERIEUR_PLANCHE_20_AMBIANCES_PAVILLON.png", "category": "daytime_weather_celestial", "variability": "variable", "format": "canonical_contact_sheet", "stateCount": 20, "splittable": false },
+    { "id": "LUNE_PLANCHE_08_PHASES", "file": "/assets/tao/outside/moon/LUNE_PLANCHE_08_PHASES.png", "category": "moon", "variability": "variable", "format": "canonical_contact_sheet", "stateCount": 8, "splittable": false }
+  ],
+  "standaloneStates": [
+    { "id": "OUTSIDE_CREPUSCULE_ROSE_VILLAGE_FJORDIQUE", "file": "/assets/tao/outside/states/OUTSIDE_CREPUSCULE_ROSE_VILLAGE_FJORDIQUE.png", "label": "Crépuscule rose — village fjordique", "category": "daytime", "description": "Crépuscule rose et violet sur le village éclairé.", "width": 1448, "height": 1086 },
+    { "id": "OUTSIDE_JOUR_CLAIR_FJORD_ALPIN", "file": "/assets/tao/outside/states/OUTSIDE_JOUR_CLAIR_FJORD_ALPIN.png", "label": "Jour clair — fjord alpin", "category": "daytime", "description": "Ciel bleu intense et nuages blancs sur le fjord.", "width": 1536, "height": 1024 },
+    { "id": "OUTSIDE_JOUR_NUAGEUX_FJORD_ALPIN", "file": "/assets/tao/outside/states/OUTSIDE_JOUR_NUAGEUX_FJORD_ALPIN.png", "label": "Jour nuageux — fjord alpin", "category": "daytime", "description": "Couverture nuageuse dense sans précipitations.", "width": 1535, "height": 1024 },
+    { "id": "OUTSIDE_APRES_MIDI_ENSOLEILLE_FJORD_ALPIN", "file": "/assets/tao/outside/states/OUTSIDE_APRES_MIDI_ENSOLEILLE_FJORD_ALPIN.png", "label": "Après-midi ensoleillé — fjord alpin", "category": "daytime", "description": "Lumière chaude d’après-midi sur le fjord.", "width": 1536, "height": 1024 },
+    { "id": "OUTSIDE_JOUR_ENSOLEILLE_VILLAGE_FJORDIQUE", "file": "/assets/tao/outside/states/OUTSIDE_JOUR_ENSOLEILLE_VILLAGE_FJORDIQUE.png", "label": "Jour ensoleillé — village fjordique", "category": "daytime", "description": "Panorama lumineux du village et du fjord.", "width": 1535, "height": 1024 },
+    { "id": "OUTSIDE_COUCHER_DE_SOLEIL_VILLAGE_FJORDIQUE", "file": "/assets/tao/outside/states/OUTSIDE_COUCHER_DE_SOLEIL_VILLAGE_FJORDIQUE.png", "label": "Coucher de soleil — village fjordique", "category": "daytime", "description": "Ciel orangé et reflet du soleil couchant sur l’eau.", "width": 1536, "height": 1024 },
+    { "id": "OUTSIDE_AURORE_BOREALE_VILLAGE_NORDIQUE", "file": "/assets/tao/outside/states/OUTSIDE_AURORE_BOREALE_VILLAGE_NORDIQUE.png", "label": "Aurore boréale — village nordique", "category": "celestial", "description": "Aurore verte au-dessus du village illuminé.", "width": 1536, "height": 1024 },
+    { "id": "OUTSIDE_NUIT_ETOILEE_CROISSANT_VILLAGE_NORDIQUE", "file": "/assets/tao/outside/states/OUTSIDE_NUIT_ETOILEE_CROISSANT_VILLAGE_NORDIQUE.png", "label": "Nuit étoilée et croissant — village nordique", "category": "celestial", "description": "Ciel étoilé, Voie lactée discrète et croissant de Lune.", "width": 1536, "height": 1024 },
+    { "id": "OUTSIDE_NUIT_ETOILEE_FJORD_ALPIN", "file": "/assets/tao/outside/states/OUTSIDE_NUIT_ETOILEE_FJORD_ALPIN.png", "label": "Nuit étoilée — fjord alpin", "category": "celestial", "description": "Nuit claire et Voie lactée au-dessus du fjord.", "width": 1448, "height": 1086 },
+    { "id": "OUTSIDE_PLEINE_LUNE_VILLAGE_FJORDIQUE", "file": "/assets/tao/outside/states/OUTSIDE_PLEINE_LUNE_VILLAGE_FJORDIQUE.png", "label": "Pleine Lune — village fjordique", "category": "celestial", "description": "Pleine Lune et reflet lunaire sur le fjord.", "width": 1448, "height": 1086 },
+    { "id": "OUTSIDE_VOIE_LACTEE_FJORD_ALPIN", "file": "/assets/tao/outside/states/OUTSIDE_VOIE_LACTEE_FJORD_ALPIN.png", "label": "Voie lactée — fjord alpin", "category": "celestial", "description": "Voie lactée exceptionnelle et étoile filante.", "width": 1536, "height": 1024 },
+    { "id": "OUTSIDE_AURORE_POLAIRE_EXCEPTIONNELLE_FJORD", "file": "/assets/tao/outside/states/OUTSIDE_AURORE_POLAIRE_EXCEPTIONNELLE_FJORD.png", "label": "Aurore polaire exceptionnelle — fjord", "category": "celestial", "description": "Aurore verte et violette accompagnée de la Lune.", "width": 1536, "height": 1024 },
+    { "id": "OUTSIDE_AURORE_POLAIRE_RARE_FJORD", "file": "/assets/tao/outside/states/OUTSIDE_AURORE_POLAIRE_RARE_FJORD.png", "label": "Aurore polaire rare — fjord", "category": "celestial", "description": "Aurore polaire rare au-dessus du fjord nocturne.", "width": 1536, "height": 1024 },
+    { "id": "OUTSIDE_ORAGE_VILLAGE_FJORDIQUE", "file": "/assets/tao/outside/states/OUTSIDE_ORAGE_VILLAGE_FJORDIQUE.png", "label": "Orage — village fjordique", "category": "weather", "description": "Forte pluie et éclair au-dessus du fjord.", "width": 1448, "height": 1086 },
+    { "id": "OUTSIDE_PLUIE_DOUCE_VILLAGE_FJORDIQUE", "file": "/assets/tao/outside/states/OUTSIDE_PLUIE_DOUCE_VILLAGE_FJORDIQUE.png", "label": "Pluie douce — village fjordique", "category": "weather", "description": "Pluie régulière sous un ciel gris clair.", "width": 1448, "height": 1086 },
+    { "id": "OUTSIDE_FORTE_PLUIE_VILLAGE_FJORDIQUE", "file": "/assets/tao/outside/states/OUTSIDE_FORTE_PLUIE_VILLAGE_FJORDIQUE.png", "label": "Forte pluie — village fjordique", "category": "weather", "description": "Pluie dense et ciel sombre sur le fjord.", "width": 1448, "height": 1086 },
+    { "id": "OUTSIDE_BROUILLARD_VILLAGE_FJORDIQUE", "file": "/assets/tao/outside/states/OUTSIDE_BROUILLARD_VILLAGE_FJORDIQUE.png", "label": "Brouillard — village fjordique", "category": "weather", "description": "Bancs de brume masquant partiellement les montagnes.", "width": 1536, "height": 1024 },
+    { "id": "OUTSIDE_NEIGE_VILLAGE_FJORDIQUE", "file": "/assets/tao/outside/states/OUTSIDE_NEIGE_VILLAGE_FJORDIQUE.png", "label": "Neige — village fjordique", "category": "weather", "description": "Village enneigé sous une chute de neige légère.", "width": 1536, "height": 1024 },
+    { "id": "OUTSIDE_TEMPETE_DE_NEIGE_VILLAGE_FJORDIQUE", "file": "/assets/tao/outside/states/OUTSIDE_TEMPETE_DE_NEIGE_VILLAGE_FJORDIQUE.png", "label": "Tempête de neige — village fjordique", "category": "weather", "description": "Neige abondante et visibilité réduite sur le fjord.", "width": 1448, "height": 1086 }
+  ],
+  "missingStandaloneAssets": [
+    "1 état extérieur individuel pour atteindre les 20 états de la planche de référence",
+    "8 phases lunaires individuelles"
+  ]
+}
