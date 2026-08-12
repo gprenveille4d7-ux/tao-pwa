@@ -1,0 +1,32 @@
+# TAO — État réel de la version consolidée
+
+ÉTAPE 0 — **FAITE**  
+ÉTAPE 1 — **FAITE**  
+ÉTAPE 2 — **FAITE**  
+ÉTAPE 3 — **FAITE — 13 POSTURES CANONIQUES + 2 VARIANTES**  
+ÉTAPE 4 — **FAITE**  
+ÉTAPE 5 — **FAITE**  
+ÉTAPE 6 — **FAITE**  
+ÉTAPE 7 — **TECHNIQUEMENT TERMINÉE — VALIDATION UTILISATEUR ATTENDUE**  
+ÉTAPE 8 — **TECHNIQUEMENT TERMINÉE — VALIDATION VISUELLE DES ASSETS EN COURS**  
+ÉTAPE 9 — **TECHNIQUEMENT TERMINÉE — VALIDATION UTILISATEUR ATTENDUE**  
+ÉTAPE 10 — **TECHNIQUEMENT TERMINÉE — VALIDATION UTILISATEUR ATTENDUE**  
+EXPÉRIENCE ASTROLOGIE TAOÏSTE V1 — **TECHNIQUEMENT TERMINÉE — VALIDATION UTILISATEUR ATTENDUE**  
+PHASES LUNAIRES — **REPORTÉES**
+
+## Contrôles consolidés
+
+- Le contrôleur narratif central couvre uniquement `IDLE`, `WELCOME`, `OBSERVING`, `THINKING` et `EXPLAINING`.
+- L’extérieur conserve `object-fit: contain` et `object-position: center`.
+- Le bureau modulaire validé utilise un bureau vide et sept composants autonomes ; l’ancien bureau fusionné reste conservé comme asset historique.
+- 19 PNG extérieurs autonomes sont présents et enregistrés dans `sky-manifest.json`.
+- Le thème natal BaZi du profil actif est calculé localement selon la convention `tao-bazi-1.0.0` ; les résultats calculés sont séparés des données du profil et mis en cache par profil.
+- La lecture quotidienne locale `tao-daily-1.0.1` calcule les piliers annuel, mensuel et journalier, le terme solaire courant, une résonance documentée avec le thème natal et une guidance déterministe.
+- Les pages `AUJOURD’HUI`, `MON THÈME` et `PROFILS` sont de véritables espaces verticaux responsive. Plusieurs profils locaux peuvent être enregistrés et le profil actif peut changer.
+- Aucun automatisme de ciel, météo ou Lune, aucun cycle de chance, aucun moteur Yi Jing, aucune compatibilité avancée et aucune IA ne sont actifs.
+
+## Prototypes non validés
+
+- Étape 8 : 11 objets sont disponibles manuellement ; sept extractions sont classées C et doivent être refaites dans Photoshop avant toute réintégration.
+- Étape 9 : aucune limite critique détectée ; la validation visuelle finale appartient à l’utilisateur.
+- Étape 10 : le calcul solaire V1 est limité aux années 1800–2200, utilise l’heure civile IANA sans correction au temps solaire vrai et demande encore la validation fonctionnelle de l’utilisateur.

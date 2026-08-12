@@ -1,0 +1,31 @@
+export function element(tag, options = {}) {
+  const node = document.createElement(tag);
+  if (options.className) node.className = options.className;
+  if (options.text !== undefined) node.textContent = options.text;
+  if (options.html !== undefined) node.innerHTML = options.html;
+  if (options.attributes) {
+    for (const [name, value] of Object.entries(options.attributes)) node.setAttribute(name, value);
+  }
+  return node;
+}
+
+export function formatBirthDate(value) {
+  return new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" })
+    .format(new Date(`${value}T00:00:00Z`));
+}
+
+export function formatLongDate(value) {
+  return new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" })
+    .format(new Date(`${value}T12:00:00Z`));
+}
+
+export function formatPlace(place) {
+  return [place.city, place.region, place.country].filter(Boolean).join(" — ");
+}
+
+export function localDateIso(timeZone, now = new Date()) {
+  const parts = Object.fromEntries(new Intl.DateTimeFormat("en-CA", {
+    timeZone, year: "numeric", month: "2-digit", day: "2-digit",
+  }).formatToParts(now).filter(({ type }) => type !== "literal").map(({ type, value }) => [type, value]));
+  return `${parts.year}-${parts.month}-${parts.day}`;
+}

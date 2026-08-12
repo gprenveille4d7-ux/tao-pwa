@@ -1,0 +1,24 @@
+# Règles permanentes du projet TAO
+
+- TAO est construite à partir d’assets canoniques fournis par l’utilisateur.
+- Ne jamais redessiner, régénérer, recolorer, retoucher, recadrer ou remplacer un asset canonique.
+- Ne jamais modifier directement un PNG canonique pour résoudre un problème d’interface.
+- Ne jamais fusionner plusieurs assets canoniques s’ils doivent rester indépendants.
+- Le personnage TAO utilise plusieurs postures PNG indépendantes.
+- Les changements de posture sont instantanés. Aucun fondu ni interpolation n’est requis sans demande explicite.
+- Le bureau fonctionne par couches superposées. Les objets variables restent indépendants du fond.
+- Les états extérieurs restent indépendants du décor intérieur.
+- Les phases de Lune appartiennent au système extérieur.
+- Les phases de Lune sont reportées : conserver les assets source sans découpage ni intégration runtime jusqu’à instruction explicite.
+- La numérotation canonique active s’arrête à l’Étape 10 ; les fonctions ultérieures restent à définir.
+- L’Étape 8 est techniquement terminée avec 11 objets runtime manuels ; la validation visuelle des assets reste en cours. Les extractions de classe C demeurent documentées mais exclues du runtime.
+- L’Étape 9 est techniquement terminée et attend la validation utilisateur. Le contrôleur extérieur reste exclusivement manuel, sans automatisation.
+- L’Étape 10 est techniquement terminée et attend la validation utilisateur. Le thème BaZi et la lecture quotidienne V1 sont calculés localement ; aucun cycle de chance, aucun Yi Jing complet et aucune IA ne sont actifs.
+- L’Expérience Astrologie Taoïste V1 (`AUJOURD’HUI`, `MON THÈME`, `PROFILS`) est techniquement terminée et attend la validation utilisateur.
+- Une mission = un module.
+- Ne jamais commencer une phase suivante sans validation explicite.
+- Ne jamais supprimer une fonctionnalité ou un asset validé sans demande explicite.
+- Toujours privilégier la réutilisation du projet existant.
+- Ne jamais créer un nouveau projet TAO si le projet existe déjà.
+- Les planches canoniques multi-états ne doivent pas être découpées sans fourniture ou validation explicite d’assets individuels.
+- Les attributions marquées `ambiguous` dans les manifests doivent être validées avant toute logique applicative.

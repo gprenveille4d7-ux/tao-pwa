@@ -1,0 +1,11 @@
+{
+  "family": "pavilion",
+  "behaviorEnabled": false,
+  "assets": [
+    { "id": "PAVILLON_BASE_FENETRES_TRANSPARENTES", "file": "/assets/tao/pavilion/base/PAVILLON_BASE_FENETRES_TRANSPARENTES.png", "category": "base", "variability": "fixed", "alpha": true },
+    { "id": "PAVILLON_BASE_FENETRES_PANORAMIQUES", "file": "/assets/tao/pavilion/base/PAVILLON_BASE_FENETRES_PANORAMIQUES.png", "category": "base", "variability": "fixed", "alpha": true, "note": "Variante proche de la base transparente ; choix canonique à valider." },
+    { "id": "BUREAU_BASE_CARTE_CELESTE", "file": "/assets/tao/pavilion/desk/BUREAU_BASE_CARTE_CELESTE.png", "category": "desk", "variability": "fixed", "alpha": true, "note": "Le plateau et la carte centrale sont fusionnés dans ce PNG." },
+    { "id": "BUREAU_BASE_VIDE", "file": "/assets/tao/pavilion/desk/modular/BUREAU_BASE_VIDE.png", "category": "desk", "variability": "calibration", "alpha": true, "note": "Bureau vide pour la composition modulaire ; validation utilisateur requise." },
+    { "id": "ETAGERE_FENETRE_GAUCHE", "file": "/assets/tao/pavilion/fixtures/ETAGERE_FENETRE_GAUCHE.png", "category": "fixture", "variability": "fixed", "alpha": true, "note": "Étagère fixe créée pour remplacer la baie vide à gauche de TAO." }
+  ]
+}
