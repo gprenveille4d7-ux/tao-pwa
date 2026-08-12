@@ -28,7 +28,7 @@ export const guidance = Object.freeze({
     supportive: "Soutien présent", toModerate: "À équilibrer",
     fluid: "Fluide", sensitive: "Sensible", observing: "Observation",
     favorable: "Favorable", balanced: "Équilibré", prudence: "Prudence",
-    strong: "Forte", gentle: "Douce", outward: "Vers l’extérieur", inward: "Vers l’intérieur",
+    strong: "Forte", moderate: "Modérée", gentle: "Douce", outward: "Vers l’extérieur", inward: "Vers l’intérieur",
     useful: "Utile", neutral: "Neutre", priority: "Prioritaire",
   }),
   detailed: Object.freeze({
@@ -42,7 +42,7 @@ export const guidance = Object.freeze({
     creativity: "Créativité",
     rhythm: "Rythme personnel",
     retreat: "Moment de recul",
-    supportCopy: "L’énergie du {support} nourrit symboliquement celle du {day}. Dans la lecture combinée, le {dominant} forme aussi un appui disponible : utilise-le comme une ressource, sans chercher à le renforcer à tout prix.",
+    supportCopy: "L’énergie {support} nourrit symboliquement celle {day}. Dans la lecture combinée, {dominant} forme aussi un appui disponible : utilise-le comme une ressource, sans chercher à le renforcer à tout prix.",
     attentionCopy: "Le cycle de contrôle met le {attention} en regard de l’énergie du jour. Le {quieter}, plus discret dans la lecture combinée, mérite d’être ménagé par des gestes simples plutôt que compensé brutalement.",
     relationshipCopy: Object.freeze({
       fluid: "Les polarités du jour et de ton thème se complètent. Dans les échanges, écoute la nuance avant de répondre : la branche du {animal} favorise une présence souple.",

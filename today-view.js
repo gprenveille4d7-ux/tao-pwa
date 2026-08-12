@@ -168,7 +168,7 @@ function createDetailedGuidance(result, natalTheme) {
   const master = stemData(natalTheme.dayMaster.key);
   const branch = branchData(result.dayEnergy.branch.key);
   section.append(
-    domainCard(t("guidance.detailed.support"), t("guidance.status.supportive"), t("guidance.detailed.supportCopy", { support: elementData(supportKey).label, dominant: dominant.label, day: dayElement.label })),
+    domainCard(t("guidance.detailed.support"), t("guidance.status.supportive"), t("guidance.detailed.supportCopy", { support: elementData(supportKey).of, dominant: dominant.withArticle, day: dayElement.of })),
     domainCard(t("guidance.detailed.attention"), t("guidance.status.toModerate"), t("guidance.detailed.attentionCopy", { attention: elementData(attentionKey).label, quieter: quieter.label })),
     domainCard(t("guidance.detailed.relationships"), t(`guidance.status.${result.domains.relations}`), t(`guidance.detailed.relationshipCopy.${result.domains.relations}`, { animal: branch.animal, echoes: result.domains.branchEchoes })),
     domainCard(t("guidance.detailed.action"), t(`guidance.status.${result.domains.action}`), t(`guidance.detailed.actionCopy.${result.domains.action}`, { day: dayElement.label, master: master.french })),

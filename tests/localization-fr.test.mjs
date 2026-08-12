@@ -98,5 +98,6 @@ test("tous les identifiants exposés par les moteurs actuels ont une entrée fra
   assert.ok(fr.guidance.elementAdvice[daily.dayEnergy.stem.element], "Guidance de l’élément du jour absente");
   assert.ok(fr.guidance.detailed.actionCopy[daily.domains.action], "Tendance d’action non localisée");
   assert.ok(fr.guidance.detailed.relationshipCopy[daily.domains.relations], "Tendance relationnelle non localisée");
+  assert.equal(fr.guidance.status.moderate, "Modérée");
   assert.ok(fr.yijing.guidance.essential && fr.yijing.history.confirmDelete, "Interface Yi Jing incomplète");
 });
