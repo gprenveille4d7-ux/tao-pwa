@@ -41,8 +41,8 @@ export function createYijingGuidance({ question, result, profileContext = null }
   const primary = result.primary;
   const transformed = result.transformed;
   const movement = transformed
-    ? `Les lignes ${result.changingLines.join(", ")} déplacent la lecture de « ${primary.french} » vers « ${transformed.french} ». Il ne s’agit pas d’une prédiction : ce passage décrit une transformation possible, de ${primary.theme} vers ${transformed.theme}.`
-    : `Aucune ligne ne mute. Le signe « ${primary.french} » reste le centre de gravité du tirage : approfondis ${primary.theme} avant de chercher une autre direction.`;
+    ? `Les lignes ${result.changingLines.join(", ")} déplacent la lecture de « ${primary.french} » vers « ${transformed.french} ». Il ne s’agit pas d’une prédiction : ce passage décrit une transformation possible, de « ${primary.theme} » vers « ${transformed.theme} ».`
+    : `Aucune ligne ne mute. Le signe « ${primary.french} » reste le centre de gravité du tirage : approfondis la dynamique de « ${primary.theme} » avant de chercher une autre direction.`;
   const essential = [
     `À propos de « ${question.trim()} », TAO retient d’abord ${primary.theme}.`,
     `Le signe ${primary.number}, ${primary.french}, suggère de ${primary.posture}.`,
@@ -69,4 +69,3 @@ export function createYijingGuidance({ question, result, profileContext = null }
     symbolicNotice: "Cette lecture est symbolique et traditionnelle. Elle éclaire une dynamique possible sans prédire l’avenir ni remplacer ton discernement.",
   });
 }
-

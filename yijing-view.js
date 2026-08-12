@@ -4,9 +4,9 @@ import { getCachedBazi, setCachedBazi } from "./bazi-cache.mjs";
 import { element } from "./tao-ui.js";
 import { formatDate, getConcept, t } from "./locales/index.js";
 import { setTaoPose } from "./tao-character.js";
-import { TRIGRAMS } from "./yijing-data.mjs";
-import { castThreeCoins, createCasting, interpretLineValue, resolveCasting } from "./yijing-engine.mjs";
-import { createYijingGuidance } from "./yijing-guidance.mjs";
+import { TRIGRAMS } from "./yijing-data.mjs?v=1.0.1";
+import { castThreeCoins, createCasting, interpretLineValue, resolveCasting } from "./yijing-engine.mjs?v=1.0.1";
+import { createYijingGuidance } from "./yijing-guidance.mjs?v=1.0.1";
 import { deleteYijingReading, getYijingHistory, saveYijingReading } from "./yijing-history.js";
 
 const root = document.querySelector("[data-yijing-root]");

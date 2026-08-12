@@ -96,6 +96,13 @@ function buildLineReadings(hexagram) {
   }));
 }
 
+function deForm(image) {
+  if (image.startsWith("le ")) return `du ${image.slice(3)}`;
+  if (image.startsWith("la ")) return `de la ${image.slice(3)}`;
+  if (image.startsWith("l’")) return `de l’${image.slice(2)}`;
+  return `de ${image}`;
+}
+
 export const HEXAGRAMS = Object.freeze(HEXAGRAM_ROWS.map(([number, hanzi, pinyin, french, lower, upper, theme, shadow, posture, reflection]) => {
   const base = {
     number, hanzi, pinyin, french, lower, upper,
@@ -103,8 +110,8 @@ export const HEXAGRAMS = Object.freeze(HEXAGRAM_ROWS.map(([number, hanzi, pinyin
     lines: Object.freeze([...TRIGRAMS[lower].lines, ...TRIGRAMS[upper].lines]),
     theme, shadow, posture, reflection,
     keywords: Object.freeze([TRIGRAMS[lower].quality, TRIGRAMS[upper].quality, theme]),
-    image: `${TRIGRAMS[upper].image} au-dessus de ${TRIGRAMS[lower].image}`,
-    summary: `Ce signe parle de ${theme}. Il invite à ${posture}.`,
+    image: `${TRIGRAMS[upper].image} au-dessus ${deForm(TRIGRAMS[lower].image)}`,
+    summary: `Ce signe met en lumière une dynamique : ${theme}. Il invite à ${posture}.`,
     dynamics: `La rencontre entre ${TRIGRAMS[lower].french.toLowerCase()} et ${TRIGRAMS[upper].french.toLowerCase()} met en mouvement ${theme}.`,
     strengths: Object.freeze([posture, TRIGRAMS[lower].quality, TRIGRAMS[upper].quality]),
     risks: Object.freeze([shadow, "confondre le symbole avec une certitude", "agir sans relire la situation concrète"]),
@@ -118,4 +125,3 @@ export const HEXAGRAM_BY_SIGNATURE = new Map(HEXAGRAMS.map((hexagram) => [hexagr
 export function getHexagramByLines(lines) {
   return HEXAGRAM_BY_SIGNATURE.get(lines.map(Number).join("")) ?? null;
 }
-

@@ -1,4 +1,4 @@
-import { getHexagramByLines } from "./yijing-data.mjs";
+import { getHexagramByLines } from "./yijing-data.mjs?v=1.0.1";
 
 export const YIJING_ENGINE_VERSION = "tao-yijing-engine-1.0.0";
 export const COIN_CONVENTION = Object.freeze({ heads: 3, tails: 2 });
@@ -44,4 +44,3 @@ export function resolveCasting(lineResults) {
     transformed,
   });
 }
-
