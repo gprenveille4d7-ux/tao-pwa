@@ -12,6 +12,10 @@ import { deleteYijingReading, getYijingHistory, saveYijingReading } from "./yiji
 const root = document.querySelector("[data-yijing-root]");
 const state = { phase: "question", question: "", lines: [], result: null, guidance: null, savedId: null };
 
+function render() {
+  renderYijingView();
+}
+
 function sectionHeader(kicker, title, intro) {
   const header = element("header", { className: "product-section__header" });
   if (kicker) header.append(element("p", { className: "product-eyebrow", text: kicker }));

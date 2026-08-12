@@ -15,6 +15,7 @@ test("la page Yi Jing remplace le placeholder et charge son contrôleur", async 
 
 test("le parcours comprend question, tirage, transformation, guidance et historique", async () => {
   const source = await readFile(resolve(root, "yijing-view.js"), "utf8");
+  assert.match(source, /function render\(\)\s*\{\s*renderYijingView\(\);/);
   for (const marker of ["questionCard", "confirmationCard", "castingCard", "hexagramCard", "guidanceSection", "historySection"]) assert.match(source, new RegExp(marker));
   assert.match(source, /TAO_POSE_05_YI_JING/);
   assert.match(source, /TAO_POSE_03_REFLEXION/);
@@ -28,4 +29,3 @@ test("le module reste local et ne dépend d’aucune API réseau", async () => {
     assert.doesNotMatch(source, /fetch\s*\(|XMLHttpRequest|https?:\/\//, `Accès réseau détecté dans ${file}`);
   }
 });
-
