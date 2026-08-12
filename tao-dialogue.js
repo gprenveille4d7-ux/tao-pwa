@@ -23,21 +23,67 @@ const DIALOGUE_TESTS = Object.freeze({
 export function createTaoDialogue(root) {
   const content = root.querySelector("[data-dialogue-content]");
   const scrollRegion = root.querySelector("[data-dialogue-scroll]");
+  const context = root.querySelector(".tao-dialogue__context");
+  const footer = root.querySelector("[data-dialogue-footer]");
+  const meta = root.querySelector("[data-dialogue-meta]");
+  const position = root.querySelector("[data-dialogue-position]");
+  const previous = root.querySelector("[data-dialogue-previous]");
+  const next = root.querySelector("[data-dialogue-next]");
+  let messages = [];
+  let messageIndex = 0;
 
-  function setText(text, ariaLabel = t("common.app.dialogueRegion")) {
+  function renderParagraphs(text, ariaLabel) {
     const paragraphs = String(text).split(/\n\s*\n/).filter(Boolean);
-    content.replaceChildren(
-      ...paragraphs.map((paragraphText) => {
-        const paragraph = document.createElement("p");
-        paragraph.textContent = paragraphText;
-        return paragraph;
-      }),
-    );
+    content.replaceChildren(...paragraphs.map((paragraphText) => {
+      const paragraph = document.createElement("p");
+      paragraph.textContent = paragraphText;
+      return paragraph;
+    }));
     scrollRegion.setAttribute("aria-label", ariaLabel);
     scrollRegion.scrollTop = 0;
   }
 
-  return Object.freeze({ setText });
+  function setText(text, ariaLabel = t("common.app.dialogueRegion")) {
+    messages = [];
+    messageIndex = 0;
+    footer.hidden = true;
+    context.textContent = t("common.app.pavilionName");
+    renderParagraphs(text, ariaLabel);
+    document.dispatchEvent(new CustomEvent("tao:dialogue-static"));
+  }
+
+  function renderDailyMessage() {
+    const text = messages[messageIndex];
+    renderParagraphs(text, `${t("common.app.dialogueRegion")} — ${t("guidance.dailyBrief.position", { current: messageIndex + 1, total: messages.length })}`);
+    position.textContent = t("guidance.dailyBrief.position", { current: messageIndex + 1, total: messages.length });
+    document.dispatchEvent(new CustomEvent("tao:dialogue-message-change", { detail: { index: messageIndex, total: messages.length, text } }));
+  }
+
+  function setDailyBrief(brief) {
+    messages = (brief.messages ?? []).map(String).filter(Boolean);
+    if (!messages.length) return setText(brief.fallback ?? "Je t’écoute.");
+    messageIndex = 0;
+    context.textContent = brief.context ?? t("guidance.dailyBrief.context");
+    meta.textContent = brief.meta ?? "";
+    previous.setAttribute("aria-label", t("guidance.dailyBrief.previous"));
+    next.setAttribute("aria-label", t("guidance.dailyBrief.next"));
+    footer.hidden = false;
+    previous.disabled = messages.length < 2;
+    next.disabled = messages.length < 2;
+    renderDailyMessage();
+    document.dispatchEvent(new CustomEvent("tao:daily-brief-change", { detail: { total: messages.length } }));
+  }
+
+  previous.addEventListener("click", () => {
+    messageIndex = (messageIndex - 1 + messages.length) % messages.length;
+    renderDailyMessage();
+  });
+  next.addEventListener("click", () => {
+    messageIndex = (messageIndex + 1) % messages.length;
+    renderDailyMessage();
+  });
+
+  return Object.freeze({ setText, setDailyBrief });
 }
 
 function initializeTaoDialogue() {
@@ -72,4 +118,8 @@ const taoDialogue = initializeTaoDialogue();
 
 export function setTaoDialogueText(text, ariaLabel) {
   taoDialogue.setText(text, ariaLabel);
+}
+
+export function setTaoDailyBrief(brief) {
+  taoDialogue.setDailyBrief(brief);
 }

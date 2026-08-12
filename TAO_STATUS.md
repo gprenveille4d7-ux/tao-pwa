@@ -25,6 +25,8 @@ PHASES LUNAIRES — **REPORTÉES**
 - La lecture quotidienne locale `tao-daily-1.0.1` calcule les piliers annuel, mensuel et journalier, le terme solaire courant, une résonance documentée avec le thème natal et une guidance déterministe.
 - Les pages `AUJOURD’HUI`, `MON THÈME` et `PROFILS` sont de véritables espaces verticaux responsive. Plusieurs profils locaux peuvent être enregistrés et le profil actif peut changer.
 - Les données visibles passent par la couche française centralisée `locales/` ; les identifiants techniques des moteurs restent inchangés. Le glossaire, les fallbacks et les contrôles DEV sont documentés dans `docs/13_LOCALISATION_FR.md`.
+- Le Pavillon affiche désormais quatre paroles contextualisées par la journée (énergie, terme solaire, conseil et résonance). Pendant cette parole, TAO alterne directement sept PNG canoniques selon un rythme irrégulier, sans fondu ni morphing.
+- Un écran d’ouverture immédiat masque le chargement des calques lourds ; un service worker met en cache les ressources déjà consultées pour accélérer les lancements suivants. L’ancien bureau fusionné masqué n’est plus téléchargé au démarrage.
 - Aucun automatisme de ciel, météo ou Lune, aucun cycle de chance, aucun moteur Yi Jing, aucune compatibilité avancée et aucune IA ne sont actifs.
 
 ## Prototypes non validés

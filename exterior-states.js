@@ -11,7 +11,7 @@ const DEFAULT_COMPOSITION = Object.freeze({
 const toPublicUrl = (path) => `./public${path}`;
 
 async function loadManifest() {
-  const response = await fetch(MANIFEST_URL, { cache: "no-store" });
+  const response = await fetch(MANIFEST_URL);
 
   if (!response.ok) {
     throw new Error(`Registre extérieur indisponible (${response.status}).`);

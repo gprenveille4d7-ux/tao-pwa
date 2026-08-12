@@ -6,6 +6,8 @@ export const common = Object.freeze({
     pavilionDescriptor: "Pavillon des Étoiles",
     dialogueTitle: "Le mot de TAO",
     dialogueRegion: "Paroles de TAO",
+    loadingTitle: "TAO ouvre le Nebula…",
+    loadingDetail: "Elle observe le ciel avant de te parler.",
   }),
   navigation: Object.freeze({
     label: "Navigation principale",

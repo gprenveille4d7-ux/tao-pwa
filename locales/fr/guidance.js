@@ -13,6 +13,16 @@ export const guidance = Object.freeze({
   dailySummaryYang: "Une journée qui invite à mobiliser {energy} avec présence, sans forcer le rythme.",
   dailySummaryYin: "Une journée qui invite à écouter les nuances de {element} et à progresser avec finesse.",
   pavilionSummary: "{element} est au cœur de la journée. {summary}",
+  dailyBrief: Object.freeze({
+    context: "Aujourd’hui",
+    previous: "Parole précédente",
+    next: "Parole suivante",
+    position: "Parole {current} sur {total}",
+    energy: "{firstName}, {summary}",
+    season: "Le terme solaire du moment est {term}. {explanation}",
+    advice: "Pour accompagner cette journée, privilégie {favor}. Observe aussi {moderate} sans la laisser prendre toute la place.",
+    resonance: "La rencontre entre l’énergie du jour et ton thème présente une harmonie symbolique {level}. Prends-la comme une invitation à observer, jamais comme une certitude.",
+  }),
   resonanceReasons: Object.freeze({ same: "L’élément du jour rejoint directement celui de ton Maître du Jour.", nourishes: "L’élément du jour nourrit symboliquement ton Maître du Jour.", supports: "Ton Maître du Jour peut soutenir le mouvement symbolique de la journée.", controls: "La relation entre les éléments invite davantage à la mesure et à l’ajustement.", neutral: "Les deux éléments se rencontrent sans relation dominante directe.", polarity: "Les polarités Yin et Yang apportent une complémentarité interne." }),
   elementAdvice: Object.freeze({
     wood: Object.freeze({ favor: ["Faire progresser une idée", "Rester souple", "Cultiver ce qui commence"], moderate: ["L’impatience", "La dispersion"], domains: ["Créativité", "Action"] }),

@@ -3,7 +3,7 @@ const POSE_MANIFEST_URL =
 const DEFAULT_POSE_ID = "TAO_POSE_00_NEUTRE";
 
 async function loadPoseRegistry() {
-  const response = await fetch(POSE_MANIFEST_URL, { cache: "no-store" });
+  const response = await fetch(POSE_MANIFEST_URL);
 
   if (!response.ok) {
     throw new Error(`Registre des postures indisponible (${response.status}).`);
@@ -50,6 +50,7 @@ async function loadPoseRegistry() {
 function createTaoCharacter(root, poses, reportError) {
   const image = root.querySelector("[data-tao-image]");
   const poseById = new Map(poses.map((pose) => [pose.id, pose]));
+  const preparedPoses = new Map();
   let currentPose = poseById.get(DEFAULT_POSE_ID);
   let fallbackInProgress = false;
 
@@ -64,6 +65,24 @@ function createTaoCharacter(root, poses, reportError) {
     root.dataset.pose = nextPose.id;
     image.src = nextPose.file;
     return nextPose;
+  }
+
+  function preloadPose(poseId) {
+    const pose = poseById.get(poseId);
+    if (!pose) return Promise.reject(new Error(`Posture TAO inconnue : ${poseId}`));
+    if (preparedPoses.has(poseId)) return preparedPoses.get(poseId);
+    const promise = new Promise((resolve, reject) => {
+      const preload = new Image();
+      preload.decoding = "async";
+      preload.addEventListener("load", () => resolve(pose), { once: true });
+      preload.addEventListener("error", () => reject(new Error(`Asset introuvable : ${poseId}`)), { once: true });
+      preload.src = pose.file;
+    }).catch((error) => {
+      preparedPoses.delete(poseId);
+      throw error;
+    });
+    preparedPoses.set(poseId, promise);
+    return promise;
   }
 
   image.addEventListener("error", () => {
@@ -84,7 +103,7 @@ function createTaoCharacter(root, poses, reportError) {
     fallbackInProgress = false;
   });
 
-  return Object.freeze({ setPose });
+  return Object.freeze({ setPose, preloadPose });
 }
 
 function enablePoseDebugPanel(poses, taoCharacter) {
@@ -152,4 +171,9 @@ const taoCharacterReady = initializeTaoCharacter().catch((error) => {
 export async function setTaoPose(poseId) {
   const taoCharacter = await taoCharacterReady;
   return taoCharacter.setPose(poseId);
+}
+
+export async function preloadTaoPose(poseId) {
+  const taoCharacter = await taoCharacterReady;
+  return taoCharacter.preloadPose(poseId);
 }

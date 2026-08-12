@@ -17,6 +17,81 @@ body {
   overflow: hidden;
 }
 
+.tao-boot {
+  position: fixed;
+  z-index: 10000;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  padding: 2rem;
+  color: #f2e7d5;
+  background:
+    radial-gradient(circle at 50% 43%, rgb(43 65 96 / 48%), transparent 18rem),
+    linear-gradient(180deg, #07111e, #03070d);
+  text-align: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 220ms ease, visibility 220ms ease;
+}
+
+.tao-is-booting .tao-boot {
+  opacity: 1;
+  visibility: visible;
+}
+
+.tao-boot__sigil {
+  display: grid;
+  width: 4.2rem;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid rgb(213 173 115 / 72%);
+  border-radius: 50%;
+  color: #e5c38d;
+  background: rgb(7 17 31 / 72%);
+  box-shadow: 0 0 2.8rem rgb(87 128 170 / 26%);
+  font: 500 2rem/1 Georgia, serif;
+}
+
+.tao-boot__pulse {
+  width: 5rem;
+  height: 1px;
+  margin: 1.2rem 0 1rem;
+  overflow: hidden;
+  background: rgb(213 173 115 / 16%);
+}
+
+.tao-boot__pulse::after {
+  content: "";
+  display: block;
+  width: 45%;
+  height: 100%;
+  background: #d5ad73;
+  animation: tao-boot-pulse 1.35s ease-in-out infinite alternate;
+}
+
+.tao-boot p {
+  margin: 0;
+  color: #ead5b3;
+  font: 500 1.25rem/1.35 Georgia, serif;
+}
+
+.tao-boot small {
+  margin-top: 0.45rem;
+  color: rgb(220 226 235 / 68%);
+  font: 500 0.78rem/1.5 system-ui, sans-serif;
+}
+
+@keyframes tao-boot-pulse {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(220%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tao-boot,
+  .tao-boot__pulse::after { transition: none; animation: none; }
+}
+
 body {
   min-height: 100svh;
   min-height: 100dvh;
@@ -514,6 +589,64 @@ img {
 
 .tao-dialogue__content p + p {
   margin-top: 0.8em;
+}
+
+.tao-dialogue__footer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 0.55rem;
+  margin-top: 0.7rem;
+  padding-top: 0.55rem;
+  border-top: 1px solid rgb(207 166 111 / 16%);
+}
+
+.tao-dialogue__footer[hidden] {
+  display: none;
+}
+
+.tao-dialogue__meta,
+.tao-dialogue__position {
+  min-width: 0;
+  color: rgb(226 222 212 / 68%);
+  font: 600 0.62rem/1.35 system-ui, sans-serif;
+  overflow-wrap: anywhere;
+}
+
+.tao-dialogue__position {
+  color: rgb(213 173 115 / 88%);
+  white-space: nowrap;
+}
+
+.tao-dialogue__controls {
+  display: flex;
+  gap: 0.32rem;
+}
+
+.tao-dialogue__control {
+  display: grid;
+  width: 2.15rem;
+  min-height: 2.15rem;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgb(207 166 111 / 28%);
+  border-radius: 50%;
+  color: #e5c38d;
+  background: rgb(255 255 255 / 3%);
+  font: 500 1.25rem/1 system-ui, sans-serif;
+  cursor: pointer;
+}
+
+.tao-dialogue__control:hover,
+.tao-dialogue__control:focus-visible {
+  border-color: rgb(207 166 111 / 68%);
+  background: rgb(207 166 111 / 10%);
+  outline: none;
+}
+
+.tao-dialogue__control:disabled {
+  opacity: 0.4;
+  cursor: default;
 }
 
 .tao-onboarding {
@@ -1922,6 +2055,14 @@ body.is-calibration-mode [data-calibration-target^="desk"]:not([data-calibration
   .tao-dialogue__content {
     font-size: 0.98rem;
     line-height: 1.55;
+  }
+
+  .tao-dialogue__footer {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .tao-dialogue__position {
+    display: none;
   }
 
   .tao-onboarding__actions {

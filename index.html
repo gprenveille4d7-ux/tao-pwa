@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fr">
+<html lang="fr" class="tao-is-booting">
   <head>
     <meta charset="UTF-8" />
     <meta
@@ -11,10 +11,19 @@
       content="Le Nebula, demeure céleste de TAO."
     />
     <title>TAO — Le Nebula</title>
+    <link rel="preload" as="image" href="./public/assets/tao/outside/states/OUTSIDE_JOUR_CLAIR_FJORD_ALPIN.png" fetchpriority="high" />
+    <link rel="preload" as="image" href="./public/assets/tao/pavilion/base/PAVILLON_BASE_FENETRES_TRANSPARENTES.png" fetchpriority="high" />
+    <link rel="preload" as="image" href="./public/assets/tao/character/poses/TAO_POSE_00_NEUTRE.png" fetchpriority="high" />
     <link rel="stylesheet" href="./styles.css?v=nebula-mobile-1" />
     <link rel="stylesheet" href="./product-experience.css?v=tao-product-v2" />
   </head>
   <body>
+    <div class="tao-boot" data-tao-boot role="status" aria-live="polite" aria-busy="true">
+      <div class="tao-boot__sigil" aria-hidden="true">T</div>
+      <span class="tao-boot__pulse" aria-hidden="true"></span>
+      <p data-i18n="common.app.loadingTitle">TAO ouvre le Nebula…</p>
+      <small data-i18n="common.app.loadingDetail">Elle observe le ciel avant de te parler.</small>
+    </div>
     <main class="app-shell">
       <section
         class="app-view pavilion-screen"
@@ -47,6 +56,7 @@
             width="1536"
             height="1024"
             fetchpriority="high"
+            data-boot-critical
             draggable="false"
           />
           <img
@@ -57,6 +67,7 @@
             width="795"
             height="1978"
             fetchpriority="high"
+            data-boot-critical
             draggable="false"
           />
           <img
@@ -66,6 +77,7 @@
             width="1536"
             height="1024"
             fetchpriority="high"
+            data-boot-critical
             draggable="false"
           />
           <div
@@ -82,13 +94,15 @@
               alt=""
               width="1536"
               height="1024"
+              fetchpriority="high"
+              data-boot-critical
               draggable="false"
             />
           </div>
           <img
             class="pavilion-scene__desk pavilion-scene__desk--legacy"
             data-calibration-legacy-desk
-            src="./public/assets/tao/pavilion/desk/BUREAU_BASE_CARTE_CELESTE.png"
+            data-src="./public/assets/tao/pavilion/desk/BUREAU_BASE_CARTE_CELESTE.png"
             alt=""
             width="1254"
             height="1254"
@@ -102,6 +116,8 @@
             alt=""
             width="1254"
             height="1254"
+            fetchpriority="high"
+            data-boot-critical
             draggable="false"
           />
           <img
@@ -189,6 +205,14 @@
                 <p>Je t’écoute.</p>
               </div>
             </div>
+            <footer class="tao-dialogue__footer" data-dialogue-footer hidden>
+              <span class="tao-dialogue__meta" data-dialogue-meta></span>
+              <span class="tao-dialogue__position" data-dialogue-position aria-live="polite"></span>
+              <div class="tao-dialogue__controls">
+                <button type="button" class="tao-dialogue__control" data-dialogue-previous aria-label="Parole précédente">‹</button>
+                <button type="button" class="tao-dialogue__control" data-dialogue-next aria-label="Parole suivante">›</button>
+              </div>
+            </footer>
           </section>
           <section class="tao-onboarding" data-onboarding hidden aria-label="Première rencontre avec TAO" data-i18n-aria-label="common.accessibility.firstMeeting">
             <form class="tao-onboarding__form" data-onboarding-form novalidate>
@@ -272,7 +296,8 @@
       <section class="scene-debug__section" data-desk-debug></section>
     </aside>
     <aside class="calibration-panel" data-calibration-panel hidden aria-label="Calibration visuelle de la scène"></aside>
-    <script type="module" src="./tao-character.js"></script>
+    <script type="module" src="./tao-bootstrap.js?v=tao-shell-1"></script>
+    <script type="module" src="./tao-character.js?v=tao-speaking-1"></script>
     <script type="module" src="./tao-dialogue.js"></script>
     <script type="module" src="./exterior-states.js?v=outside-framing-controls-4"></script>
     <script type="module" src="./desk-objects.js"></script>
@@ -280,6 +305,7 @@
     <script type="module" src="./today-view.js?v=tao-localization-fr-1"></script>
     <script type="module" src="./bazi-theme.js?v=tao-localization-fr-1"></script>
     <script type="module" src="./profiles-view.js?v=tao-localization-fr-1"></script>
+    <script type="module" src="./tao-presence.js?v=tao-speaking-1"></script>
     <script type="module" src="./app-navigation.js?v=tao-localization-fr-1"></script>
     <script type="module" src="./scene-calibration.js?v=modular-desk-responsive-1"></script>
   </body>

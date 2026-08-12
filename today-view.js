@@ -4,7 +4,7 @@ import { getCachedBazi, setCachedBazi } from "./bazi-cache.mjs";
 import { calculateDailyTao } from "./daily-tao-engine.mjs?v=1.0.1";
 import { getCachedDaily, setCachedDaily } from "./daily-cache.mjs?v=1.0.1";
 import { element, formatLongDate, localDateIso } from "./tao-ui.js";
-import { setTaoDialogueText } from "./tao-dialogue.js";
+import { setTaoDailyBrief } from "./tao-dialogue.js";
 import { setTaoNarrativeState } from "./tao-narrative.js";
 import { formatPercent, getConcept, t } from "./locales/index.js";
 import { glossaryDisclosure } from "./locales/glossary-ui.js";
@@ -18,6 +18,10 @@ const branchData = (key) => getConcept("bazi.earthlyBranches", key);
 
 function solarTermId(pinyin) {
   return String(pinyin).trim().toLowerCase().replace(/\s+/g, "_");
+}
+
+function lowerFirst(value) {
+  return value ? `${value.charAt(0).toLocaleLowerCase("fr-FR")}${value.slice(1)}` : value;
 }
 
 function localizedResonanceReasons(result, natalTheme) {
@@ -223,8 +227,23 @@ async function updatePavilionDialogue() {
     const summary = reading.result.dayEnergy.stem.polarity === "yang"
       ? t("guidance.dailySummaryYang", { energy: elementData(key).energyOf })
       : t("guidance.dailySummaryYin", { element: elementData(key).withArticle });
-    setTaoDialogueText(t("guidance.pavilionSummary", { element: elementData(key).label, summary }));
-    await setTaoNarrativeState("observing");
+    const localizedTerm = getConcept("calendar.solarTerms", solarTermId(reading.result.solarTerm.pinyin));
+    const advice = getConcept("guidance.elementAdvice", key);
+    const resonanceLevel = reading.result.resonance.score >= 72
+      ? t("guidance.resonance.high").toLocaleLowerCase("fr-FR")
+      : reading.result.resonance.score >= 48
+        ? t("guidance.resonance.moderate").toLocaleLowerCase("fr-FR")
+        : t("guidance.resonance.gentle").toLocaleLowerCase("fr-FR");
+    setTaoDailyBrief({
+      context: `${t("guidance.dailyBrief.context")} · ${stemData(reading.result.dayEnergy.stem.key).french}`,
+      meta: `${formatLongDate(reading.result.date, reading.result.timeZone)} · ${localizedTerm.label}`,
+      messages: [
+        t("guidance.dailyBrief.energy", { firstName: reading.profile.firstName, summary }),
+        t("guidance.dailyBrief.season", { term: `${localizedTerm.label} — ${localizedTerm.traditional}`, explanation: localizedTerm.explanation }),
+        t("guidance.dailyBrief.advice", { favor: lowerFirst(advice.favor[0]), moderate: lowerFirst(advice.moderate[0]) }),
+        t("guidance.dailyBrief.resonance", { level: resonanceLevel }),
+      ],
+    });
   } catch {
     // Le Pavillon reste utilisable même si la lecture temporelle est indisponible.
   }
