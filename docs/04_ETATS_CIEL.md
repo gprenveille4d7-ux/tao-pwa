@@ -4,7 +4,7 @@
 
 **TECHNIQUEMENT TERMINÉE — VALIDATION UTILISATEUR ATTENDUE**
 
-Le système est exclusivement visuel et manuel. `automaticBehaviorEnabled` reste à `false` et aucune donnée de date, heure, météo, saison, profil, astrologie, Yi Jing, dialogue ou IA ne pilote l’extérieur.
+Le système visuel est désormais automatique en production et reste pilotable manuellement en développement. `automaticBehaviorEnabled` vaut `true` : le lieu du profil, l’heure solaire, la météo normalisée et la saison composent l’extérieur. Le fonctionnement détaillé se trouve dans `docs/16_ENVIRONNEMENT_DYNAMIQUE.md`.
 
 ## Source de vérité
 
@@ -14,9 +14,9 @@ Le dossier `public/assets/tao/outside/states/` contient exactement 19 PNG autono
 
 Les planches multi-états restent des références visuelles uniquement. Elles ne sont ni rendues comme paysage runtime, ni découpées, ni modifiées.
 
-## Contrôleur manuel
+## Contrôleurs automatique et manuel
 
-`exterior-states.js` charge le manifeste sans précharger les 19 grandes images. Le PNG par défaut est demandé directement par le document ; chaque autre état n’est chargé qu’au moment de sa sélection.
+`exterior-states.js` charge le manifeste et conserve l’API manuelle. Il utilise deux images partageant exactement le même cadrage afin de produire un fondu sans flash. `environment-controller.js` sélectionne l’état à partir de `solar-engine.mjs`, `weather-service.mjs` et `environment-engine.mjs`.
 
 L’API `window.taoExterior` expose :
 
@@ -25,9 +25,9 @@ L’API `window.taoExterior` expose :
 - `hasState(id)` pour vérifier un identifiant ;
 - `states` pour consulter le registre runtime.
 
-Le changement est direct et sans transition. Avant de remplacer l’image visible, le contrôleur vérifie que le nouveau PNG charge correctement. En cas d’identifiant inconnu ou d’échec réseau, il conserve le dernier paysage valide et journalise l’erreur.
+Avant de rendre le nouvel asset visible, le contrôleur vérifie son chargement. Le changement utilise un fondu de 2,2 secondes. En cas d’identifiant inconnu ou d’échec réseau, le dernier paysage valide reste visible.
 
-Le mode `?debug=scene` affiche « DÉCOR EXTÉRIEUR (19) », les 19 libellés et l’état actif. Ce panneau reste un outil DEV uniquement.
+Le mode `?debug=scene` affiche les 19 assets manuels. Le mode local `?debug=environment` simule les moments et météos. Ces panneaux restent des outils DEV uniquement ; la production reste en `AUTO`.
 
 ## Cadrage
 
@@ -36,7 +36,7 @@ Le calque extérieur conserve `object-fit: contain` et `object-position: center`
 - les sources 3:2 remplissent naturellement la scène 3:2 ;
 - les sources 4:3 restent intégralement visibles ;
 - leurs marges latérales sont masquées par l’architecture du Pavillon ;
-- aucune distorsion ni transition n’est appliquée.
+- aucune distorsion n’est appliquée ; les deux calques du fondu utilisent les mêmes variables de cadrage.
 
 ## Indépendance
 

@@ -29,7 +29,7 @@ PHASES LUNAIRES — **REPORTÉES**
 - Le Pavillon affiche désormais quatre paroles contextualisées par la journée (énergie, terme solaire, conseil et résonance). Pendant cette parole, TAO alterne directement sept PNG canoniques selon un rythme irrégulier, sans fondu ni morphing.
 - Un écran d’ouverture immédiat masque le chargement des calques lourds ; un service worker met en cache les ressources déjà consultées pour accélérer les lancements suivants. L’ancien bureau fusionné masqué n’est plus téléchargé au démarrage.
 - Le Yi Jing local comprend la question, la méthode des trois pièces, le tirage progressif ou rapide, 64 hexagrammes, 384 lectures de lignes, les mutations, la transformation, une guidance structurée et un carnet local filtré par profil.
-- Aucun automatisme de ciel, météo ou Lune, aucun cycle de chance, aucune compatibilité avancée et aucune IA ne sont actifs.
+- Le ciel et la météo sont automatisés par `tao-environment-1.0.0` à partir du lieu du profil. Les phases lunaires, événements célestes rares, cycles de chance, compatibilités avancées et IA restent inactifs.
 
 ## Prototypes non validés
 
@@ -46,3 +46,14 @@ PHASES LUNAIRES — **REPORTÉES**
 - Dix Dieux visibles et relations principales calculés sans modifier le moteur BaZi ;
 - bibliothèque pédagogique Yi Jing et favoris locaux ajoutés ;
 - Da Yun, compatibilité avancée et astronomie explicitement laissés en état « moteur en attente ».
+
+## ENVIRONNEMENT EXTÉRIEUR DYNAMIQUE — 12 AOÛT 2026
+
+**ÉTAT : TECHNIQUEMENT TERMINÉ — VALIDATION VISUELLE UTILISATEUR ATTENDUE**
+
+- localisation prioritaire : lieu du profil actif ;
+- lever et coucher calculés localement, puis affinés par Open-Meteo lorsqu’il répond ;
+- météo normalisée et mise en cache ;
+- composition temps + météo + saison avec fondu de 2,2 secondes ;
+- panneau local `?debug=environment#pavilion` ;
+- aucune Lune ni aurore automatique sans donnée fiable.

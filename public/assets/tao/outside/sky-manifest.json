@@ -3,8 +3,8 @@
   "version": 3,
   "behaviorEnabled": true,
   "manualSelectionEnabled": true,
-  "automaticBehaviorEnabled": false,
-  "runtimeStatus": "technical_complete_pending_user_validation",
+  "automaticBehaviorEnabled": true,
+  "runtimeStatus": "dynamic_environment_pending_user_validation",
   "defaultState": "OUTSIDE_JOUR_CLAIR_FJORD_ALPIN",
   "assets": [
     { "id": "EXTERIEUR_PLANCHE_20_AMBIANCES_FJORD", "file": "/assets/tao/outside/state-sheets/EXTERIEUR_PLANCHE_20_AMBIANCES_FJORD.png", "category": "daytime_weather_celestial", "variability": "variable", "format": "canonical_contact_sheet", "stateCount": 20, "splittable": false },

@@ -18,7 +18,7 @@ Cette feuille de route décrit l’état réellement présent dans la version co
 ## Prototypes conservés sans validation
 
 - Le contrôleur `desk-objects.js` pilote manuellement 11 objets runtime utilisables : dix extractions auditées et un PNG individuel d’origine. Sept extractions de classe C restent conservées mais sont exclues du sélecteur ; les planches multi-objets restent documentaires.
-- Le contrôleur `exterior-states.js` constitue le système manuel de l’Étape 9. Ses 19 états autonomes sont enregistrés et commutables, sans logique automatique.
+- Le contrôleur `exterior-states.js` conserve ses 19 états manuels et fournit désormais deux calques synchronisés au moteur `tao-environment-1.0.0`. L’automatisation utilise la localisation du profil, les heures solaires locales, Open-Meteo et un cache hors ligne ; les phases lunaires et événements rares restent exclus.
 - Le moteur `bazi-engine.mjs` calcule localement le thème du profil actif. `MON THÈME` affiche les quatre piliers, le Maître du Jour, la distribution simple des Cinq Éléments, l’équilibre Yin/Yang et une première lecture déterministe. La convention et les limites sont consignées dans `docs/11_BAZI_ENGINE.md`.
 
 ## Phases lunaires

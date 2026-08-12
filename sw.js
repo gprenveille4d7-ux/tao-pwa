@@ -1,8 +1,8 @@
-const CACHE_VERSION = "tao-shell-2026-08-12-v7";
+const CACHE_VERSION = "tao-shell-2026-08-12-v14";
 const SHELL = [
   "./",
   "./index.html",
-  "./styles.css?v=nebula-mobile-1",
+  "./styles.css?v=tao-environment-4",
   "./product-experience.css?v=tao-tree-1",
   "./locales/index.js",
   "./navigation-routes.mjs",
@@ -13,8 +13,21 @@ const SHELL = [
   "./profiles-view.js?v=tao-tree-1",
   "./yijing-view.js?v=tao-tree-1",
   "./pavilion-portals.js?v=tao-tree-1",
+  "./exterior-states.js?v=outside-environment-1",
+  "./environment-controller.js?v=tao-environment-7",
+  "./environment-location.mjs?v=1.0.0",
+  "./environment-engine.mjs?v=1.0.2",
+  "./solar-engine.mjs?v=1.0.0",
+  "./time-zone.mjs",
+  "./weather-service.mjs?v=1.0.1",
   "./yijing-engine.mjs?v=1.0.1",
   "./yijing-data.mjs?v=1.0.1",
+  "./public/assets/tao/outside/states/OUTSIDE_CREPUSCULE_ROSE_VILLAGE_FJORDIQUE.png",
+  "./public/assets/tao/outside/states/OUTSIDE_JOUR_ENSOLEILLE_VILLAGE_FJORDIQUE.png",
+  "./public/assets/tao/outside/states/OUTSIDE_JOUR_CLAIR_FJORD_ALPIN.png",
+  "./public/assets/tao/outside/states/OUTSIDE_APRES_MIDI_ENSOLEILLE_FJORD_ALPIN.png",
+  "./public/assets/tao/outside/states/OUTSIDE_COUCHER_DE_SOLEIL_VILLAGE_FJORDIQUE.png",
+  "./public/assets/tao/outside/states/OUTSIDE_NUIT_ETOILEE_FJORD_ALPIN.png",
 ];
 
 self.addEventListener("install", (event) => {

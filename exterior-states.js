@@ -25,9 +25,18 @@ function createExteriorController(image, states, defaultStateId) {
   const fallbackState = stateById.get(defaultStateId) ?? states[0];
   let currentStateId = fallbackState.id;
   let requestToken = 0;
+  let activeLayer = image;
+  const standbyLayer = image.cloneNode(false);
+  standbyLayer.removeAttribute("data-exterior-image");
+  standbyLayer.removeAttribute("data-boot-critical");
+  standbyLayer.removeAttribute("fetchpriority");
+  standbyLayer.setAttribute("aria-hidden", "true");
+  standbyLayer.classList.add("pavilion-scene__outside--standby");
+  image.after(standbyLayer);
 
   image.src = toPublicUrl(fallbackState.file);
   image.dataset.exteriorState = fallbackState.id;
+  image.classList.add("is-active");
 
   const announceChange = (state) => {
     image.dispatchEvent(
@@ -39,7 +48,7 @@ function createExteriorController(image, states, defaultStateId) {
     image.dispatchEvent(new CustomEvent("tao:exterior-error", { detail }));
   };
 
-  const setState = (id) => {
+  const setState = (id, options = {}) => {
     const state = stateById.get(id);
 
     if (!state) {
@@ -62,10 +71,16 @@ function createExteriorController(image, states, defaultStateId) {
 
     probe.addEventListener("load", () => {
       if (token !== requestToken) return;
-      image.src = requestedUrl;
-      image.dataset.exteriorState = state.id;
+      const nextLayer = activeLayer === image ? standbyLayer : image;
+      nextLayer.src = requestedUrl;
+      nextLayer.dataset.exteriorState = state.id;
       currentStateId = state.id;
-      announceChange(state);
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        activeLayer.classList.remove("is-active");
+        nextLayer.classList.add("is-active");
+        activeLayer = nextLayer;
+        announceChange({ ...state, source: options.source ?? "manual" });
+      }));
     });
 
     probe.addEventListener("error", () => {
@@ -88,6 +103,7 @@ function createExteriorController(image, states, defaultStateId) {
     getState: () => currentStateId,
     hasState: (id) => stateById.has(id),
     states: Object.freeze([...states]),
+    getActiveLayer: () => activeLayer,
   });
 }
 
@@ -105,9 +121,10 @@ function createCompositionControls(image) {
   readout.dataset.exteriorComposition = "";
 
   const updateComposition = () => {
-    image.style.setProperty("--outside-x", `${values.x}%`);
-    image.style.setProperty("--outside-y", `${values.y}%`);
-    image.style.setProperty("--outside-scale", String(values.scale));
+    const scene = image.closest(".pavilion-scene") ?? image;
+    scene.style.setProperty("--outside-x", `${values.x}%`);
+    scene.style.setProperty("--outside-y", `${values.y}%`);
+    scene.style.setProperty("--outside-scale", String(values.scale));
     readout.value = `X ${values.x} % · Y ${values.y} % · ÉCHELLE ${values.scale.toFixed(2)}`;
   };
 
@@ -252,6 +269,7 @@ async function initializeExteriorStates() {
     manifest.defaultState,
   );
   window.taoExterior = controller;
+  window.dispatchEvent(new CustomEvent("tao:exterior-ready", { detail: { controller } }));
 
   if (debugEnabled) enableDebugPanel(controller, image);
 }

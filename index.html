@@ -14,7 +14,7 @@
     <link rel="preload" as="image" href="./public/assets/tao/outside/states/OUTSIDE_JOUR_CLAIR_FJORD_ALPIN.png" fetchpriority="high" />
     <link rel="preload" as="image" href="./public/assets/tao/pavilion/base/PAVILLON_BASE_FENETRES_TRANSPARENTES.png" fetchpriority="high" />
     <link rel="preload" as="image" href="./public/assets/tao/character/poses/TAO_POSE_00_NEUTRE.png" fetchpriority="high" />
-    <link rel="stylesheet" href="./styles.css?v=nebula-mobile-1" />
+    <link rel="stylesheet" href="./styles.css?v=tao-environment-4" />
     <link rel="stylesheet" href="./product-experience.css?v=tao-tree-1" />
   </head>
   <body>
@@ -48,7 +48,7 @@
         >
           <div class="pavilion-scene__backdrop" aria-hidden="true"></div>
           <img
-            class="pavilion-scene__outside"
+            class="pavilion-scene__outside is-active"
             data-exterior-image
             data-exterior-state="OUTSIDE_JOUR_CLAIR_FJORD_ALPIN"
             src="./public/assets/tao/outside/states/OUTSIDE_JOUR_CLAIR_FJORD_ALPIN.png"
@@ -59,6 +59,12 @@
             data-boot-critical
             draggable="false"
           />
+          <div class="pavilion-scene__environment" data-environment-layers aria-hidden="true">
+            <span class="environment-layer environment-layer--light" data-environment-light></span>
+            <span class="environment-layer environment-layer--sky" data-environment-sky></span>
+            <span class="environment-layer environment-layer--weather" data-environment-weather></span>
+            <span class="environment-layer environment-layer--celestial" data-celestial-event-layer hidden></span>
+          </div>
           <img
             class="pavilion-scene__shelf"
             data-calibration-target="shelfPatch"
@@ -187,6 +193,15 @@
           <div class="pavilion-scene__nameplate" aria-hidden="true">
             <span>LE NEBULA</span>
           </div>
+          <a
+            class="environment-attribution"
+            data-environment-attribution
+            href="https://open-meteo.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Source des données météo : Open-Meteo"
+            hidden
+          >Météo : Open-Meteo</a>
         </div>
         <div class="tao-conversation">
           <section class="tao-dialogue" data-tao-dialogue aria-labelledby="tao-dialogue-title">
@@ -289,10 +304,12 @@
       <section class="scene-debug__section" data-desk-debug></section>
     </aside>
     <aside class="calibration-panel" data-calibration-panel hidden aria-label="Calibration visuelle de la scène"></aside>
+    <aside class="environment-debug" data-environment-debug hidden aria-label="TAO Environment Debug"></aside>
     <script type="module" src="./tao-bootstrap.js?v=tao-shell-1"></script>
     <script type="module" src="./tao-character.js?v=tao-speaking-1"></script>
     <script type="module" src="./tao-dialogue.js"></script>
-    <script type="module" src="./exterior-states.js?v=outside-framing-controls-4"></script>
+    <script type="module" src="./exterior-states.js?v=outside-environment-1"></script>
+    <script type="module" src="./environment-controller.js?v=tao-environment-7"></script>
     <script type="module" src="./desk-objects.js"></script>
     <script type="module" src="./onboarding.js"></script>
     <script type="module" src="./today-view.js?v=tao-tree-1"></script>
