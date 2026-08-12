@@ -6,8 +6,32 @@ import { getCachedDaily, setCachedDaily } from "./daily-cache.mjs?v=1.0.1";
 import { element, formatLongDate, localDateIso } from "./tao-ui.js";
 import { setTaoDialogueText } from "./tao-dialogue.js";
 import { setTaoNarrativeState } from "./tao-narrative.js";
+import { formatPercent, getConcept, t } from "./locales/index.js";
+import { glossaryDisclosure } from "./locales/glossary-ui.js";
 
 const root = document.querySelector("[data-today-root]");
+const GENERATES = Object.freeze({ wood: "fire", fire: "earth", earth: "metal", metal: "water", water: "wood" });
+const CONTROLS = Object.freeze({ wood: "earth", earth: "water", water: "fire", fire: "metal", metal: "wood" });
+const elementData = (key) => getConcept("bazi.elements", key);
+const stemData = (key) => getConcept("bazi.heavenlyStems", key);
+const branchData = (key) => getConcept("bazi.earthlyBranches", key);
+
+function solarTermId(pinyin) {
+  return String(pinyin).trim().toLowerCase().replace(/\s+/g, "_");
+}
+
+function localizedResonanceReasons(result, natalTheme) {
+  const daily = result.dayEnergy.stem.element;
+  const master = natalTheme.dayMaster.element;
+  const reasons = [];
+  if (daily === master) reasons.push(t("guidance.resonanceReasons.same"));
+  else if (GENERATES[daily] === master) reasons.push(t("guidance.resonanceReasons.nourishes"));
+  else if (GENERATES[master] === daily) reasons.push(t("guidance.resonanceReasons.supports"));
+  else if (CONTROLS[daily] === master || CONTROLS[master] === daily) reasons.push(t("guidance.resonanceReasons.controls"));
+  else reasons.push(t("guidance.resonanceReasons.neutral"));
+  if (result.dayEnergy.stem.polarity !== natalTheme.dayMaster.polarity) reasons.push(t("guidance.resonanceReasons.polarity"));
+  return reasons;
+}
 
 function sectionHeader(kicker, title, intro) {
   const header = element("header", { className: "product-section__header" });
@@ -19,12 +43,14 @@ function sectionHeader(kicker, title, intro) {
 
 function createOverview(result) {
   const card = element("section", { className: "product-card glance-card", attributes: { "aria-labelledby": "today-glance" } });
-  card.append(sectionHeader(null, "EN UN REGARD"));
+  card.append(sectionHeader(null, t("guidance.page.glance")));
   card.querySelector("h2").id = "today-glance";
   const grid = element("dl", { className: "glance-grid" });
   for (const [label, value] of [
-    ["Énergie", result.overview.energy], ["Rythme", result.overview.rhythm],
-    ["Élément soutenu", result.overview.supported], ["Point d’attention", result.overview.attention],
+    [t("guidance.overview.energy"), `${elementData(result.dayEnergy.stem.element).label} ${getConcept("bazi.polarities", result.dayEnergy.stem.polarity).label}`],
+    [t("guidance.overview.rhythm"), result.dayEnergy.stem.polarity === "yang" ? t("guidance.rhythms.measuredMovement") : t("guidance.rhythms.activeObservation")],
+    [t("guidance.overview.supported"), elementData(Object.keys(GENERATES).find((key) => GENERATES[key] === result.dayEnergy.stem.element)).label],
+    [t("guidance.overview.attention"), elementData(Object.keys(CONTROLS).find((key) => CONTROLS[key] === result.dayEnergy.stem.element)).label],
   ]) {
     const item = element("div");
     item.append(element("dt", { text: label }), element("dd", { text: value }));
@@ -35,30 +61,36 @@ function createOverview(result) {
 }
 
 function createDayEnergy(result) {
+  const stem = stemData(result.dayEnergy.stem.key);
+  const branch = branchData(result.dayEnergy.branch.key);
+  const energy = elementData(result.dayEnergy.stem.element);
+  const summary = result.dayEnergy.stem.polarity === "yang"
+    ? t("guidance.dailySummaryYang", { energy: energy.energyOf })
+    : t("guidance.dailySummaryYin", { element: energy.withArticle });
   const card = element("section", { className: `product-card hero-card element-accent--${result.dayEnergy.stem.element}` });
   card.append(
-    element("p", { className: "product-eyebrow", text: "ÉNERGIE DU JOUR" }),
+    element("p", { className: "product-eyebrow", text: t("guidance.page.dayEnergy") }),
     element("p", { className: "hero-card__glyph", text: result.pillars.day.chinese }),
-    element("h2", { className: "hero-card__value", text: result.dayEnergy.label }),
-    element("p", { className: "hero-card__meta", text: `${result.dayEnergy.stem.name} ${result.dayEnergy.branch.name} · ${result.dayEnergy.animal}` }),
-    element("p", { className: "hero-card__summary", text: result.dayEnergy.summary }),
+    element("h2", { className: "hero-card__value", text: `${stem.french} · ${branch.animal}` }),
+    element("p", { className: "hero-card__meta", text: `${stem.label} · ${branch.label}` }),
+    element("p", { className: "hero-card__summary", text: summary }),
   );
   return card;
 }
 
 function createResonance(result, natalTheme) {
   const card = element("section", { className: "product-card resonance-card" });
-  card.append(sectionHeader("JOUR × THÈME NATAL", "RÉSONANCE AVEC TON THÈME"));
+  card.append(sectionHeader(t("guidance.resonance.kicker"), t("guidance.page.resonance")));
   const level = element("div", { className: "resonance-level" });
   level.append(
-    element("span", { text: "Harmonie symbolique" }),
-    element("strong", { text: result.resonance.level }),
-    element("small", { text: `${result.resonance.score}/100 · indicateur interne` }),
+    element("span", { text: t("guidance.resonance.harmony") }),
+    element("strong", { text: result.resonance.score >= 72 ? t("guidance.resonance.high") : result.resonance.score >= 48 ? t("guidance.resonance.moderate") : t("guidance.resonance.gentle") }),
+    element("small", { text: `${result.resonance.score}/100 · ${t("guidance.resonance.internalIndicator")}` }),
   );
   const text = element("div", { className: "resonance-copy" });
   text.append(
-    element("p", { text: `Ton Maître du Jour est ${natalTheme.dayMaster.elementLabel} ${natalTheme.dayMaster.polarity === "yang" ? "Yang" : "Yin"}.` }),
-    ...result.resonance.reasons.map((reason) => element("p", { text: reason })),
+    element("p", { text: `Ton ${t("bazi.labels.dayMaster")} est ${stemData(natalTheme.dayMaster.key).french}.` }),
+    ...localizedResonanceReasons(result, natalTheme).map((reason) => element("p", { text: reason })),
   );
   card.append(level, text);
   return card;
@@ -66,23 +98,24 @@ function createResonance(result, natalTheme) {
 
 function createElementBalance(result) {
   const section = element("section", { className: "product-card" });
-  section.append(sectionHeader("ÉQUILIBRE SYMBOLIQUE", "CINQ ÉLÉMENTS", "Le trait clair montre l’équilibre natal enrichi des deux composantes du jour."));
+  section.append(sectionHeader(t("guidance.elements.kicker"), t("guidance.elements.title"), t("guidance.elements.intro")));
   const list = element("div", { className: "element-bars" });
   for (const item of Object.values(result.elements)) {
+    const localized = elementData(item.key);
     const row = element("div", { className: `element-row element-row--${item.key}` });
     const label = element("div", { className: "element-row__label" });
     label.append(
-      element("strong", { text: item.label }),
-      element("span", { text: item.dailyCount ? `+${item.dailyCount} aujourd’hui` : "stable aujourd’hui" }),
+      element("strong", { text: localized.label }),
+      element("span", { text: item.dailyCount ? t("guidance.elements.dailyAddition", { count: item.dailyCount }) : t("guidance.elements.stable") }),
     );
     const meter = element("div", { className: "element-meter", attributes: {
-      role: "meter", "aria-label": `${item.label} : ${item.percent}% dans la lecture combinée`,
+      role: "meter", "aria-label": `${localized.label} : ${formatPercent(item.percent)} dans la lecture combinée`,
       "aria-valuemin": "0", "aria-valuemax": "100", "aria-valuenow": String(item.percent),
     } });
     const fill = element("span", { className: "element-meter__fill" });
     fill.style.width = `${item.percent}%`;
     meter.append(fill);
-    row.append(label, meter, element("span", { className: "element-row__value", text: `${item.percent}%` }));
+    row.append(label, meter, element("span", { className: "element-row__value", text: formatPercent(item.percent) }));
     list.append(row);
   }
   section.append(list);
@@ -91,9 +124,10 @@ function createElementBalance(result) {
 
 function createGuidance(result) {
   const section = element("section", { className: "product-card guidance-card" });
-  section.append(sectionHeader("PAROLES DE TAO", "GUIDANCE DE TAO"));
+  section.append(sectionHeader(t("common.app.dialogueTitle"), t("guidance.page.guidance")));
   const grid = element("div", { className: "guidance-grid" });
-  for (const [title, items] of [["À privilégier", result.guidance.favor], ["À modérer", result.guidance.moderate]]) {
+  const localizedAdvice = getConcept("guidance.elementAdvice", result.dayEnergy.stem.element);
+  for (const [title, items] of [[t("guidance.advice.favor"), localizedAdvice.favor], [t("guidance.advice.moderate"), localizedAdvice.moderate]]) {
     const group = element("div");
     group.append(element("h3", { text: title }));
     const list = element("ul");
@@ -102,18 +136,20 @@ function createGuidance(result) {
     grid.append(group);
   }
   const rhythm = element("div", { className: "guidance-rhythm" });
-  rhythm.append(element("span", { text: "Rythme" }), element("strong", { text: result.guidance.rhythm }));
-  const domains = element("div", { className: "domain-pills", attributes: { "aria-label": "Domaines soutenus" } });
-  for (const domain of result.guidance.domains) domains.append(element("span", { text: domain }));
+  rhythm.append(element("span", { text: t("guidance.advice.rhythm") }), element("strong", { text: result.dayEnergy.stem.polarity === "yang" ? t("guidance.rhythms.consciousAction") : t("guidance.rhythms.activeContemplation") }));
+  const domains = element("div", { className: "domain-pills", attributes: { "aria-label": t("guidance.advice.supportedDomains") } });
+  for (const domain of localizedAdvice.domains) domains.append(element("span", { text: domain }));
   section.append(grid, rhythm, domains);
   return section;
 }
 
 function createSeason(result) {
+  const localized = getConcept("calendar.solarTerms", solarTermId(result.solarTerm.pinyin));
   const section = element("section", { className: "product-card season-card" });
   section.append(
-    sectionHeader("SAISON DU MOMENT", `${result.solarTerm.label} · ${result.solarTerm.pinyin}`),
-    element("p", { text: result.solarTerm.description }),
+    sectionHeader(t("guidance.page.season"), localized.label),
+    element("p", { className: "season-card__traditional", text: localized.traditional }),
+    element("p", { text: localized.explanation }),
   );
   return section;
 }
@@ -126,14 +162,14 @@ function pillarMini(label, pillar) {
 
 function createDetails(result) {
   const details = element("details", { className: "product-disclosure" });
-  details.append(element("summary", { text: "Approfondir la lecture du jour" }));
+  details.append(element("summary", { text: t("guidance.page.deepen") }));
   const content = element("div", { className: "product-disclosure__content" });
   const pillars = element("div", { className: "mini-pillar-grid" });
-  pillars.append(pillarMini("Année énergétique", result.pillars.year), pillarMini("Mois énergétique", result.pillars.month), pillarMini("Jour", result.pillars.day));
+  pillars.append(pillarMini(t("bazi.pillars.year"), result.pillars.year), pillarMini(t("bazi.pillars.month"), result.pillars.month), pillarMini(t("bazi.pillars.day"), result.pillars.day));
   content.append(
     pillars,
-    element("p", { className: "method-note", text: result.methodology }),
-    element("p", { className: "symbolic-note", text: "TAO propose une lecture traditionnelle et symbolique destinée à la réflexion personnelle." }),
+    element("p", { className: "method-note", text: t("guidance.methodology") }),
+    element("p", { className: "symbolic-note", text: t("guidance.symbolicNote") }),
   );
   details.append(content);
   return details;
@@ -159,22 +195,22 @@ export async function renderTodayView() {
   try {
     const reading = getActiveDailyReading();
     if (!reading) {
-      renderError("Crée d’abord un profil pour découvrir la lecture de ta journée.");
+      renderError(t("guidance.errors.profileRequired"));
       return null;
     }
     const { profile, natalTheme, result } = reading;
     const header = element("header", { className: "product-header" });
     header.append(
-      element("p", { className: "product-eyebrow", text: "AUJOURD’HUI" }),
+      element("p", { className: "product-eyebrow", text: t("guidance.page.eyebrow") }),
       element("h1", { text: formatLongDate(result.date, result.timeZone) }),
-      element("p", { className: "product-lead", text: `Bonjour ${profile.firstName}. Voici les repères symboliques de ta journée.` }),
+      element("p", { className: "product-lead", text: t("guidance.greeting", { firstName: profile.firstName }) }),
     );
-    root.replaceChildren(header, createOverview(result), createDayEnergy(result), createResonance(result, natalTheme), createElementBalance(result), createGuidance(result), createSeason(result), createDetails(result));
+    root.replaceChildren(header, createOverview(result), createDayEnergy(result), createResonance(result, natalTheme), createElementBalance(result), createGuidance(result), createSeason(result), createDetails(result), glossaryDisclosure(["dayMaster", "fiveElements", "yinYang", "jieQi", "generationCycle", "controlCycle"], "Glossaire de TAO"));
     await setTaoNarrativeState("observing");
     return result;
   } catch (error) {
     console.error("[TAO] Lecture quotidienne impossible.", error);
-    renderError("La lecture du jour ne peut pas être établie pour le moment.");
+    renderError(t("guidance.errors.unavailable"));
     return null;
   }
 }
@@ -183,7 +219,11 @@ async function updatePavilionDialogue() {
   try {
     const reading = getActiveDailyReading();
     if (!reading) return;
-    setTaoDialogueText(`${reading.result.dayEnergy.stem.elementLabel} est au cœur de la journée. ${reading.result.dayEnergy.summary}`);
+    const key = reading.result.dayEnergy.stem.element;
+    const summary = reading.result.dayEnergy.stem.polarity === "yang"
+      ? t("guidance.dailySummaryYang", { energy: elementData(key).energyOf })
+      : t("guidance.dailySummaryYin", { element: elementData(key).withArticle });
+    setTaoDialogueText(t("guidance.pavilionSummary", { element: elementData(key).label, summary }));
     await setTaoNarrativeState("observing");
   } catch {
     // Le Pavillon reste utilisable même si la lecture temporelle est indisponible.

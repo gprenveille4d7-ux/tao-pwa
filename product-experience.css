@@ -272,3 +272,72 @@
   .product-disclosure { animation: product-card-in 180ms ease-out both; }
   @keyframes product-card-in { from { opacity: 0; transform: translateY(0.3rem); } }
 }
+.tao-glossary__content {
+  display: grid;
+  gap: 1rem;
+}
+
+.tao-glossary__entry {
+  min-width: 0;
+  padding-block: .9rem;
+  border-bottom: 1px solid rgba(205, 166, 100, .2);
+}
+
+.tao-glossary__entry:last-child {
+  border-bottom: 0;
+}
+
+.tao-glossary__entry h3,
+.tao-glossary__entry p {
+  overflow-wrap: anywhere;
+}
+
+.tao-glossary__entry h3 {
+  margin: 0;
+  color: #ead3a1;
+}
+
+.tao-glossary__traditional {
+  margin: .25rem 0 .55rem;
+  color: #c59b59;
+  letter-spacing: .035em;
+}
+
+.tao-glossary__detail {
+  color: rgba(234, 227, 211, .76);
+}
+
+.season-card__traditional {
+  color: #cba25f;
+  font-family: Georgia, serif;
+  letter-spacing: .04em;
+}
+
+@media (min-width: 700px) {
+  .tao-glossary__content {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 390px) {
+  .product-page,
+  .theme-view__content,
+  .product-card,
+  .product-disclosure,
+  .pillar-card,
+  .mini-pillar {
+    min-width: 0;
+  }
+
+  .pillar-card__signs > div,
+  .glance-grid > div,
+  .profile-facts > div {
+    overflow-wrap: anywhere;
+  }
+
+  .day-master-card__name,
+  .hero-card__meta,
+  .tao-glossary__traditional {
+    white-space: normal;
+  }
+}

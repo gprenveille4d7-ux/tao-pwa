@@ -19,16 +19,17 @@
       <section
         class="app-view pavilion-screen"
         data-app-view="pavilion"
-        aria-label="Le Nebula, demeure de TAO"
+          aria-label="Le Nebula, demeure de TAO"
+          data-i18n-aria-label="common.accessibility.pavilionScene"
       >
       <div class="pavilion-home">
-        <header class="pavilion-identity" aria-label="Identité de TAO">
+        <header class="pavilion-identity" aria-label="Identité de TAO" data-i18n-aria-label="common.accessibility.taoIdentity">
           <div class="pavilion-identity__sigil" aria-hidden="true">T</div>
           <div class="pavilion-identity__copy">
             <p class="pavilion-identity__name">TAO</p>
-            <p class="pavilion-identity__place">Le Nebula</p>
+            <p class="pavilion-identity__place" data-i18n="common.app.pavilionName">Le Nebula</p>
           </div>
-          <p class="pavilion-identity__descriptor">Pavillon des Étoiles</p>
+          <p class="pavilion-identity__descriptor" data-i18n="common.app.pavilionDescriptor">Pavillon des Étoiles</p>
         </header>
         <div class="pavilion-stage">
         <div
@@ -174,8 +175,8 @@
         <div class="tao-conversation">
           <section class="tao-dialogue" data-tao-dialogue aria-labelledby="tao-dialogue-title">
             <header class="tao-dialogue__header">
-              <h1 class="tao-dialogue__speaker" id="tao-dialogue-title">LE MOT DE TAO</h1>
-              <span class="tao-dialogue__context">Le Nebula</span>
+              <h1 class="tao-dialogue__speaker" id="tao-dialogue-title" data-i18n="common.app.dialogueTitle">Le mot de TAO</h1>
+              <span class="tao-dialogue__context" data-i18n="common.app.pavilionName">Le Nebula</span>
             </header>
             <div
               class="tao-dialogue__scroll"
@@ -189,7 +190,7 @@
               </div>
             </div>
           </section>
-          <section class="tao-onboarding" data-onboarding hidden aria-label="Première rencontre avec TAO">
+          <section class="tao-onboarding" data-onboarding hidden aria-label="Première rencontre avec TAO" data-i18n-aria-label="common.accessibility.firstMeeting">
             <form class="tao-onboarding__form" data-onboarding-form novalidate>
               <div data-onboarding-control></div>
               <p class="tao-onboarding__error" data-onboarding-error role="alert" hidden></p>
@@ -210,12 +211,12 @@
 
       <section class="app-view app-placeholder" data-app-view="yijing" aria-labelledby="yijing-title" hidden>
         <div class="app-placeholder__content app-placeholder__content--narrow">
-          <p class="app-placeholder__eyebrow">Espace en préparation</p>
-          <h1 id="yijing-title">YI JING</h1>
-          <p class="app-placeholder__intro">Lorsque tu seras prêt, nous pourrons interroger le Yi Jing.</p>
+          <p class="app-placeholder__eyebrow" data-i18n="yijing.page.eyebrow">Espace en préparation</p>
+          <h1 id="yijing-title" data-i18n="yijing.page.title">Yi Jing</h1>
+          <p class="app-placeholder__intro" data-i18n="yijing.page.intro">Lorsque tu seras prêt, nous pourrons interroger le Yi Jing.</p>
           <article class="future-card future-card--centered">
-            <h2>Consultation future</h2>
-            <p>Aucun tirage, pièce, hexagramme ou interprétation n’est généré pendant cette étape.</p>
+            <h2 data-i18n="yijing.page.futureTitle">Consultation future</h2>
+            <p data-i18n="yijing.page.futureCopy">Aucun tirage, pièce, hexagramme ou interprétation n’est généré pendant cette étape.</p>
           </article>
         </div>
       </section>
@@ -225,26 +226,26 @@
       </section>
     </main>
 
-    <nav class="main-navigation" data-main-navigation aria-label="Navigation principale" hidden>
+    <nav class="main-navigation" data-main-navigation aria-label="Navigation principale" data-i18n-aria-label="common.navigation.label" hidden>
       <a class="main-navigation__item" data-navigation-target="today" href="#today">
         <span class="main-navigation__icon nav-icon--today" aria-hidden="true"></span>
-        <span class="main-navigation__label">AUJOURD’HUI</span>
+        <span class="main-navigation__label" data-i18n="common.navigation.today">Aujourd’hui</span>
       </a>
       <a class="main-navigation__item" data-navigation-target="theme" href="#theme">
         <span class="main-navigation__icon nav-icon--theme" aria-hidden="true"></span>
-        <span class="main-navigation__label">MON THÈME</span>
+        <span class="main-navigation__label" data-i18n="common.navigation.theme">Mon thème</span>
       </a>
       <a class="main-navigation__item main-navigation__item--pavilion" data-navigation-target="pavilion" href="#pavilion">
         <span class="main-navigation__icon nav-icon--pavilion" aria-hidden="true"></span>
-        <span class="main-navigation__label">NEBULA</span>
+        <span class="main-navigation__label" data-i18n="common.navigation.pavilionShort">Nebula</span>
       </a>
       <a class="main-navigation__item" data-navigation-target="yijing" href="#yijing">
         <span class="main-navigation__icon nav-icon--yijing" aria-hidden="true"></span>
-        <span class="main-navigation__label">YI JING</span>
+        <span class="main-navigation__label" data-i18n="common.navigation.yijing">Yi Jing</span>
       </a>
       <a class="main-navigation__item" data-navigation-target="profiles" href="#profiles">
         <span class="main-navigation__icon nav-icon--profiles" aria-hidden="true"></span>
-        <span class="main-navigation__label">PROFILS</span>
+        <span class="main-navigation__label" data-i18n="common.navigation.profiles">Profils</span>
       </a>
     </nav>
     <aside class="pose-debug" data-pose-debug hidden aria-label="Test des postures TAO">
@@ -276,10 +277,10 @@
     <script type="module" src="./exterior-states.js?v=outside-framing-controls-4"></script>
     <script type="module" src="./desk-objects.js"></script>
     <script type="module" src="./onboarding.js"></script>
-    <script type="module" src="./today-view.js?v=tao-product-v3"></script>
-    <script type="module" src="./bazi-theme.js?v=tao-product-v1"></script>
-    <script type="module" src="./profiles-view.js?v=tao-product-v2"></script>
-    <script type="module" src="./app-navigation.js?v=nebula-mobile-1"></script>
+    <script type="module" src="./today-view.js?v=tao-localization-fr-1"></script>
+    <script type="module" src="./bazi-theme.js?v=tao-localization-fr-1"></script>
+    <script type="module" src="./profiles-view.js?v=tao-localization-fr-1"></script>
+    <script type="module" src="./app-navigation.js?v=tao-localization-fr-1"></script>
     <script type="module" src="./scene-calibration.js?v=modular-desk-responsive-1"></script>
   </body>
 </html>

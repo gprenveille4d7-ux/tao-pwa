@@ -1,12 +1,13 @@
 import { getActiveProfile } from "./profile-store.js";
+import { formatDate, formatPlace, localizeDocument, t } from "./locales/index.js";
 
 const DEFAULT_VIEW = "pavilion";
 const VIEW_TITLES = Object.freeze({
-  today: "Aujourd’hui",
-  theme: "Mon thème",
-  pavilion: "Le Nebula",
-  yijing: "Yi Jing",
-  profiles: "Profils",
+  today: t("common.navigation.today"),
+  theme: t("common.navigation.theme"),
+  pavilion: t("common.navigation.pavilion"),
+  yijing: t("common.navigation.yijing"),
+  profiles: t("common.navigation.profiles"),
 });
 
 const navigation = document.querySelector("[data-main-navigation]");
@@ -17,25 +18,12 @@ const profileDate = document.querySelector("[data-active-profile-date]");
 const profilePlace = document.querySelector("[data-active-profile-place]");
 const profileTime = document.querySelector("[data-active-profile-time]");
 
-function formatDate(value) {
-  return new Intl.DateTimeFormat("fr-FR", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    timeZone: "UTC",
-  }).format(new Date(`${value}T00:00:00Z`));
-}
-
-function formatPlace(place) {
-  return [place.city, place.region, place.country].filter(Boolean).join(" — ");
-}
-
 function renderActiveProfile(profile) {
   if (!profile) return;
   if (profileName) profileName.textContent = profile.firstName;
   if (profileDate) profileDate.textContent = formatDate(profile.birthDate);
   if (profilePlace) profilePlace.textContent = formatPlace(profile.birthPlace);
-  if (profileTime) profileTime.textContent = profile.birthTimeKnown ? profile.birthTime : "Heure inconnue";
+  if (profileTime) profileTime.textContent = profile.birthTimeKnown ? profile.birthTime : t("profiles.fields.unknownTime");
 }
 
 function requestedView() {
@@ -78,6 +66,7 @@ function openDefaultView() {
 }
 
 function initializeMainNavigation() {
+  localizeDocument();
   const debugMode = new URLSearchParams(location.search).get("debug");
   const profile = getActiveProfile();
 

@@ -1,3 +1,5 @@
+import { t } from "./locales/index.js";
+
 const DIALOGUE_TESTS = Object.freeze({
   short: Object.freeze({
     label: "Texte court",
@@ -22,7 +24,7 @@ export function createTaoDialogue(root) {
   const content = root.querySelector("[data-dialogue-content]");
   const scrollRegion = root.querySelector("[data-dialogue-scroll]");
 
-  function setText(text, ariaLabel = "Paroles de TAO") {
+  function setText(text, ariaLabel = t("common.app.dialogueRegion")) {
     const paragraphs = String(text).split(/\n\s*\n/).filter(Boolean);
     content.replaceChildren(
       ...paragraphs.map((paragraphText) => {
@@ -57,7 +59,7 @@ function initializeTaoDialogue() {
 
     if (!test) throw new Error(`Texte de test inconnu : ${testId}`);
 
-    dialogue.setText(test.text, `Paroles de TAO — ${test.label.toLowerCase()}`);
+    dialogue.setText(test.text, `${t("common.app.dialogueRegion")} — ${test.label.toLowerCase()}`);
     label.value = test.label;
   }
 

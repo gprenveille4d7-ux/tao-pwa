@@ -10,6 +10,7 @@ import {
 } from "./profile-store.js";
 import { setTaoDialogueText } from "./tao-dialogue.js";
 import { setTaoNarrativeState } from "./tao-narrative.js";
+import { formatDate as formatLocalizedDate, formatPlace as formatLocalizedPlace, t } from "./locales/index.js";
 
 const root = document.querySelector("[data-onboarding]");
 const form = root.querySelector("[data-onboarding-form]");
@@ -51,16 +52,11 @@ function todayIso() {
 }
 
 function formatDate(date) {
-  return new Intl.DateTimeFormat("fr-FR", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    timeZone: "UTC",
-  }).format(new Date(`${date}T00:00:00Z`));
+  return formatLocalizedDate(date);
 }
 
 function formatPlace(place) {
-  return [place.city, place.region, place.country].filter(Boolean).join(" — ");
+  return formatLocalizedPlace(place);
 }
 
 function nextIncompleteStep() {
@@ -101,49 +97,49 @@ async function renderStep(step) {
 
   if (step === "firstName") {
     await setTaoNarrativeState("welcome");
-    setTaoDialogueText("Avant de commencer… comment dois-je t’appeler ?");
+    setTaoDialogueText(t("profiles.onboarding.firstQuestion"));
     const { group, input } = createField({
       id: "first-name",
-      label: "Prénom",
+      label: t("profiles.fields.firstName"),
       value: draft.firstName ?? "",
       autocomplete: "given-name",
     });
     input.maxLength = 80;
-    control.append(group, primaryButton("Continuer"));
+    control.append(group, primaryButton(t("common.actions.continue")));
     input.focus({ preventScroll: true });
     return;
   }
 
   if (step === "birthPlace") {
     await setTaoNarrativeState("observing");
-    setTaoDialogueText(`Très bien, ${draft.firstName}. Et où es-tu né ?`);
+    setTaoDialogueText(t("profiles.onboarding.placeQuestion", { firstName: draft.firstName }));
     renderPlaceSearch();
     return;
   }
 
   if (step === "birthDate") {
     await setTaoNarrativeState("observing");
-    setTaoDialogueText("Quel jour ?");
+    setTaoDialogueText(t("profiles.onboarding.dateQuestion"));
     const { group, input } = createField({
       id: "birth-date",
-      label: "Date de naissance",
+      label: t("profiles.fields.birthDate"),
       type: "date",
       value: draft.birthDate ?? "",
       autocomplete: "bday",
     });
     input.max = todayIso();
     input.required = true;
-    control.append(group, primaryButton("Continuer"));
+    control.append(group, primaryButton(t("common.actions.continue")));
     input.focus({ preventScroll: true });
     return;
   }
 
   if (step === "birthTime") {
     await setTaoNarrativeState("observing");
-    setTaoDialogueText("Et à quelle heure ?");
+    setTaoDialogueText(t("profiles.onboarding.timeQuestion"));
     const { group, input } = createField({
       id: "birth-time",
-      label: "Heure locale au lieu de naissance",
+      label: t("profiles.fields.localBirthTime"),
       type: "time",
       value: draft.birthTime ?? "",
       autocomplete: "bday-time",
@@ -152,7 +148,7 @@ async function renderStep(step) {
     const actions = element("div", { className: "tao-onboarding__actions" });
     const unknown = element("button", {
       className: "tao-action tao-action--quiet",
-      text: "Je ne connais pas mon heure de naissance",
+      text: t("profiles.fields.unknownTimeChoice"),
       type: "button",
     });
     unknown.addEventListener("click", async () => {
@@ -161,7 +157,7 @@ async function renderStep(step) {
       editingExistingAnswer = false;
       await renderStep("confirm");
     });
-    actions.append(primaryButton("Continuer"), unknown);
+    actions.append(primaryButton(t("common.actions.continue")), unknown);
     control.append(group, actions);
     input.focus({ preventScroll: true });
     return;
@@ -173,7 +169,7 @@ async function renderStep(step) {
 function renderPlaceSearch() {
   const { group, input } = createField({
     id: "birth-place",
-    label: "Ville de naissance",
+    label: t("profiles.fields.birthCity"),
     type: "search",
     value: draft.birthPlace ? formatPlace(draft.birthPlace) : "",
     autocomplete: "off",
@@ -182,14 +178,14 @@ function renderPlaceSearch() {
   input.setAttribute("aria-autocomplete", "list");
   input.setAttribute("aria-controls", "birth-place-results");
   input.setAttribute("aria-expanded", "false");
-  const status = element("p", { className: "tao-place-status", text: "Écris au moins trois lettres." });
+  const status = element("p", { className: "tao-place-status", text: t("profiles.onboarding.typeThree") });
   status.setAttribute("aria-live", "polite");
   const results = element("ul", { className: "tao-place-results" });
   results.id = "birth-place-results";
   results.setAttribute("role", "listbox");
   const attribution = element("p", {
     className: "tao-place-attribution",
-    text: "Recherche de lieux : Open-Meteo · données GeoNames",
+    text: t("profiles.onboarding.attribution"),
   });
 
   input.addEventListener("input", () => {
@@ -201,16 +197,16 @@ function renderPlaceSearch() {
     const query = input.value.trim();
 
     if (query.length < 3) {
-      status.textContent = "Écris au moins trois lettres.";
+      status.textContent = t("profiles.onboarding.typeThree");
       return;
     }
 
-    status.textContent = "Je cherche ce lieu…";
+    status.textContent = t("profiles.onboarding.searching");
     searchTimer = window.setTimeout(() => runPlaceSearch(query, input, status, results), 280);
   });
 
   const actions = element("div", { className: "tao-onboarding__actions" });
-  actions.append(primaryButton("Continuer"));
+  actions.append(primaryButton(t("common.actions.continue")));
   control.append(group, status, results, attribution, actions);
   input.focus({ preventScroll: true });
 }
@@ -225,7 +221,7 @@ async function runPlaceSearch(query, input, status, results) {
     results.replaceChildren();
 
     if (places.length === 0) {
-      status.textContent = "Je n’ai pas trouvé ce lieu. Essaie avec une autre écriture.";
+      status.textContent = t("profiles.onboarding.noPlace");
       input.setAttribute("aria-expanded", "false");
       return;
     }
@@ -244,22 +240,22 @@ async function runPlaceSearch(query, input, status, results) {
         input.value = formatPlace(place);
         results.replaceChildren();
         input.setAttribute("aria-expanded", "false");
-        status.textContent = `Lieu choisi : ${formatPlace(place)}.`;
+        status.textContent = t("profiles.onboarding.selected", { place: formatPlace(place) });
       });
       item.append(button);
       results.append(item);
     }
 
-    status.textContent = "Choisis le lieu correspondant à ta naissance.";
+    status.textContent = t("profiles.onboarding.chooseBirthPlace");
     input.setAttribute("aria-expanded", "true");
   } catch (error) {
     if (error.name === "AbortError") return;
     results.replaceChildren();
     input.setAttribute("aria-expanded", "false");
-    status.textContent = "La recherche de lieux est momentanément indisponible.";
+    status.textContent = t("profiles.onboarding.searchUnavailable");
     const retry = element("button", {
       className: "tao-action tao-action--quiet",
-      text: "Réessayer",
+      text: t("common.actions.retry"),
       type: "button",
     });
     retry.addEventListener("click", () => runPlaceSearch(lastPlaceQuery, input, status, results));
@@ -270,13 +266,13 @@ async function runPlaceSearch(query, input, status, results) {
 
 async function renderConfirmation() {
   await setTaoNarrativeState("observing");
-  setTaoDialogueText(`Très bien, ${draft.firstName}. Est-ce bien cela ?`);
+  setTaoDialogueText(t("profiles.onboarding.confirmQuestion", { firstName: draft.firstName }));
   const summary = element("dl", { className: "tao-profile-summary" });
   const entries = [
-    ["Prénom", draft.firstName, "firstName"],
-    ["Lieu de naissance", formatPlace(draft.birthPlace), "birthPlace"],
-    ["Date de naissance", formatDate(draft.birthDate), "birthDate"],
-    ["Heure de naissance", draft.birthTimeKnown ? draft.birthTime : "Heure inconnue", "birthTime"],
+    [t("profiles.fields.firstName"), draft.firstName, "firstName"],
+    [t("profiles.fields.birthPlace"), formatPlace(draft.birthPlace), "birthPlace"],
+    [t("profiles.fields.birthDate"), formatDate(draft.birthDate), "birthDate"],
+    [t("profiles.fields.birthTime"), draft.birthTimeKnown ? draft.birthTime : t("profiles.fields.unknownTime"), "birthTime"],
   ];
 
   for (const [label, value, step] of entries) {
@@ -285,10 +281,10 @@ async function renderConfirmation() {
     const description = element("dd", { text: value });
     const edit = element("button", {
       className: "tao-summary-edit",
-      text: `Corriger ${label.toLowerCase()}`,
+      text: `${t("common.actions.correct")} ${label.toLowerCase()}`,
       type: "button",
     });
-    edit.setAttribute("aria-label", `Corriger : ${label}`);
+      edit.setAttribute("aria-label", `${t("common.actions.correct")} : ${label}`);
     edit.addEventListener("click", () => {
       editingExistingAnswer = true;
       renderStep(step);
@@ -297,7 +293,7 @@ async function renderConfirmation() {
     summary.append(row);
   }
 
-  control.append(summary, primaryButton("Oui, commençons"));
+  control.append(summary, primaryButton(t("profiles.onboarding.confirm")));
 }
 
 async function handleSubmit(event) {
@@ -307,7 +303,7 @@ async function handleSubmit(event) {
   try {
     if (currentStep === "firstName") {
       const firstName = new FormData(form).get("first-name")?.trim();
-      if (!firstName) return showError("J’ai besoin de ton prénom pour continuer.");
+      if (!firstName) return showError(t("profiles.onboarding.errors.firstName"));
       draft = { ...draft, firstName };
       persistDraft();
       if (editingExistingAnswer) {
@@ -318,7 +314,7 @@ async function handleSubmit(event) {
     }
 
     if (currentStep === "birthPlace") {
-      if (!draft.birthPlace?.id) return showError("Choisis le lieu correspondant à ta naissance.");
+      if (!draft.birthPlace?.id) return showError(t("profiles.onboarding.errors.place"));
       persistDraft();
       if (editingExistingAnswer) {
         editingExistingAnswer = false;
@@ -329,7 +325,7 @@ async function handleSubmit(event) {
 
     if (currentStep === "birthDate") {
       const birthDate = new FormData(form).get("birth-date");
-      if (!birthDate || birthDate > todayIso()) return showError("Cette date ne semble pas possible.");
+      if (!birthDate || birthDate > todayIso()) return showError(t("profiles.onboarding.errors.date"));
       draft = { ...draft, birthDate };
       persistDraft();
       if (editingExistingAnswer) {
@@ -342,7 +338,7 @@ async function handleSubmit(event) {
     if (currentStep === "birthTime") {
       const birthTime = new FormData(form).get("birth-time");
       if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(birthTime ?? "")) {
-        return showError("Indique une heure, ou choisis « heure inconnue ».");
+        return showError(t("profiles.onboarding.errors.time"));
       }
       draft = { ...draft, birthTimeKnown: true, birthTime };
       persistDraft();
@@ -352,7 +348,7 @@ async function handleSubmit(event) {
 
     if (currentStep === "confirm") return completeFirstMeeting();
   } catch {
-    showError("Je n’arrive pas à conserver ces informations sur cet appareil. Réessaie.");
+    showError(t("profiles.onboarding.errors.storage"));
   }
 }
 
@@ -375,7 +371,7 @@ async function completeFirstMeeting() {
   root.hidden = true;
   document.body.classList.remove("is-onboarding");
   await setTaoNarrativeState("thinking");
-  setTaoDialogueText(`Très bien, ${profile.firstName}. Je crois que nous pouvons commencer.`);
+  setTaoDialogueText(t("profiles.onboarding.final", { firstName: profile.firstName }));
   window.dispatchEvent(
     new CustomEvent("tao:profile-created", { detail: { profileId: profile.id } }),
   );
@@ -385,7 +381,7 @@ function enableDebugReset() {
   if (new URLSearchParams(location.search).get("debug") !== "onboarding") return;
   const reset = element("button", {
     className: "onboarding-debug-reset",
-    text: "Réinitialiser la rencontre",
+    text: t("profiles.onboarding.reset"),
     type: "button",
   });
   reset.addEventListener("click", () => {
@@ -419,6 +415,6 @@ async function initializeOnboarding() {
 
 form.addEventListener("submit", handleSubmit);
 initializeOnboarding().catch(() => {
-  showError("La première rencontre ne peut pas démarrer correctement. Recharge la page.");
+  showError(t("profiles.onboarding.errors.startup"));
   root.hidden = false;
 });

@@ -1,3 +1,5 @@
+import { formatDate, formatLongDate as formatLocalizedLongDate, formatPlace as formatLocalizedPlace } from "./locales/index.js";
+
 export function element(tag, options = {}) {
   const node = document.createElement(tag);
   if (options.className) node.className = options.className;
@@ -10,17 +12,15 @@ export function element(tag, options = {}) {
 }
 
 export function formatBirthDate(value) {
-  return new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" })
-    .format(new Date(`${value}T00:00:00Z`));
+  return formatDate(value);
 }
 
-export function formatLongDate(value) {
-  return new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" })
-    .format(new Date(`${value}T12:00:00Z`));
+export function formatLongDate(value, timeZone = "UTC") {
+  return formatLocalizedLongDate(value, timeZone);
 }
 
 export function formatPlace(place) {
-  return [place.city, place.region, place.country].filter(Boolean).join(" — ");
+  return formatLocalizedPlace(place);
 }
 
 export function localDateIso(timeZone, now = new Date()) {

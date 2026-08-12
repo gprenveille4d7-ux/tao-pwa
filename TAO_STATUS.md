@@ -12,6 +12,7 @@
 ÉTAPE 9 — **TECHNIQUEMENT TERMINÉE — VALIDATION UTILISATEUR ATTENDUE**  
 ÉTAPE 10 — **TECHNIQUEMENT TERMINÉE — VALIDATION UTILISATEUR ATTENDUE**  
 EXPÉRIENCE ASTROLOGIE TAOÏSTE V1 — **TECHNIQUEMENT TERMINÉE — VALIDATION UTILISATEUR ATTENDUE**  
+LOCALISATION FRANÇAISE `tao-localization-fr-1.0.0` — **TECHNIQUEMENT TERMINÉE — VALIDATION UTILISATEUR ATTENDUE**
 PHASES LUNAIRES — **REPORTÉES**
 
 ## Contrôles consolidés
@@ -23,6 +24,7 @@ PHASES LUNAIRES — **REPORTÉES**
 - Le thème natal BaZi du profil actif est calculé localement selon la convention `tao-bazi-1.0.0` ; les résultats calculés sont séparés des données du profil et mis en cache par profil.
 - La lecture quotidienne locale `tao-daily-1.0.1` calcule les piliers annuel, mensuel et journalier, le terme solaire courant, une résonance documentée avec le thème natal et une guidance déterministe.
 - Les pages `AUJOURD’HUI`, `MON THÈME` et `PROFILS` sont de véritables espaces verticaux responsive. Plusieurs profils locaux peuvent être enregistrés et le profil actif peut changer.
+- Les données visibles passent par la couche française centralisée `locales/` ; les identifiants techniques des moteurs restent inchangés. Le glossaire, les fallbacks et les contrôles DEV sont documentés dans `docs/13_LOCALISATION_FR.md`.
 - Aucun automatisme de ciel, météo ou Lune, aucun cycle de chance, aucun moteur Yi Jing, aucune compatibilité avancée et aucune IA ne sont actifs.
 
 ## Prototypes non validés
