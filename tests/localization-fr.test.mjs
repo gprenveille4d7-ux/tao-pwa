@@ -27,7 +27,7 @@ function visit(value, path = "fr") {
 }
 
 test("le catalogue français est versionné et ne contient aucune valeur vide", () => {
-  assert.equal(LOCALIZATION_VERSION, "tao-localization-fr-1.0.0");
+  assert.equal(LOCALIZATION_VERSION, "tao-localization-fr-1.1.0");
   visit(fr);
   assert.ok(countTranslationStrings(fr) >= 300);
 });
@@ -96,4 +96,7 @@ test("tous les identifiants exposés par les moteurs actuels ont une entrée fra
   const termId = daily.solarTerm.pinyin.toLowerCase().replace(/\s+/g, "_");
   assert.ok(fr.calendar.solarTerms[termId], `Terme solaire moteur non localisé : ${termId}`);
   assert.ok(fr.guidance.elementAdvice[daily.dayEnergy.stem.element], "Guidance de l’élément du jour absente");
+  assert.ok(fr.guidance.detailed.actionCopy[daily.domains.action], "Tendance d’action non localisée");
+  assert.ok(fr.guidance.detailed.relationshipCopy[daily.domains.relations], "Tendance relationnelle non localisée");
+  assert.ok(fr.yijing.guidance.essential && fr.yijing.history.confirmDelete, "Interface Yi Jing incomplète");
 });

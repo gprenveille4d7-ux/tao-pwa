@@ -13,7 +13,8 @@
 - La numérotation canonique active s’arrête à l’Étape 10 ; les fonctions ultérieures restent à définir.
 - L’Étape 8 est techniquement terminée avec 11 objets runtime manuels ; la validation visuelle des assets reste en cours. Les extractions de classe C demeurent documentées mais exclues du runtime.
 - L’Étape 9 est techniquement terminée et attend la validation utilisateur. Le contrôleur extérieur reste exclusivement manuel, sans automatisation.
-- L’Étape 10 est techniquement terminée et attend la validation utilisateur. Le thème BaZi et la lecture quotidienne V1 sont calculés localement ; aucun cycle de chance, aucun Yi Jing complet et aucune IA ne sont actifs.
+- L’Étape 10 est techniquement terminée et attend la validation utilisateur. Le thème BaZi et la lecture quotidienne V1 sont calculés localement ; aucun cycle de chance et aucune IA ne sont actifs.
+- Le module Yi Jing local est techniquement terminé et attend la validation utilisateur : trois pièces, 64 hexagrammes, mutations, guidance structurée et carnet local.
 - L’Expérience Astrologie Taoïste V1 (`AUJOURD’HUI`, `MON THÈME`, `PROFILS`) est techniquement terminée et attend la validation utilisateur.
 - Une mission = un module.
 - Ne jamais commencer une phase suivante sans validation explicite.

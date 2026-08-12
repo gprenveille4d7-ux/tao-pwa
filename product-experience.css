@@ -150,6 +150,12 @@
 .guidance-rhythm strong { color: var(--product-ivory); font: 600 0.9rem/1.4 system-ui, sans-serif; }
 .domain-pills { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .domain-pills span { padding: 0.45rem 0.7rem; border: 1px solid rgb(215 180 119 / 22%); border-radius: 999px; color: #d9c39f; font: 600 0.7rem/1 system-ui, sans-serif; }
+.daily-guidance-detail { gap: var(--space-3); }
+.daily-domain-card { display: grid; gap: var(--space-3); }
+.daily-domain-card__heading { display: flex; align-items: start; justify-content: space-between; gap: var(--space-3); }
+.daily-domain-card__heading h2 { margin: 0; color: var(--product-ivory); font: 500 1.18rem/1.22 Georgia, serif; }
+.daily-domain-card__heading span { flex: 0 0 auto; padding: .34rem .55rem; border: 1px solid rgb(215 180 119 / 24%); border-radius: 999px; color: var(--product-gold); background: rgb(215 180 119 / 6%); font: 650 .62rem/1 system-ui, sans-serif; }
+.daily-domain-card > p { margin: 0; color: #d2dbe3; font: 400 .9rem/1.6 system-ui, sans-serif; }
 .season-card { display: grid; gap: var(--space-4); }
 
 .product-disclosure { overflow: hidden; }
@@ -203,6 +209,7 @@
 .product-button:focus-visible,
 .profile-form :focus-visible { outline: 2px solid var(--product-gold); outline-offset: 2px; }
 .product-button--primary { color: #160f08; background: var(--product-gold); }
+.product-button--danger { border-color: rgb(194 112 92 / 35%); color: #efc3b8; }
 .product-button--add { width: 100%; min-height: 3.4rem; border-style: dashed; color: var(--product-gold); background: rgb(215 180 119 / 5%); }
 .active-profile-product { display: grid; }
 .active-profile-product h2 { margin: var(--space-2) 0 0; font-size: 2rem; }
@@ -235,15 +242,90 @@
 .product-error { display: grid; gap: var(--space-3); }
 .product-error a { color: var(--product-gold); }
 
+/* Yi Jing */
+.yijing-header .symbolic-note { max-width: 39rem; padding-left: .85rem; border-left: 2px solid rgb(215 180 119 / 35%); }
+.yijing-question,
+.yijing-confirmation,
+.yijing-casting,
+.yijing-result-heading,
+.yijing-save { display: grid; gap: var(--space-6); }
+.yijing-question__form { display: grid; gap: var(--space-3); }
+.yijing-question__form label { color: var(--product-muted); font: 650 .76rem/1.4 system-ui, sans-serif; }
+.yijing-question__form textarea {
+  width: 100%; min-height: 8rem; resize: vertical; padding: 1rem;
+  border: 1px solid rgb(215 180 119 / 30%); border-radius: .9rem;
+  color: var(--product-ivory); background: #091522; font: 500 1rem/1.55 system-ui, sans-serif;
+}
+.yijing-question__form textarea:focus-visible { outline: 2px solid var(--product-gold); outline-offset: 2px; }
+.yijing-confirmation blockquote,
+.yijing-result-heading blockquote,
+.yijing-guidance blockquote {
+  margin: 0; padding: var(--space-4); border-left: 2px solid var(--product-gold);
+  color: #e8dcc9; background: rgb(215 180 119 / 6%); font: 500 1.05rem/1.6 Georgia, serif;
+}
+.yijing-question-reminder { margin: 0; color: var(--product-muted); font: italic 500 .86rem/1.5 Georgia, serif; }
+.hexagram-diagram { display: grid; gap: .48rem; width: min(100%, 18rem); margin: var(--space-4) auto; padding: 0; list-style: none; }
+.hexagram-line { display: grid; grid-template-columns: 1.5rem 1fr 1.3rem; align-items: center; gap: .55rem; min-height: 1rem; }
+.hexagram-line__number { color: var(--product-muted); font: 600 .65rem/1 system-ui, sans-serif; text-align: right; }
+.hexagram-line__stroke { display: block; position: relative; height: .68rem; }
+.hexagram-line__stroke::before,
+.hexagram-line__stroke::after { content: ""; position: absolute; inset-block: 0; border-radius: 999px; background: #dbc28f; }
+.hexagram-line--yang .hexagram-line__stroke::before { inset-inline: 0; }
+.hexagram-line--yang .hexagram-line__stroke::after { display: none; }
+.hexagram-line--yin .hexagram-line__stroke::before { inset-inline: 0 55%; }
+.hexagram-line--yin .hexagram-line__stroke::after { inset-inline: 55% 0; }
+.hexagram-line--empty .hexagram-line__stroke::before { inset-inline: 0; background: rgb(255 255 255 / 9%); }
+.hexagram-line--empty .hexagram-line__stroke::after { display: none; }
+.hexagram-line--changing .hexagram-line__stroke::before,
+.hexagram-line--changing .hexagram-line__stroke::after { background: #efb96f; box-shadow: 0 0 .75rem rgb(239 185 111 / 24%); }
+.hexagram-line__change { color: #efb96f; font: 800 1rem/1 system-ui, sans-serif; }
+.hexagram-diagram--compact { width: min(100%, 14rem); margin-block: var(--space-3); }
+.hexagram-diagram--compact .hexagram-line__stroke { height: .5rem; }
+.coin-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .55rem; padding: var(--space-3); border-radius: .9rem; background: rgb(255 255 255 / 4%); }
+.yijing-coin { display: grid; place-items: center; width: 2.65rem; aspect-ratio: 1; border: 1px solid rgb(215 180 119 / 50%); border-radius: 50%; color: #f1ddb5; background: radial-gradient(circle at 35% 30%, #9e7242, #46301d); font: 650 .52rem/1 system-ui, sans-serif; }
+.yijing-coin--tails { color: #cbd4de; background: radial-gradient(circle at 35% 30%, #526579, #1d2938); }
+.coin-row strong { flex-basis: 100%; color: var(--product-gold); text-align: center; font: 650 .78rem/1.4 system-ui, sans-serif; }
+.yijing-casting__progress { margin: 0; color: var(--product-gold); font: 650 .75rem/1.4 system-ui, sans-serif; text-align: center; }
+.hexagram-card { display: grid; gap: var(--space-2); overflow: hidden; }
+.hexagram-card__identity { color: var(--product-gold); font: 500 3rem/1 Georgia, serif; }
+.hexagram-card > h2 { margin: 0; font: 500 clamp(1.7rem, 7vw, 2.5rem)/1.1 Georgia, serif; }
+.hexagram-card__traditional { margin: 0; color: var(--product-gold); font: 650 .82rem/1.45 system-ui, sans-serif; }
+.hexagram-card__image { margin: var(--space-2) 0 0; color: var(--product-muted); font: italic 500 .84rem/1.5 Georgia, serif; }
+.trigram-grid { display: grid; margin: var(--space-3) 0 0; }
+.trigram-grid > div { display: grid; grid-template-columns: minmax(7rem, .8fr) minmax(0, 1.2fr); gap: var(--space-3); padding: .72rem 0; border-top: 1px solid rgb(255 255 255 / 7%); }
+.trigram-grid dt { color: var(--product-muted); font: 500 .72rem/1.4 system-ui, sans-serif; }
+.trigram-grid dd { margin: 0; color: var(--product-ivory); font: 600 .8rem/1.45 system-ui, sans-serif; text-align: right; overflow-wrap: anywhere; }
+.yijing-mutations { display: grid; gap: var(--space-4); }
+.yijing-mutations > p,
+.yijing-mutations li { color: #d4dce4; font: 500 .9rem/1.55 system-ui, sans-serif; }
+.yijing-guidance { gap: var(--space-3); }
+.yijing-guidance__card { display: grid; gap: var(--space-3); }
+.yijing-guidance__card h3,
+.yijing-guidance__card h4 { margin: 0; color: var(--product-gold); font: 700 .77rem/1.4 system-ui, sans-serif; letter-spacing: .05em; text-transform: uppercase; }
+.yijing-guidance__card h4 { margin-top: var(--space-3); color: #e8d5b1; text-transform: none; }
+.yijing-guidance__card p,
+.yijing-guidance__card li { margin: 0; color: #d5dde5; font: 400 .93rem/1.62 system-ui, sans-serif; }
+.yijing-guidance__card ul { display: grid; gap: var(--space-2); margin: 0; padding-left: 1.2rem; }
+.yijing-guidance__card--essential { background: linear-gradient(145deg, rgb(52 45 36 / 96%), var(--product-surface)); }
+.yijing-guidance__card--rhythm { border-color: rgb(215 180 119 / 34%); }
+.yijing-history { padding-top: var(--space-4); }
+.yijing-history__list { display: grid; gap: var(--space-3); }
+.yijing-history__item { display: grid; gap: var(--space-2); }
+.yijing-history__item h3 { margin: 0; color: var(--product-ivory); font: 500 1.1rem/1.35 Georgia, serif; }
+.yijing-history__item > p:not(.product-eyebrow) { margin: 0; color: var(--product-muted); font: 500 .74rem/1.4 system-ui, sans-serif; }
+
 @media (min-width: 43rem) {
   .product-page,
   .theme-view__content { padding-inline: var(--space-8); gap: var(--space-8); }
   .glance-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--space-6); }
   .guidance-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .daily-guidance-detail { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .daily-guidance-detail > .product-section__header { grid-column: 1 / -1; }
   .mini-pillar-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .profile-list-card { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
   .profile-list-card__actions { margin-top: 0; justify-content: end; }
   .profile-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .yijing-history__list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .product-field--wide,
   .unknown-time,
   .profile-form .form-error,

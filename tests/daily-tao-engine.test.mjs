@@ -67,6 +67,16 @@ test("la lecture combine les cinq éléments sans modifier le thème natal", () 
   assert.deepEqual(Object.fromEntries(Object.entries(currentInput.natalTheme.elements).map(([key, value]) => [key, value.count])), natalCounts);
 });
 
+test("la guidance détaillée expose des tendances sans score arbitraire", () => {
+  const result = calculateDailyTao(input());
+  assert.equal("score" in result.resonance, false);
+  assert.ok(["high", "moderate", "gentle"].includes(result.resonance.level));
+  assert.ok(["favorable", "balanced", "prudence"].includes(result.domains.action));
+  assert.ok(["fluid", "sensitive", "observing"].includes(result.domains.relations));
+  assert.ok(result.domains.dominantElement);
+  assert.ok(result.domains.quieterElement);
+});
+
 test("le cache quotidien est isolé par date et profil", () => {
   const storage = memoryStorage();
   const firstInput = input();

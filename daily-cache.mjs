@@ -1,4 +1,4 @@
-import { DAILY_CALCULATION_VERSION } from "./daily-tao-engine.mjs?v=1.0.1";
+import { DAILY_CALCULATION_VERSION } from "./daily-tao-engine.mjs?v=1.1.0";
 
 const CACHE_PREFIX = "tao.daily.v1";
 

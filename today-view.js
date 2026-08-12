@@ -1,8 +1,8 @@
 import { getActiveProfile } from "./profile-store.js";
 import { calculateBazi } from "./bazi-engine.mjs";
 import { getCachedBazi, setCachedBazi } from "./bazi-cache.mjs";
-import { calculateDailyTao } from "./daily-tao-engine.mjs?v=1.0.1";
-import { getCachedDaily, setCachedDaily } from "./daily-cache.mjs?v=1.0.1";
+import { calculateDailyTao } from "./daily-tao-engine.mjs?v=1.1.0";
+import { getCachedDaily, setCachedDaily } from "./daily-cache.mjs?v=1.1.0";
 import { element, formatLongDate, localDateIso } from "./tao-ui.js";
 import { setTaoDailyBrief } from "./tao-dialogue.js";
 import { setTaoNarrativeState } from "./tao-narrative.js";
@@ -88,8 +88,8 @@ function createResonance(result, natalTheme) {
   const level = element("div", { className: "resonance-level" });
   level.append(
     element("span", { text: t("guidance.resonance.harmony") }),
-    element("strong", { text: result.resonance.score >= 72 ? t("guidance.resonance.high") : result.resonance.score >= 48 ? t("guidance.resonance.moderate") : t("guidance.resonance.gentle") }),
-    element("small", { text: `${result.resonance.score}/100 · ${t("guidance.resonance.internalIndicator")}` }),
+    element("strong", { text: t(`guidance.resonance.${result.resonance.level}`) }),
+    element("small", { text: t("guidance.resonance.internalIndicator") }),
   );
   const text = element("div", { className: "resonance-copy" });
   text.append(
@@ -144,6 +144,38 @@ function createGuidance(result) {
   const domains = element("div", { className: "domain-pills", attributes: { "aria-label": t("guidance.advice.supportedDomains") } });
   for (const domain of localizedAdvice.domains) domains.append(element("span", { text: domain }));
   section.append(grid, rhythm, domains);
+  return section;
+}
+
+function domainCard(title, status, text, className = "") {
+  const card = element("article", { className: `product-card daily-domain-card ${className}`.trim() });
+  card.append(
+    element("div", { className: "daily-domain-card__heading" }),
+    element("p", { text }),
+  );
+  card.firstElementChild.append(element("h2", { text: title }), element("span", { text: status }));
+  return card;
+}
+
+function createDetailedGuidance(result, natalTheme) {
+  const section = element("section", { className: "product-section daily-guidance-detail" });
+  section.append(sectionHeader(t("guidance.detailed.kicker"), t("guidance.detailed.title"), t("guidance.detailed.intro")));
+  const dayElement = elementData(result.dayEnergy.stem.element);
+  const dominant = elementData(result.domains.dominantElement);
+  const quieter = elementData(result.domains.quieterElement);
+  const supportKey = Object.keys(GENERATES).find((key) => GENERATES[key] === result.dayEnergy.stem.element);
+  const attentionKey = Object.keys(CONTROLS).find((key) => CONTROLS[key] === result.dayEnergy.stem.element);
+  const master = stemData(natalTheme.dayMaster.key);
+  const branch = branchData(result.dayEnergy.branch.key);
+  section.append(
+    domainCard(t("guidance.detailed.support"), t("guidance.status.supportive"), t("guidance.detailed.supportCopy", { support: elementData(supportKey).label, dominant: dominant.label, day: dayElement.label })),
+    domainCard(t("guidance.detailed.attention"), t("guidance.status.toModerate"), t("guidance.detailed.attentionCopy", { attention: elementData(attentionKey).label, quieter: quieter.label })),
+    domainCard(t("guidance.detailed.relationships"), t(`guidance.status.${result.domains.relations}`), t(`guidance.detailed.relationshipCopy.${result.domains.relations}`, { animal: branch.animal, echoes: result.domains.branchEchoes })),
+    domainCard(t("guidance.detailed.action"), t(`guidance.status.${result.domains.action}`), t(`guidance.detailed.actionCopy.${result.domains.action}`, { day: dayElement.label, master: master.french })),
+    domainCard(t("guidance.detailed.creativity"), t(`guidance.status.${result.domains.creativity}`), t(`guidance.detailed.creativityCopy.${result.domains.creativity}`, { day: dayElement.label })),
+    domainCard(t("guidance.detailed.rhythm"), t(`guidance.status.${result.domains.personalRhythm}`), t(`guidance.detailed.rhythmCopy.${result.domains.personalRhythm}`)),
+    domainCard(t("guidance.detailed.retreat"), t(`guidance.status.${result.domains.retreat}`), t(`guidance.detailed.retreatCopy.${result.domains.retreat}`)),
+  );
   return section;
 }
 
@@ -209,7 +241,7 @@ export async function renderTodayView() {
       element("h1", { text: formatLongDate(result.date, result.timeZone) }),
       element("p", { className: "product-lead", text: t("guidance.greeting", { firstName: profile.firstName }) }),
     );
-    root.replaceChildren(header, createOverview(result), createDayEnergy(result), createResonance(result, natalTheme), createElementBalance(result), createGuidance(result), createSeason(result), createDetails(result), glossaryDisclosure(["dayMaster", "fiveElements", "yinYang", "jieQi", "generationCycle", "controlCycle"], "Glossaire de TAO"));
+    root.replaceChildren(header, createOverview(result), createDayEnergy(result), createDetailedGuidance(result, natalTheme), createResonance(result, natalTheme), createElementBalance(result), createGuidance(result), createSeason(result), createDetails(result), glossaryDisclosure(["dayMaster", "fiveElements", "yinYang", "jieQi", "generationCycle", "controlCycle"], "Glossaire de TAO"));
     await setTaoNarrativeState("observing");
     return result;
   } catch (error) {
@@ -229,11 +261,7 @@ async function updatePavilionDialogue() {
       : t("guidance.dailySummaryYin", { element: elementData(key).withArticle });
     const localizedTerm = getConcept("calendar.solarTerms", solarTermId(reading.result.solarTerm.pinyin));
     const advice = getConcept("guidance.elementAdvice", key);
-    const resonanceLevel = reading.result.resonance.score >= 72
-      ? t("guidance.resonance.high").toLocaleLowerCase("fr-FR")
-      : reading.result.resonance.score >= 48
-        ? t("guidance.resonance.moderate").toLocaleLowerCase("fr-FR")
-        : t("guidance.resonance.gentle").toLocaleLowerCase("fr-FR");
+    const resonanceLevel = t(`guidance.resonance.${reading.result.resonance.level}`).toLocaleLowerCase("fr-FR");
     setTaoDailyBrief({
       context: `${t("guidance.dailyBrief.context")} · ${stemData(reading.result.dayEnergy.stem.key).french}`,
       meta: `${formatLongDate(reading.result.date, reading.result.timeZone)} · ${localizedTerm.label}`,

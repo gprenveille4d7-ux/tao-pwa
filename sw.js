@@ -1,10 +1,13 @@
-const CACHE_VERSION = "tao-shell-2026-08-12-v1";
+const CACHE_VERSION = "tao-shell-2026-08-12-v2";
 const SHELL = [
   "./",
   "./index.html",
   "./styles.css?v=nebula-mobile-1",
-  "./product-experience.css?v=tao-product-v2",
+  "./product-experience.css?v=tao-product-v3",
   "./locales/index.js",
+  "./yijing-view.js?v=tao-yijing-1",
+  "./yijing-engine.mjs",
+  "./yijing-data.mjs",
 ];
 
 self.addEventListener("install", (event) => {

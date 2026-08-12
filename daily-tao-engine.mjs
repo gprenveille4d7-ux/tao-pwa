@@ -4,7 +4,7 @@ import {
   getSolarTermInstant,
 } from "./bazi-engine.mjs";
 
-export const DAILY_CALCULATION_VERSION = "tao-daily-1.0.1";
+export const DAILY_CALCULATION_VERSION = "tao-daily-1.1.0";
 
 const ELEMENTS = Object.freeze(["wood", "fire", "earth", "metal", "water"]);
 const ELEMENT_LABELS = Object.freeze({ wood: "Bois", fire: "Feu", earth: "Terre", metal: "Métal", water: "Eau" });
@@ -94,33 +94,47 @@ function createElementImpact(natalTheme, dayPillar) {
 function createResonance(natalTheme, dayPillar) {
   const master = natalTheme.dayMaster.element;
   const daily = dayPillar.stem.element;
-  let score = 52;
   const reasons = [];
+  let relation = "neutral";
 
   if (daily === master) {
-    score += 22;
+    relation = "same";
     reasons.push("L’élément du jour rejoint directement celui de ton Maître du Jour.");
   } else if (GENERATES[daily] === master) {
-    score += 18;
+    relation = "nourishes";
     reasons.push("L’élément du jour nourrit symboliquement ton Maître du Jour.");
   } else if (GENERATES[master] === daily) {
-    score += 8;
+    relation = "supports";
     reasons.push("Ton Maître du Jour peut soutenir le mouvement symbolique de la journée.");
   } else if (CONTROLS[daily] === master || CONTROLS[master] === daily) {
-    score -= 14;
+    relation = "controls";
     reasons.push("La relation entre les éléments invite davantage à la mesure et à l’ajustement.");
   } else {
     reasons.push("Les deux éléments se rencontrent sans relation dominante directe.");
   }
 
-  if (dayPillar.stem.polarity !== natalTheme.dayMaster.polarity) {
-    score += 5;
-    reasons.push("Les polarités Yin et Yang apportent une complémentarité interne.");
-  }
+  const complementaryPolarity = dayPillar.stem.polarity !== natalTheme.dayMaster.polarity;
+  if (complementaryPolarity) reasons.push("Les polarités Yin et Yang apportent une complémentarité interne.");
+  const level = ["same", "nourishes"].includes(relation) ? "high" : relation === "controls" ? "gentle" : "moderate";
+  return { level, relation, complementaryPolarity, reasons };
+}
 
-  score = clamp(score, 20, 92);
-  const level = score >= 72 ? "Élevée" : score >= 48 ? "Modérée" : "Douce";
-  return { score, level, reasons };
+function createDomainSignals(natalTheme, dayPillar, elements, resonance) {
+  const ranked = Object.values(elements).sort((a, b) => b.percent - a.percent || a.key.localeCompare(b.key));
+  const natalBranches = Object.values(natalTheme.pillars).filter((pillar) => pillar?.determined !== false && pillar?.branch);
+  const branchEchoes = natalBranches.filter((pillar) => pillar.branch.key === dayPillar.branch.key).length;
+  const controlled = resonance.relation === "controls";
+  const yang = dayPillar.stem.polarity === "yang";
+  return Object.freeze({
+    dominantElement: ranked[0].key,
+    quieterElement: ranked.at(-1).key,
+    branchEchoes,
+    relations: branchEchoes ? "sensitive" : resonance.complementaryPolarity ? "fluid" : "observing",
+    action: controlled ? "prudence" : yang ? "favorable" : "balanced",
+    creativity: ["wood", "fire"].includes(dayPillar.stem.element) ? "strong" : resonance.relation === "supports" ? "moderate" : "gentle",
+    personalRhythm: yang ? "outward" : "inward",
+    retreat: controlled ? "priority" : ["water", "earth"].includes(dayPillar.stem.element) ? "useful" : "neutral",
+  });
 }
 
 export function calculateDailyTao({ date, timeZone, profile, natalTheme }) {
@@ -130,6 +144,7 @@ export function calculateDailyTao({ date, timeZone, profile, natalTheme }) {
   const season = currentSolarTerm(temporal.epochMs, Number(date.slice(0, 4)));
   const elements = createElementImpact(natalTheme, day);
   const resonance = createResonance(natalTheme, day);
+  const domains = createDomainSignals(natalTheme, day, elements, resonance);
   const guidance = GUIDANCE[day.stem.element];
   const polarity = day.stem.polarity === "yang" ? "Yang" : "Yin";
   const rhythm = day.stem.polarity === "yang" ? "mouvement mesuré" : "observation active";
@@ -159,6 +174,7 @@ export function calculateDailyTao({ date, timeZone, profile, natalTheme }) {
       attention: ELEMENT_LABELS[attentionElement],
     },
     resonance,
+    domains,
     elements,
     guidance: {
       ...guidance,

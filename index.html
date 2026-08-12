@@ -15,7 +15,7 @@
     <link rel="preload" as="image" href="./public/assets/tao/pavilion/base/PAVILLON_BASE_FENETRES_TRANSPARENTES.png" fetchpriority="high" />
     <link rel="preload" as="image" href="./public/assets/tao/character/poses/TAO_POSE_00_NEUTRE.png" fetchpriority="high" />
     <link rel="stylesheet" href="./styles.css?v=nebula-mobile-1" />
-    <link rel="stylesheet" href="./product-experience.css?v=tao-product-v2" />
+    <link rel="stylesheet" href="./product-experience.css?v=tao-product-v3" />
   </head>
   <body>
     <div class="tao-boot" data-tao-boot role="status" aria-live="polite" aria-busy="true">
@@ -233,16 +233,8 @@
         <div class="theme-view__content" data-bazi-root aria-live="polite"></div>
       </section>
 
-      <section class="app-view app-placeholder" data-app-view="yijing" aria-labelledby="yijing-title" hidden>
-        <div class="app-placeholder__content app-placeholder__content--narrow">
-          <p class="app-placeholder__eyebrow" data-i18n="yijing.page.eyebrow">Espace en préparation</p>
-          <h1 id="yijing-title" data-i18n="yijing.page.title">Yi Jing</h1>
-          <p class="app-placeholder__intro" data-i18n="yijing.page.intro">Lorsque tu seras prêt, nous pourrons interroger le Yi Jing.</p>
-          <article class="future-card future-card--centered">
-            <h2 data-i18n="yijing.page.futureTitle">Consultation future</h2>
-            <p data-i18n="yijing.page.futureCopy">Aucun tirage, pièce, hexagramme ou interprétation n’est généré pendant cette étape.</p>
-          </article>
-        </div>
+      <section class="app-view product-view" data-app-view="yijing" aria-label="Consultation du Yi Jing" hidden>
+        <div class="product-page product-page--narrow" data-yijing-root aria-live="polite"></div>
       </section>
 
       <section class="app-view product-view" data-app-view="profiles" aria-label="Gestion des profils" hidden>
@@ -302,9 +294,10 @@
     <script type="module" src="./exterior-states.js?v=outside-framing-controls-4"></script>
     <script type="module" src="./desk-objects.js"></script>
     <script type="module" src="./onboarding.js"></script>
-    <script type="module" src="./today-view.js?v=tao-localization-fr-1"></script>
+    <script type="module" src="./today-view.js?v=tao-daily-guidance-2"></script>
     <script type="module" src="./bazi-theme.js?v=tao-localization-fr-1"></script>
     <script type="module" src="./profiles-view.js?v=tao-localization-fr-1"></script>
+    <script type="module" src="./yijing-view.js?v=tao-yijing-1"></script>
     <script type="module" src="./tao-presence.js?v=tao-speaking-1"></script>
     <script type="module" src="./app-navigation.js?v=tao-localization-fr-1"></script>
     <script type="module" src="./scene-calibration.js?v=modular-desk-responsive-1"></script>

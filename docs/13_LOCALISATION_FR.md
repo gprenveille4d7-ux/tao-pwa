@@ -1,6 +1,6 @@
 # Localisation française de TAO
 
-Version terminologique : `tao-localization-fr-1.0.0`.
+Version terminologique : `tao-localization-fr-1.1.0`.
 
 ## Architecture
 

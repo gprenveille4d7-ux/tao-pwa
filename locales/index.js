@@ -1,6 +1,6 @@
 import fr from "./fr/index.js";
 
-export const LOCALIZATION_VERSION = "tao-localization-fr-1.0.0";
+export const LOCALIZATION_VERSION = "tao-localization-fr-1.1.0";
 export const DEFAULT_LOCALE = "fr";
 export const locales = Object.freeze({ fr });
 
