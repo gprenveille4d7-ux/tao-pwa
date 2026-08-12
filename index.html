@@ -8,10 +8,10 @@
     />
     <meta
       name="description"
-      content="Le Pavillon des Étoiles, décor statique canonique de TAO."
+      content="Le Nebula, demeure céleste de TAO."
     />
-    <title>TAO — Pavillon des Étoiles</title>
-    <link rel="stylesheet" href="./styles.css?v=modular-desk-responsive-1" />
+    <title>TAO — Le Nebula</title>
+    <link rel="stylesheet" href="./styles.css?v=nebula-mobile-1" />
     <link rel="stylesheet" href="./product-experience.css?v=tao-product-v2" />
   </head>
   <body>
@@ -19,13 +19,22 @@
       <section
         class="app-view pavilion-screen"
         data-app-view="pavilion"
-        aria-label="Pavillon des Étoiles"
+        aria-label="Le Nebula, demeure de TAO"
       >
-      <div class="pavilion-stage">
+      <div class="pavilion-home">
+        <header class="pavilion-identity" aria-label="Identité de TAO">
+          <div class="pavilion-identity__sigil" aria-hidden="true">T</div>
+          <div class="pavilion-identity__copy">
+            <p class="pavilion-identity__name">TAO</p>
+            <p class="pavilion-identity__place">Le Nebula</p>
+          </div>
+          <p class="pavilion-identity__descriptor">Pavillon des Étoiles</p>
+        </header>
+        <div class="pavilion-stage">
         <div
           class="pavilion-scene"
           role="img"
-          aria-label="Intérieur du Pavillon des Étoiles avec son bureau fixe"
+          aria-label="Intérieur du Nebula avec TAO et son bureau"
         >
           <div class="pavilion-scene__backdrop" aria-hidden="true"></div>
           <img
@@ -158,10 +167,16 @@
             draggable="false"
           />
           <div class="pavilion-scene__desk-objects" data-desk-objects aria-hidden="true"></div>
+          <div class="pavilion-scene__nameplate" aria-hidden="true">
+            <span>LE NEBULA</span>
+          </div>
         </div>
         <div class="tao-conversation">
           <section class="tao-dialogue" data-tao-dialogue aria-labelledby="tao-dialogue-title">
-            <h1 class="tao-dialogue__speaker" id="tao-dialogue-title">TAO</h1>
+            <header class="tao-dialogue__header">
+              <h1 class="tao-dialogue__speaker" id="tao-dialogue-title">LE MOT DE TAO</h1>
+              <span class="tao-dialogue__context">Le Nebula</span>
+            </header>
             <div
               class="tao-dialogue__scroll"
               data-dialogue-scroll
@@ -181,6 +196,7 @@
             </form>
           </section>
         </div>
+      </div>
       </div>
       </section>
 
@@ -220,7 +236,7 @@
       </a>
       <a class="main-navigation__item main-navigation__item--pavilion" data-navigation-target="pavilion" href="#pavilion">
         <span class="main-navigation__icon nav-icon--pavilion" aria-hidden="true"></span>
-        <span class="main-navigation__label">LE PAVILLON</span>
+        <span class="main-navigation__label">NEBULA</span>
       </a>
       <a class="main-navigation__item" data-navigation-target="yijing" href="#yijing">
         <span class="main-navigation__icon nav-icon--yijing" aria-hidden="true"></span>
@@ -263,7 +279,7 @@
     <script type="module" src="./today-view.js?v=tao-product-v3"></script>
     <script type="module" src="./bazi-theme.js?v=tao-product-v1"></script>
     <script type="module" src="./profiles-view.js?v=tao-product-v2"></script>
-    <script type="module" src="./app-navigation.js?v=tao-product-v1"></script>
+    <script type="module" src="./app-navigation.js?v=nebula-mobile-1"></script>
     <script type="module" src="./scene-calibration.js?v=modular-desk-responsive-1"></script>
   </body>
 </html>

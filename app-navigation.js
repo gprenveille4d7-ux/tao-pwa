@@ -4,7 +4,7 @@ const DEFAULT_VIEW = "pavilion";
 const VIEW_TITLES = Object.freeze({
   today: "Aujourd’hui",
   theme: "Mon thème",
-  pavilion: "Pavillon des Étoiles",
+  pavilion: "Le Nebula",
   yijing: "Yi Jing",
   profiles: "Profils",
 });
