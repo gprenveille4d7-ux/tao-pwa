@@ -1,12 +1,12 @@
 export const profiles = Object.freeze({
   page: Object.freeze({ eyebrow: "Profils", title: "Les personnes de ton cercle", lead: "Chaque personne conserve ses propres données et son propre thème.", active: "Profil actif", people: "Personnes", others: "Autres profils", empty: "Aucune autre personne n’est encore enregistrée.", addPerson: "Ajouter une personne" }),
   fields: Object.freeze({ firstName: "Prénom", relationship: "Lien facultatif", birthPlace: "Lieu de naissance", birthCity: "Ville de naissance", birthDate: "Date de naissance", birthTime: "Heure de naissance", localBirthTime: "Heure locale au lieu de naissance", unknownTime: "Heure inconnue", unknownTimeChoice: "Je ne connais pas mon heure de naissance" }),
-  facts: Object.freeze({ birth: "Naissance", place: "Lieu", time: "Heure", localTime: "Heure locale", dayMaster: "Maître du Jour" }),
+  facts: Object.freeze({ birth: "Naissance", place: "Lieu", time: "Heure", localTime: "Heure locale", dayMaster: "Énergie fondamentale" }),
   relationships: Object.freeze({ self: "Moi", other: "Autre", family: "Famille", friend: "Ami", partner: "Conjoint", child: "Enfant", parent: "Parent" }),
   actions: Object.freeze({ use: "Utiliser ce profil", edit: "Modifier", closeEditor: "Fermer l’éditeur", saveChanges: "Enregistrer les modifications", addThisPerson: "Ajouter cette personne", addPerson: "+ Ajouter une personne" }),
   editor: Object.freeze({ editEyebrow: "Modifier", newEyebrow: "Nouvelle personne", searchHint: "Saisis au moins trois lettres puis choisis une proposition.", searching: "Recherche du lieu…", chooseExact: "Choisis le lieu exact.", noneFound: "Aucun lieu trouvé.", unavailable: "La recherche est momentanément indisponible. Réessaie.", selected: "Lieu choisi : {place}." }),
   errors: Object.freeze({ noProfile: "Aucun profil valide n’est disponible.", firstName: "Indique un prénom.", place: "Choisis le lieu exact dans les propositions.", date: "Cette date ne semble pas possible.", time: "Indique une heure valide ou choisis « heure inconnue »." }),
-  compare: Object.freeze({ eyebrow: "Comparer deux profils", title: "À venir", copy: "La compatibilité avancée n’est pas encore activée." }),
+  compare: Object.freeze({ eyebrow: "Deux personnes, deux dynamiques", title: "Votre manière de vous rencontrer", copy: "Une future lecture présentera ce qui rapproche, les différences et les points de vigilance sans réduire une relation à un pourcentage." }),
   onboarding: Object.freeze({
     firstQuestion: "Avant de commencer… comment dois-je t’appeler ?",
     placeQuestion: "Très bien, {firstName}. Et où es-tu né ?",

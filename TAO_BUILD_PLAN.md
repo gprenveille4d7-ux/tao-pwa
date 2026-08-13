@@ -26,3 +26,5 @@ Cette feuille de route décrit l’état réellement présent dans la version co
 **REPORTÉES** — la planche source est conservée sans découpage ni intégration runtime.
 
 La V1 produit désormais une guidance quotidienne déterministe et approfondie, une présentation éditoriale du thème natal et une gestion locale multi-profils. Le module Yi Jing local ajoute la méthode des trois pièces, les 64 hexagrammes, les mutations, la guidance et le carnet. La compatibilité avancée, les Da Yun, les phases lunaires et l’IA restent hors périmètre.
+
+La couche `tao-semantics-fr-1.0.0` transforme ces résultats en trois profondeurs : sens humain, explication traçable et terminologie traditionnelle. Les identifiants et calculs des moteurs restent inchangés.

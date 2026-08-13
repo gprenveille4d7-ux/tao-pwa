@@ -2,7 +2,7 @@ export const yijing = Object.freeze({
   page: Object.freeze({
     eyebrow: "Livre des transformations",
     title: "Yi Jing",
-    intro: "Pose une question, prends le temps de former les six lignes, puis laisse TAO mettre en lumière la dynamique du tirage.",
+    intro: "Pose une question, prends le temps de former les six lignes, puis laisse TAO commencer par ce que le tirage peut t’aider à observer.",
     notice: "Le Yi Jing propose une lecture symbolique destinée à la réflexion. Il ne prédit pas l’avenir et ne remplace pas ton discernement.",
   }),
   question: Object.freeze({

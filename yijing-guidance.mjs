@@ -32,7 +32,7 @@ function profileResonance(profileContext, result) {
   const quality = qualities[profileContext.dayMaster.element];
   return Object.freeze({
     title: "Résonance avec ton profil",
-    text: `Ton Maître du Jour est ${profileContext.dayMaster.label}. Sans fusionner les deux systèmes, la lecture peut être mise en regard de ta manière naturelle d’aborder ${quality}. Ici, « ${result.primary.french} » t’invite surtout à ${result.primary.posture}. Garde ce rapprochement comme un angle de réflexion, non comme une règle personnelle.`,
+    text: `Ton énergie fondamentale est associée à ${quality}. Sans fusionner les deux traditions, cette lecture peut être mise en regard de cette manière d’avancer. Ici, « ${result.primary.french} » t’invite surtout à ${result.primary.posture}. Garde ce rapprochement comme un angle de réflexion, non comme une règle personnelle.`,
   });
 }
 

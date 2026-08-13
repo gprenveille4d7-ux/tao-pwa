@@ -1,5 +1,5 @@
 export const common = Object.freeze({
-  meta: Object.freeze({ locale: "fr-FR", language: "Français", version: "tao-localization-fr-1.1.0" }),
+  meta: Object.freeze({ locale: "fr-FR", language: "Français", version: "tao-localization-fr-1.2.0" }),
   app: Object.freeze({
     name: "TAO",
     pavilionName: "Le Nebula",

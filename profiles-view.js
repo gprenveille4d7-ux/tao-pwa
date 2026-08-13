@@ -11,9 +11,10 @@ import { calculateBazi } from "./bazi-engine.mjs";
 import { clearDailyCacheForProfile } from "./daily-cache.mjs";
 import { searchBirthPlaces } from "./geocoding.js";
 import { element, formatBirthDate, formatPlace } from "./tao-ui.js";
-import { getConcept, t } from "./locales/index.js";
+import { t } from "./locales/index.js?v=1.2.0";
 import { createSectionNavigation, focusRequestedSection, markProductSection } from "./section-navigation.js";
 import { parseAppRoute } from "./navigation-routes.mjs";
+import { getSemanticConcept } from "./semantic-layer.mjs?v=1.0.1";
 
 const root = document.querySelector("[data-profiles-root]");
 const RELATIONSHIPS = ["other", "family", "friend", "partner", "child", "parent"];
@@ -26,8 +27,8 @@ let searchController = null;
 function getDayMaster(profile) {
   try {
     const result = getCachedBazi(profile) ?? setCachedBazi(profile, calculateBazi(profile));
-    const stem = getConcept("bazi.heavenlyStems", result.dayMaster.key);
-    return `${stem.french} · ${stem.label}`;
+    const stem = getSemanticConcept("stems", result.dayMaster.key);
+    return `${stem.icon} ${stem.humanTitle}`;
   } catch {
     return t("common.states.unavailable");
   }
@@ -239,9 +240,9 @@ export function renderProfilesView() {
   const add = element("button", { className: "product-button product-button--add", text: t("profiles.actions.addPerson"), attributes: { type: "button" } });
   add.addEventListener("click", () => openEditor());
   const compare = element("section", { className: "product-card compare-card" });
-  compare.append(element("div", { html: `<p class="product-eyebrow">${t("profiles.compare.eyebrow")}</p><h2>${t("profiles.compare.title")}</h2><p>La comparaison qualitative est préparée, mais son moteur n’est pas encore branché. TAO n’affichera aucun pourcentage arbitraire.</p>` }));
+  compare.append(element("div", { html: `<p class="product-eyebrow">${t("profiles.compare.eyebrow")}</p><h2>${t("profiles.compare.title")}</h2><p>${t("profiles.compare.copy")}</p>` }));
   const status = element("aside", { className: "engine-status", attributes: { role: "note" } });
-  status.append(element("strong", { text: "Moteur en attente" }), element("p", { text: "Les Maîtres du Jour, éléments et piliers de chaque profil sont déjà conservés séparément." }));
+  status.append(element("strong", { text: "Lecture en préparation" }), element("p", { text: "Les énergies fondamentales et les repères de naissance de chaque profil sont déjà conservés séparément. Aucun score relationnel arbitraire ne sera affiché." }));
   compare.append(status);
   const me = markProductSection(element("section", { className: "product-depth-section" }), "profiles", "me");
   me.append(activeCard(active));

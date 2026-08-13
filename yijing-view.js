@@ -2,7 +2,7 @@ import { getActiveProfile } from "./profile-store.js";
 import { calculateBazi } from "./bazi-engine.mjs";
 import { getCachedBazi, setCachedBazi } from "./bazi-cache.mjs";
 import { element } from "./tao-ui.js";
-import { formatDate, getConcept, t } from "./locales/index.js";
+import { formatDate, getConcept, t } from "./locales/index.js?v=1.2.0";
 import { setTaoPose } from "./tao-character.js";
 import { HEXAGRAMS, TRIGRAMS } from "./yijing-data.mjs?v=1.0.1";
 import { castThreeCoins, createCasting, interpretLineValue, resolveCasting } from "./yijing-engine.mjs?v=1.0.1";
@@ -235,8 +235,15 @@ function saveCurrent() {
 function resultView() {
   const fragment = document.createDocumentFragment();
   const heading = element("section", { className: "product-card yijing-result-heading" });
-  heading.append(sectionHeader(t("yijing.result.kicker"), t("yijing.result.title")), element("blockquote", { text: state.question }));
-  fragment.append(heading, hexagramCard(state.result.primary, state.result.lines, t("yijing.result.primary")));
+  heading.append(
+    sectionHeader("Ce que montre ton tirage", state.guidance.essential[0], "TAO commence par la dynamique utile à ta question. Les signes traditionnels restent accessibles juste après la guidance."),
+    element("blockquote", { text: state.question }),
+  );
+  fragment.append(heading, guidanceSection(state.guidance));
+  const traditional = element("details", { className: "product-disclosure yijing-traditional" });
+  traditional.append(element("summary", { text: "Découvrir le tirage traditionnel" }));
+  const traditionalContent = element("div", { className: "product-disclosure__content yijing-traditional__content" });
+  traditionalContent.append(hexagramCard(state.result.primary, state.result.lines, t("yijing.result.primary")));
   const mutations = element("section", { className: "product-card yijing-mutations" });
   mutations.append(sectionHeader(t("yijing.result.mutationsKicker"), t("yijing.result.mutations")));
   if (state.result.changingLines.length) {
@@ -244,9 +251,10 @@ function resultView() {
     state.result.changingLines.forEach((line) => list.append(element("li", { text: t("yijing.result.mutationLine", { line, label: state.result.lines[line - 1].label }) })));
     mutations.append(list);
   } else mutations.append(element("p", { text: t("yijing.result.noMutation") }));
-  fragment.append(mutations);
-  if (state.result.transformed) fragment.append(hexagramCard(state.result.transformed, transformedLines(state.result), t("yijing.result.transformed")));
-  fragment.append(guidanceSection(state.guidance));
+  traditionalContent.append(mutations);
+  if (state.result.transformed) traditionalContent.append(hexagramCard(state.result.transformed, transformedLines(state.result), t("yijing.result.transformed")));
+  traditional.append(traditionalContent);
+  fragment.append(traditional);
   const actions = element("section", { className: "product-card yijing-save" });
   actions.append(sectionHeader(t("yijing.save.kicker"), t("yijing.save.title"), t("yijing.save.help")));
   const row = element("div", { className: "product-actions" });

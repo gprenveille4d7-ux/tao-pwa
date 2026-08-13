@@ -6,22 +6,24 @@ import { getCachedDaily, setCachedDaily } from "./daily-cache.mjs?v=1.1.0";
 import { element, formatLongDate, localDateIso } from "./tao-ui.js";
 import { setTaoDailyBrief } from "./tao-dialogue.js";
 import { setTaoNarrativeState } from "./tao-narrative.js";
-import { formatPercent, getConcept, t } from "./locales/index.js";
+import { formatPercent, getConcept, t } from "./locales/index.js?v=1.2.0";
 import { glossaryDisclosure } from "./locales/glossary-ui.js";
 import { createSectionNavigation, focusRequestedSection, markProductSection } from "./section-navigation.js";
 import { parseAppRoute } from "./navigation-routes.mjs";
+import { buildDailySemanticReading, getSemanticConcept } from "./semantic-layer.mjs?v=1.0.1";
 
 const root = document.querySelector("[data-today-root]");
+const semanticDebug = new URLSearchParams(location.search).get("debug") === "semantics";
 const GENERATES = Object.freeze({ wood: "fire", fire: "earth", earth: "metal", metal: "water", water: "wood" });
 const CONTROLS = Object.freeze({ wood: "earth", earth: "water", water: "fire", fire: "metal", metal: "wood" });
 const elementData = (key) => getConcept("bazi.elements", key);
 const stemData = (key) => getConcept("bazi.heavenlyStems", key);
 const branchData = (key) => getConcept("bazi.earthlyBranches", key);
 const TODAY_SECTIONS = Object.freeze([
-  { id: "guidance", label: "Guidance" },
-  { id: "energies", label: "Énergies" },
-  { id: "personal", label: "Vous & aujourd’hui" },
-  { id: "cycles", label: "Cycles" },
+  { id: "guidance", label: "L’essentiel" },
+  { id: "energies", label: "Pourquoi ?" },
+  { id: "personal", label: "Pour toi" },
+  { id: "cycles", label: "Le temps" },
   { id: "nature", label: "Ciel & nature" },
 ]);
 
@@ -60,10 +62,10 @@ function createOverview(result) {
   card.querySelector("h2").id = "today-glance";
   const grid = element("dl", { className: "glance-grid" });
   for (const [label, value] of [
-    [t("guidance.overview.energy"), `${elementData(result.dayEnergy.stem.element).label} ${getConcept("bazi.polarities", result.dayEnergy.stem.polarity).label}`],
-    [t("guidance.overview.rhythm"), result.dayEnergy.stem.polarity === "yang" ? t("guidance.rhythms.measuredMovement") : t("guidance.rhythms.activeObservation")],
-    [t("guidance.overview.supported"), elementData(Object.keys(GENERATES).find((key) => GENERATES[key] === result.dayEnergy.stem.element)).label],
-    [t("guidance.overview.attention"), elementData(Object.keys(CONTROLS).find((key) => CONTROLS[key] === result.dayEnergy.stem.element)).label],
+    ["Mouvement du jour", getSemanticConcept("elements", result.dayEnergy.stem.element).humanTitle],
+    ["Manière d’avancer", result.dayEnergy.stem.polarity === "yang" ? "Agir avec une direction claire" : "Laisser mûrir avant d’agir"],
+    ["Appui disponible", getSemanticConcept("elements", Object.keys(GENERATES).find((key) => GENERATES[key] === result.dayEnergy.stem.element)).humanTitle],
+    ["À ménager", getSemanticConcept("elements", Object.keys(CONTROLS).find((key) => CONTROLS[key] === result.dayEnergy.stem.element)).humanTitle],
   ]) {
     const item = element("div");
     item.append(element("dt", { text: label }), element("dd", { text: value }));
@@ -71,6 +73,55 @@ function createOverview(result) {
   }
   card.append(grid);
   return card;
+}
+
+function createHumanGuidance(result, natalTheme, profile) {
+  const semantic = buildDailySemanticReading({ result, natalTheme, firstName: profile.firstName });
+  const advice = getConcept("guidance.elementAdvice", result.dayEnergy.stem.element);
+  const card = element("section", { className: "product-card semantic-lead" });
+  card.append(
+    element("p", { className: "product-eyebrow", text: `Bonjour ${profile.firstName}` }),
+    element("h2", { text: semantic.lead }),
+    element("p", { className: "semantic-lead__personal", text: semantic.personal }),
+  );
+  const guidance = element("div", { className: "semantic-guidance-grid" });
+  for (const [title, items] of [["À favoriser", advice.favor], ["À surveiller", advice.moderate]]) {
+    const group = element("section");
+    group.append(element("h3", { text: title }), element("p", { text: items.join(" · ") }));
+    guidance.append(group);
+  }
+  card.append(guidance);
+  return { card, semantic };
+}
+
+function createWhyDisclosure(result, natalTheme, semantic) {
+  const details = element("details", { className: "product-disclosure semantic-why" });
+  details.append(element("summary", { text: "Pourquoi TAO me dit ça ?" }));
+  const content = element("div", { className: "product-disclosure__content semantic-why__content" });
+  content.append(
+    sectionHeader("Ce que TAO observe", "La rencontre entre cette journée et ton thème"),
+    element("h3", { text: "Le mouvement de la journée" }),
+    element("p", { text: `${semantic.dailyStem.humanTitle} donne la tonalité du jour. ${semantic.dailyStem.humanDescription}` }),
+    element("h3", { text: "Sa rencontre avec ton thème" }),
+    element("p", { text: semantic.relation.explanation }),
+    element("h3", { text: "Ce qui nuance la lecture" }),
+    element("p", { text: "Cette observation dépend aussi des autres éléments, des branches et de l’équilibre général du thème. Elle indique une dynamique symbolique, jamais un événement certain." }),
+  );
+  const traditional = element("details", { className: "semantic-technical" });
+  traditional.append(
+    element("summary", { text: "Voir les données traditionnelles" }),
+    element("p", { text: `Énergie du jour : ${semantic.dailyStem.traditionalLabel} — ${semantic.dailyStem.technicalFrench}` }),
+    element("p", { text: `Énergie fondamentale : ${semantic.masterStem.traditionalLabel} — ${semantic.masterStem.technicalFrench}` }),
+    element("p", { text: `Relation : ${semantic.relation.humanLabel}` }),
+  );
+  content.append(traditional);
+  if (semanticDebug) {
+    const trace = element("details", { className: "semantic-debug" });
+    trace.append(element("summary", { text: "Trace sémantique DEV" }), element("pre", { text: JSON.stringify(semantic.trace, null, 2) }));
+    content.append(trace);
+  }
+  details.append(content);
+  return details;
 }
 
 function createDayEnergy(result) {
@@ -82,7 +133,7 @@ function createDayEnergy(result) {
     : t("guidance.dailySummaryYin", { element: energy.withArticle });
   const card = element("section", { className: `product-card hero-card element-accent--${result.dayEnergy.stem.element}` });
   card.append(
-    element("p", { className: "product-eyebrow", text: t("guidance.page.dayEnergy") }),
+    element("p", { className: "product-eyebrow", text: "Lecture traditionnelle de la journée" }),
     element("p", { className: "hero-card__glyph", text: result.pillars.day.chinese }),
     element("h2", { className: "hero-card__value", text: `${stem.french} · ${branch.animal}` }),
     element("p", { className: "hero-card__meta", text: `${stem.label} · ${branch.label}` }),
@@ -236,7 +287,9 @@ function createCycles(result) {
     grid.append(card);
   }
   const waiting = element("aside", { className: "engine-status", attributes: { role: "note" } });
-  waiting.append(element("strong", { text: "Cycle personnel · Da Yun" }), element("p", { text: "Moteur en attente. Aucun grand cycle n’est inventé tant que son calcul déterministe n’est pas branché." }));
+  waiting.append(element("strong", { text: "Tes grands cycles de vie" }), element("p", { text: "Cette lecture demande encore un moteur déterministe dédié. TAO n’invente aucune période tant que ce calcul n’est pas vérifié." }));
+  const traditional = element("small", { text: "Terme traditionnel : Da Yun · 大運" });
+  waiting.append(traditional);
   section.append(grid, waiting);
   return section;
 }
@@ -274,18 +327,19 @@ export async function renderTodayView() {
       return null;
     }
     const { profile, natalTheme, result } = reading;
+    const human = createHumanGuidance(result, natalTheme, profile);
     const header = element("header", { className: "product-header" });
     header.append(
       element("p", { className: "product-eyebrow", text: t("guidance.page.eyebrow") }),
       element("h1", { text: formatLongDate(result.date, result.timeZone) }),
-      element("p", { className: "product-lead", text: t("guidance.greeting", { firstName: profile.firstName }) }),
+      element("p", { className: "product-lead", text: "TAO commence par ce qui peut t’être utile, puis te laisse découvrir la lecture traditionnelle à ton rythme." }),
     );
     const route = parseAppRoute(location.hash);
     root.replaceChildren(
       header,
       createSectionNavigation("today", TODAY_SECTIONS, "Explorer Aujourd’hui"),
-      groupSection("guidance", createOverview(result), createDetailedGuidance(result, natalTheme), createGuidance(result)),
-      groupSection("energies", createDayEnergy(result), createElementBalance(result), createDetails(result)),
+      groupSection("guidance", human.card, createOverview(result), createGuidance(result), createDetailedGuidance(result, natalTheme)),
+      groupSection("energies", createWhyDisclosure(result, natalTheme, human.semantic), createDayEnergy(result), createElementBalance(result), createDetails(result)),
       groupSection("personal", createResonance(result, natalTheme)),
       groupSection("cycles", createCycles(result)),
       groupSection("nature", createNature(result), glossaryDisclosure(["dayMaster", "fiveElements", "yinYang", "jieQi", "generationCycle", "controlCycle"], "Glossaire de TAO")),

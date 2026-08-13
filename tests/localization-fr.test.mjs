@@ -7,6 +7,7 @@ import { fr } from "../locales/fr/index.js";
 import { countTranslationStrings, formatDate, formatPercent, getTranslation, LOCALIZATION_VERSION } from "../locales/index.js";
 import { calculateBazi } from "../bazi-engine.mjs";
 import { calculateDailyTao } from "../daily-tao-engine.mjs";
+import { getSemanticConcept, SEMANTIC_LAYER_VERSION } from "../semantic-layer.mjs";
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -27,9 +28,29 @@ function visit(value, path = "fr") {
 }
 
 test("le catalogue français est versionné et ne contient aucune valeur vide", () => {
-  assert.equal(LOCALIZATION_VERSION, "tao-localization-fr-1.1.0");
+  assert.equal(LOCALIZATION_VERSION, "tao-localization-fr-1.2.0");
   visit(fr);
   assert.ok(countTranslationStrings(fr) >= 300);
+});
+
+test("la couche sémantique couvre les notions visibles à trois niveaux", () => {
+  assert.equal(SEMANTIC_LAYER_VERSION, "tao-semantics-fr-1.0.0");
+  assert.equal(Object.keys(fr.semantics.stems).length, 10);
+  assert.equal(Object.keys(fr.semantics.elements).length, 5);
+  assert.equal(Object.keys(fr.semantics.tenGods).length, 10);
+  assert.equal(Object.keys(fr.semantics.tenGodFamilies).length, 5);
+  for (const concept of Object.values(fr.semantics.stems)) {
+    assert.ok(concept.humanTitle && concept.humanDescription && concept.technicalFrench && concept.traditionalLabel);
+  }
+  for (const concept of Object.values(fr.semantics.tenGods)) {
+    assert.ok(concept.humanLabel && concept.humanDescription && concept.technicalFrench && concept.traditionalLabel);
+  }
+});
+
+test("une notion sémantique absente produit une formulation humaine sûre", () => {
+  const missing = getSemanticConcept("tenGods", "TEN_GOD_03");
+  assert.equal(missing.humanLabel, "Une dynamique à observer");
+  assert.doesNotMatch(JSON.stringify(missing), /TEN_GOD_03|undefined|translation_missing/i);
 });
 
 test("les ensembles BaZi canoniques sont intégralement couverts", () => {
@@ -77,6 +98,17 @@ test("les vues principales ne contiennent aucun libellé anglais BaZi brut", asy
     const source = await readFile(resolve(projectRoot, file), "utf8");
     assert.doesNotMatch(source, forbidden, `Terme anglais brut dans ${file}`);
   }
+});
+
+test("les écrans normaux commencent par le sens humain", async () => {
+  const today = await readFile(resolve(projectRoot, "today-view.js"), "utf8");
+  const theme = await readFile(resolve(projectRoot, "bazi-theme.js"), "utf8");
+  const yiJing = await readFile(resolve(projectRoot, "yijing-view.js"), "utf8");
+  assert.match(today, /Pourquoi TAO me dit ça/);
+  assert.match(theme, /Ton énergie fondamentale/);
+  assert.match(theme, /Les grandes dynamiques de ton thème/);
+  assert.match(yiJing, /Ce que montre ton tirage/);
+  assert.match(yiJing, /Découvrir le tirage traditionnel/);
 });
 
 test("tous les identifiants exposés par les moteurs actuels ont une entrée française", () => {

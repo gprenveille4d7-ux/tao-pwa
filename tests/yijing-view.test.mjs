@@ -9,7 +9,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 test("la page Yi Jing remplace le placeholder et charge son contrôleur", async () => {
   const html = await readFile(resolve(root, "index.html"), "utf8");
   assert.match(html, /data-yijing-root/);
-  assert.match(html, /yijing-view\.js\?v=tao-tree-1/);
+  assert.match(html, /yijing-view\.js\?v=tao-semantics-2/);
   assert.doesNotMatch(html, /Consultation future|Aucun tirage, pièce/);
 });
 

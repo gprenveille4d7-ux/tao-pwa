@@ -3,11 +3,12 @@ import { calculateBazi } from "./bazi-engine.mjs";
 import { getCachedBazi, setCachedBazi } from "./bazi-cache.mjs";
 import { element, formatBirthDate, formatPlace } from "./tao-ui.js";
 import { setTaoNarrativeState } from "./tao-narrative.js";
-import { formatPercent, getConcept, t } from "./locales/index.js";
+import { formatPercent, getConcept, t } from "./locales/index.js?v=1.2.0";
 import { glossaryDisclosure } from "./locales/glossary-ui.js";
 import { branchRelations, visibleTenGods } from "./bazi-insights.mjs?v=1.0.1";
 import { createSectionNavigation, focusRequestedSection, markProductSection } from "./section-navigation.js";
 import { parseAppRoute } from "./navigation-routes.mjs";
+import { getSemanticConcept } from "./semantic-layer.mjs?v=1.0.1";
 
 const root = document.querySelector("[data-bazi-root]");
 const debugEnabled = new URLSearchParams(location.search).get("debug") === "bazi";
@@ -17,9 +18,9 @@ const polarityData = (key) => getConcept("bazi.polarities", key);
 const stemData = (key) => getConcept("bazi.heavenlyStems", key);
 const branchData = (key) => getConcept("bazi.earthlyBranches", key);
 const THEME_SECTIONS = Object.freeze([
-  { id: "overview", label: "Vue d’ensemble" }, { id: "pillars", label: "Quatre Piliers" },
-  { id: "elements", label: "Cinq Éléments" }, { id: "structure", label: "Troncs & Branches" },
-  { id: "ten-gods", label: "Dix Dieux" }, { id: "cycles", label: "Cycles" }, { id: "life", label: "Lecture de vie" },
+  { id: "overview", label: "En un coup d’œil" }, { id: "pillars", label: "Quatre facettes" },
+  { id: "elements", label: "Tes mouvements" }, { id: "structure", label: "Sous la surface" },
+  { id: "ten-gods", label: "Grandes dynamiques" }, { id: "cycles", label: "Cycles de vie" }, { id: "life", label: "Pistes de lecture" },
 ]);
 const PILLAR_LABELS = Object.freeze({ year: "Année", month: "Mois", day: "Jour", hour: "Heure" });
 
@@ -49,14 +50,24 @@ function dayMaster(result) {
   const localizedStem = stemData(master.key);
   const localizedElement = elementData(master.element);
   const localizedPolarity = polarityData(master.polarity);
+  const semantic = getSemanticConcept("stems", master.key);
   const card = element("section", { className: `product-card day-master-card element-accent--${master.element}` });
   card.append(
-    element("p", { className: "product-eyebrow", text: `Ton ${t("bazi.labels.dayMaster")}` }),
+    element("p", { className: "product-eyebrow", text: "Ton énergie fondamentale" }),
     element("span", { className: "day-master-card__glyph", text: localizedStem.hanzi }),
-    element("p", { className: "day-master-card__name", text: localizedStem.label }),
-    element("h2", { text: `${localizedElement.label} ${localizedPolarity.label}` }),
-    element("p", { className: "day-master-card__copy", text: localizedElement.description }),
+    element("p", { className: "day-master-card__name", text: semantic.icon }),
+    element("h2", { text: semantic.humanTitle }),
+    element("p", { className: "semantic-keywords", text: semantic.keywords.join(" · ") }),
+    element("p", { className: "day-master-card__copy", text: semantic.humanDescription }),
   );
+  const details = element("details", { className: "semantic-technical day-master-card__details" });
+  details.append(
+    element("summary", { text: "Comprendre mon énergie" }),
+    element("p", { text: `Dans la lecture BaZi, le Maître du Jour est le point central à partir duquel les relations du thème sont observées.` }),
+    element("p", { text: `${semantic.traditionalLabel} — ${localizedElement.label} ${localizedPolarity.label}` }),
+    element("p", { text: "Cette énergie constitue un repère de lecture : elle ne résume pas une personne à elle seule." }),
+  );
+  card.append(details);
   return card;
 }
 
@@ -85,26 +96,37 @@ function pillarCard(name, pillar, highlighted = false) {
 function pillars(result) {
   const section = element("section", { className: "product-section" });
   const head = element("header", { className: "product-section__header" });
-  head.append(element("p", { className: "product-eyebrow", text: t("bazi.ui.natalStructure") }), element("h2", { text: t("bazi.labels.fourPillars") }), element("p", { text: t("bazi.ui.pillarsIntro") }));
+  head.append(element("p", { className: "product-eyebrow", text: "Quatre points de vue" }), element("h2", { text: "Les quatre facettes de ton thème" }), element("p", { text: "Chaque facette éclaire un angle différent. Les signes traditionnels restent disponibles après cette première lecture." }));
+  const facets = element("div", { className: "pillar-facets" });
+  for (const id of ["year", "month", "day", "hour"]) {
+    const semantic = getSemanticConcept("pillars", id);
+    const facet = element("article", { className: "insight-card" });
+    facet.append(element("span", { text: PILLAR_LABELS[id] }), element("strong", { text: semantic.humanTitle }), element("p", { text: semantic.humanDescription }));
+    facets.append(facet);
+  }
+  const traditional = element("details", { className: "product-disclosure semantic-technical" });
+  traditional.append(element("summary", { text: "Voir les Quatre Piliers traditionnels" }));
   const grid = element("div", { className: "pillar-grid" });
   grid.append(
     pillarCard(t("bazi.pillars.year"), result.pillars.year), pillarCard(t("bazi.pillars.month"), result.pillars.month),
     pillarCard(t("bazi.pillars.day"), result.pillars.day, true), pillarCard(t("bazi.pillars.hour"), result.pillars.hour),
   );
-  section.append(head, grid);
+  traditional.append(grid);
+  section.append(head, facets, traditional);
   return section;
 }
 
 function elements(result) {
   const section = element("section", { className: "product-card" });
   const head = element("header", { className: "product-section__header" });
-  head.append(element("p", { className: "product-eyebrow", text: t("bazi.ui.natalBalance") }), element("h2", { text: t("bazi.labels.fiveElements") }), element("p", { text: t("bazi.ui.elementsIntro") }));
+  head.append(element("p", { className: "product-eyebrow", text: "Mouvements présents" }), element("h2", { text: "Ce qui circule dans ton thème" }), element("p", { text: "Les Cinq Éléments décrivent des mouvements symboliques, pas cinq personnalités ni un diagnostic. La présence visible donne ici un premier repère." }));
   const list = element("div", { className: "element-bars" });
   for (const item of Object.values(result.elements)) {
     const localized = elementData(item.key);
+    const semantic = getSemanticConcept("elements", item.key);
     const row = element("div", { className: `element-row element-row--${item.key}` });
     const label = element("div", { className: "element-row__label" });
-    label.append(element("strong", { text: localized.label }), element("span", { text: t(item.count > 1 ? "bazi.ui.components" : "bazi.ui.component", { count: item.count }) }));
+    label.append(element("strong", { text: `${semantic.icon} ${semantic.humanTitle}` }), element("span", { text: `${localized.label} · ${t(item.count > 1 ? "bazi.ui.components" : "bazi.ui.component", { count: item.count })}` }));
     const meter = element("div", { className: "element-meter", attributes: { role: "meter", "aria-label": `${localized.label} : ${formatPercent(item.percent)}`, "aria-valuemin": "0", "aria-valuemax": "100", "aria-valuenow": String(item.percent) } });
     const fill = element("span", { className: "element-meter__fill" });
     fill.style.width = `${item.percent}%`;
@@ -150,12 +172,13 @@ function reading(result) {
   const weakest = ordered.filter((item) => item.count === ordered.at(-1).count).map((item) => elementData(item.key).label);
   const master = stemData(result.dayMaster.key);
   const tendency = result.yinYang.yin === result.yinYang.yang ? t("bazi.ui.equalTendency") : result.yinYang.yin > result.yinYang.yang ? t("bazi.ui.yinTendency") : t("bazi.ui.yangTendency");
+  const semanticMaster = getSemanticConcept("stems", result.dayMaster.key);
   const localizedReading = [
-    t("bazi.ui.readingMaster", { master: `${master.french} — ${master.label}` }),
+    `${semanticMaster.humanTitle} donne le centre de cette lecture. ${semanticMaster.humanDescription}`,
     t(strongest.length > 1 ? "bazi.ui.readingStrongestMany" : "bazi.ui.readingStrongestOne", { elements: strongest.join(" et ") }),
     t(weakest.length > 1 ? "bazi.ui.readingWeakestMany" : "bazi.ui.readingWeakestOne", { elements: weakest.join(" et "), tendency }),
   ];
-  const labels = [t("bazi.ui.readingNature"), t("bazi.ui.readingResources"), t("bazi.ui.readingBalance")];
+  const labels = ["Ton point de départ", "Ce qui te nourrit", "Ce qui demande de l’attention"];
   localizedReading.forEach((paragraph, index) => {
     const group = element("div");
     group.append(element("h3", { text: labels[index] ?? "Manière d’avancer" }), element("p", { text: paragraph }));
@@ -172,7 +195,7 @@ function groupSection(id, ...children) {
 
 function hiddenStems(result) {
   const section = element("section", { className: "product-card" });
-  section.append(element("p", { className: "product-eyebrow", text: "Sous la surface" }), element("h2", { text: t("bazi.labels.hiddenStems") }), element("p", { text: getConcept("bazi", "hiddenStems").explanation }));
+  section.append(element("p", { className: "product-eyebrow", text: "Sous la surface" }), element("h2", { text: "Les influences intérieures" }), element("p", { text: "Chaque énergie du cycle terrestre peut contenir plusieurs nuances moins visibles. La tradition BaZi les appelle les Troncs cachés." }));
   const grid = element("div", { className: "insight-grid" });
   for (const [pillarId, pillar] of Object.entries(result.pillars)) {
     if (!pillar.determined) continue;
@@ -184,20 +207,25 @@ function hiddenStems(result) {
     card.append(list);
     grid.append(card);
   }
-  section.append(grid);
+  const technical = element("details", { className: "product-disclosure semantic-technical" });
+  technical.append(element("summary", { text: "Voir les influences traditionnelles" }), grid);
+  section.append(technical);
   return section;
 }
 
 function interactions(result) {
   const section = element("section", { className: "product-card" });
-  section.append(element("p", { className: "product-eyebrow", text: "Relations visibles" }), element("h2", { text: "Combinaisons et oppositions" }));
+  section.append(element("p", { className: "product-eyebrow", text: "Relations visibles" }), element("h2", { text: "Comment les énergies se rencontrent" }), element("p", { text: "Ces relations indiquent des rapprochements ou des tensions possibles. Leur importance dépend toujours du thème complet." }));
   const found = branchRelations(result);
   if (!found.length) section.append(element("p", { text: "Aucune combinaison Liu He ni opposition Chong n’apparaît entre les Branches principales visibles." }));
   for (const relation of found) {
-    const concept = getConcept("bazi.interactions", relation.type === "combination" ? "liu_he" : "clash");
+    const concept = getSemanticConcept("interactions", relation.type);
     const [left, right] = relation.branches;
     const item = element("article", { className: "relation-card" });
-    item.append(element("strong", { text: concept.label }), element("p", { text: `${PILLAR_LABELS[left.pillarId]} · ${branchData(left.key).label} ↔ ${PILLAR_LABELS[right.pillarId]} · ${branchData(right.key).label}` }), element("small", { text: concept.explanation }));
+    item.append(element("strong", { text: concept.humanLabel }), element("p", { text: concept.humanDescription }));
+    const technical = element("details", { className: "semantic-technical" });
+    technical.append(element("summary", { text: "Voir la relation traditionnelle" }), element("p", { text: `${concept.traditionalLabel} — ${PILLAR_LABELS[left.pillarId]} · ${branchData(left.key).label} ↔ ${PILLAR_LABELS[right.pillarId]} · ${branchData(right.key).label}` }));
+    item.append(technical);
     section.append(item);
   }
   const waiting = element("p", { className: "method-note", text: "Punitions, dommages et ruptures : moteur détaillé en attente. TAO n’affiche aucune relation non calculée." });
@@ -207,14 +235,25 @@ function interactions(result) {
 
 function tenGods(result) {
   const section = element("section", { className: "product-card" });
-  section.append(element("p", { className: "product-eyebrow", text: "Relations au Maître du Jour" }), element("h2", { text: t("bazi.labels.tenGods") }), element("p", { text: "Ces appellations décrivent la relation des Troncs visibles avec ton Maître du Jour ; elles ne sont ni des personnes ni des prédictions." }));
-  const grid = element("div", { className: "insight-grid" });
-  for (const insight of visibleTenGods(result)) {
-    const localized = getConcept("bazi.tenGods", insight.tenGod);
-    const stem = stemData(insight.stem.key);
-    const card = element("article", { className: "insight-card" });
-    card.append(element("span", { text: PILLAR_LABELS[insight.pillarId] }), element("strong", { text: localized.label }), element("small", { text: `${localized.pinyin} · ${localized.hanzi}` }), element("p", { text: `${stem.label} — ${localized.definition}` }));
-    grid.append(card);
+  section.append(element("p", { className: "product-eyebrow", text: "Relations symboliques" }), element("h2", { text: "Les grandes dynamiques de ton thème" }), element("p", { text: "TAO commence par leur fonction humaine. Dans la tradition, ces dix relations sont appelées les Dix Dieux ; elles ne désignent ni des personnes ni des prédictions." }));
+  const insights = visibleTenGods(result);
+  const grid = element("div", { className: "ten-god-families" });
+  for (const familyId of ["support", "peers", "expression", "resources", "responsibility"]) {
+    const family = getSemanticConcept("tenGodFamilies", familyId);
+    const familyInsights = insights.filter((insight) => getSemanticConcept("tenGods", insight.tenGod).family === familyId);
+    if (!familyInsights.length) continue;
+    const familyCard = element("article", { className: "semantic-family" });
+    familyCard.append(element("h3", { text: `${family.icon} ${family.humanTitle}` }), element("p", { text: family.humanDescription }));
+    for (const insight of familyInsights) {
+      const semantic = getSemanticConcept("tenGods", insight.tenGod);
+      const item = element("section", { className: "semantic-family__item" });
+      item.append(element("span", { text: PILLAR_LABELS[insight.pillarId] }), element("strong", { text: semantic.humanLabel }), element("p", { text: semantic.humanDescription }));
+      const technical = element("details", { className: "semantic-technical" });
+      technical.append(element("summary", { text: "Lecture traditionnelle" }), element("p", { text: `${semantic.traditionalLabel} — ${semantic.technicalFrench}` }), element("small", { text: semantic.englishLabel }));
+      item.append(technical);
+      familyCard.append(item);
+    }
+    grid.append(familyCard);
   }
   section.append(grid);
   return section;
@@ -222,7 +261,7 @@ function tenGods(result) {
 
 function cyclesAndTimeline(result) {
   const section = element("section", { className: "product-card" });
-  section.append(element("p", { className: "product-eyebrow", text: "Chronologie" }), element("h2", { text: t("bazi.labels.daYun") }), element("p", { text: "Le thème natal est disponible. Le calcul des piliers décennaux, de leur âge de départ et des transitions n’est pas encore intégré." }));
+  section.append(element("p", { className: "product-eyebrow", text: "Chronologie" }), element("h2", { text: "Tes grands cycles de vie" }), element("p", { text: "Le BaZi observe aussi de longues périodes, souvent proches de dix ans, durant lesquelles certaines dynamiques prennent davantage de place. Elles sont traditionnellement appelées Da Yun · 大運." }));
   const status = element("aside", { className: "engine-status", attributes: { role: "note" } });
   status.append(element("strong", { text: "Moteur en attente" }), element("p", { text: "Aucune décennie ni période remarquable n’est affichée sans calcul déterministe vérifié." }));
   section.append(status, cycle(result));
@@ -231,12 +270,12 @@ function cyclesAndTimeline(result) {
 
 function lifeReading(result) {
   const section = element("section", { className: "product-card" });
-  section.append(element("p", { className: "product-eyebrow", text: "Lecture thématique" }), element("h2", { text: "Ce que le thème permet déjà d’explorer" }), element("p", { text: "Ces portes de lecture s’appuient actuellement sur le Maître du Jour, les éléments visibles et l’équilibre Yin / Yang. Elles resteront nuancées jusqu’à l’arrivée des cycles complets." }));
+  section.append(element("p", { className: "product-eyebrow", text: "Lecture thématique" }), element("h2", { text: "Ce que le thème permet déjà d’explorer" }), element("p", { text: "Ces portes de lecture s’appuient actuellement sur ton énergie fondamentale, les mouvements visibles et leur équilibre. Elles resteront nuancées jusqu’à l’arrivée des cycles complets." }));
   const grid = element("div", { className: "topic-grid" });
   const master = stemData(result.dayMaster.key);
   for (const [title, copy] of [
     ["Personnalité", `${master.french} sert de centre de lecture : une qualité à cultiver, pas une étiquette définitive.`],
-    ["Relations", "Les Dix Dieux et les relations entre Branches donnent des repères de coopération, d’expression et de limites."],
+    ["Relations", "Les grandes dynamiques relationnelles donnent des repères de coopération, d’expression et de limites."],
     ["Activité & créativité", "La répartition visible des éléments permet d’observer les ressources déjà présentes et celles à soutenir."],
     ["Évolution personnelle", "Les tendances natales décrivent un terrain. Les périodes de vie demanderont le futur moteur de cycles."],
   ]) {

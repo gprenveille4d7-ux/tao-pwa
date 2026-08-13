@@ -34,7 +34,7 @@ export const guidance = Object.freeze({
   detailed: Object.freeze({
     kicker: "Jour × thème natal",
     title: "Ta journée, domaine par domaine",
-    intro: "Ces tendances sont symboliques. Elles rapprochent le pilier du jour de ton Maître du Jour et de l’équilibre de ton thème, sans produire de score artificiel.",
+    intro: "Ces tendances sont symboliques. Elles rapprochent le mouvement du jour de ton énergie fondamentale et de l’équilibre de ton thème, sans produire de score artificiel.",
     support: "Ce qui te soutient",
     attention: "Ce qui demande de l’attention",
     relationships: "Relations",
@@ -45,14 +45,14 @@ export const guidance = Object.freeze({
     supportCopy: "L’énergie {support} nourrit symboliquement celle {day}. Dans la lecture combinée, {dominant} forme aussi un appui disponible : utilise-le comme une ressource, sans chercher à le renforcer à tout prix.",
     attentionCopy: "Le cycle de contrôle met {attention} en regard de l’énergie du jour. {quieter}, plus discret dans la lecture combinée, mérite d’être ménagé par des gestes simples plutôt que compensé brutalement.",
     relationshipCopy: Object.freeze({
-      fluid: "Les polarités du jour et de ton thème se complètent. Dans les échanges, écoute la nuance avant de répondre : la branche du {animal} favorise une présence souple.",
-      sensitive: "La branche du {animal} fait écho à {echoes} composante de ton thème. Les relations peuvent résonner plus vivement : distingue ce qui appartient au présent de ce qui réveille une habitude.",
-      observing: "Aucun écho direct ne domine entre la branche du {animal} et tes piliers. Cette relative neutralité aide à observer les relations sans conclure trop vite.",
+      fluid: "Les polarités du jour et de ton thème se complètent. Dans les échanges, écoute la nuance avant de répondre : l’énergie cyclique associée à l’animal {animal} favorise une présence souple.",
+      sensitive: "L’énergie cyclique associée à l’animal {animal} fait écho à {echoes} composante de ton thème. Les relations peuvent résonner plus vivement : distingue ce qui appartient au présent de ce qui réveille une habitude.",
+      observing: "Aucun écho direct ne domine entre l’énergie cyclique associée à l’animal {animal} et tes piliers. Cette relative neutralité aide à observer les relations sans conclure trop vite.",
     }),
     actionCopy: Object.freeze({
-      favorable: "La polarité Yang du jour soutient la mise en mouvement. Avec un Maître du Jour {master}, privilégie une action claire et limitée plutôt qu’une multiplication d’initiatives.",
+      favorable: "Le mouvement plus direct du jour soutient la mise en action. Avec une énergie fondamentale {master}, privilégie un geste clair et limité plutôt qu’une multiplication d’initiatives.",
       balanced: "La polarité Yin invite à préparer, trier et approfondir. L’action reste possible, mais gagne à suivre un ordre précis plutôt qu’une impulsion.",
-      prudence: "La relation de contrôle entre ton Maître du Jour {master} et l’énergie du jour demande de la mesure. Clarifie les contraintes avant d’engager un effort difficile à reprendre.",
+      prudence: "La relation de contrôle entre ton énergie fondamentale {master} et le mouvement du jour demande de la mesure. Clarifie les contraintes avant d’engager un effort difficile à reprendre.",
     }),
     creativityCopy: Object.freeze({
       strong: "Le {day} met l’expression et l’émergence au premier plan. Donne une forme concrète à une idée, même modeste, avant d’en ouvrir une seconde.",

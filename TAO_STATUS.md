@@ -57,3 +57,14 @@ PHASES LUNAIRES — **REPORTÉES**
 - composition temps + météo + saison avec fondu de 2,2 secondes ;
 - panneau local `?debug=environment#pavilion` ;
 - aucune Lune ni aurore automatique sans donnée fiable.
+
+## REFONTE SÉMANTIQUE FRANÇAISE — 13 AOÛT 2026
+
+**ÉTAT : TECHNIQUEMENT TERMINÉE — VALIDATION UTILISATEUR ATTENDUE**
+
+- lexique local `tao-semantics-fr-1.0.0` : sens humain, explication, lecture traditionnelle ;
+- dix archétypes, cinq mouvements, cinq familles et dix relations BaZi couverts ;
+- Aujourd’hui commence par le conseil et propose « Pourquoi TAO me dit ça ? » ;
+- Mon thème commence par l’archétype et les quatre facettes ;
+- la guidance Yi Jing précède désormais les signes traditionnels ;
+- aucune modification des moteurs BaZi ou Yi Jing, des profils, du décor ou des assets.

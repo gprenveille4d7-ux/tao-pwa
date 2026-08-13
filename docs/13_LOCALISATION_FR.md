@@ -1,6 +1,8 @@
 # Localisation française de TAO
 
-Version terminologique : `tao-localization-fr-1.1.0`.
+Version terminologique : `tao-localization-fr-1.2.0`.
+
+La couche de traduction est désormais complétée par `tao-semantics-fr-1.0.0`. Elle place le sens humain avant l’explication et réserve la terminologie traditionnelle au troisième niveau. Voir `docs/17_COUCHE_SEMANTIQUE_FR.md`.
 
 ## Architecture
 
@@ -31,9 +33,9 @@ Une langue ultérieure s’ajoute comme un catalogue frère de `fr`, puis dans l
 
 Les traductions des Dix Dieux varient selon les écoles. TAO retient des appellations principales compréhensibles et conserve le pinyin, les Hanzi et une appellation alternative. Cette convention n’est pas présentée comme universelle.
 
-## Deux niveaux de lecture
+## Trois niveaux de lecture
 
-Le niveau simple affiche une formulation comme **Bois Yang**. Le niveau expert conserve **Jia · 甲** et le décrit comme le Tronc céleste du Bois Yang. Les vues complexes proposent un bloc repliable **Comprendre · Glossaire de TAO**.
+Le premier niveau présente un archétype ou une fonction humaine, par exemple **Le Grand Arbre**. Le deuxième explique la règle utile en français. Le troisième conserve **Jia · 甲 — Bois Yang** et les données traditionnelles. Les vues utilisent des blocs repliables **Comprendre**, **Pourquoi TAO me dit ça ?** ou **Lecture traditionnelle**.
 
 ## Fallbacks et contrôle DEV
 
