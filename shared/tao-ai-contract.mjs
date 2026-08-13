@@ -5,6 +5,7 @@ export const TAO_AI_MODES = Object.freeze([
   "daily_synthesis",
   "explanation",
   "yijing",
+  "family_constellation",
   "presence",
 ]);
 
