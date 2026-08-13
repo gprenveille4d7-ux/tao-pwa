@@ -34,3 +34,15 @@ test("le contexte Yi Jing reprend le tirage fourni sans lancer le moteur", async
   assert.equal(context.yijing.primaryHexagram.number, 1);
   assert.deepEqual(context.yijing.changingLines, [3]);
 });
+
+test("le contexte constellation transmet uniquement les observations vérifiées", async () => {
+  globalThis.localStorage = memoryStorage();
+  localStorage.setItem("tao.profiles.v1", JSON.stringify([profile]));
+  localStorage.setItem("tao.activeProfileId.v1", profile.id);
+  const { buildTaoAIContext } = await import(`../tao-ai-context.mjs?family=${Date.now()}`);
+  const familyConstellation = { familyMembers: [{ id: "p1", displayName: "Alice", relationship: "parent", birthDate: "1985-09-11" }], observations: [{ id: "obs_1", type: "DATE_MIRROR", interest: "HIGH", participantIds: ["p1", "p2"], values: [11, 9], birthDate: "1985-09-11" }] };
+  const context = buildTaoAIContext("family_constellation", { familyConstellation, facts: [{ id: "obs_1", type: "FAMILY_DATE_MIRROR", value: "11/9", label: "11/09 ↔ 09/11" }] });
+  assert.equal(context.familyConstellation.observations[0].id, "obs_1");
+  assert.equal(context.today.dominantFacts.some(({ id }) => id === "obs_1"), true);
+  assert.doesNotMatch(JSON.stringify(context.familyConstellation), /1985-09-11|birthDate/);
+});

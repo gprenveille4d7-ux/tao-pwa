@@ -41,6 +41,16 @@ test("POST valide applique le schéma et retire un fact ID inventé", async () =
   assert.equal(body.meta.model, "gemini-3.6-flash");
 });
 
+test("le Worker accepte le mode constellation avec des faits déjà calculés", async () => {
+  const payload = validPayload("family_constellation");
+  payload.context.familyConstellation = {
+    familyMembers: [{ id: "P1", displayName: "Alice", relationship: "parent" }],
+    observations: [{ id: "F1", type: "DATE_MIRROR", interest: "HIGH", participantIds: ["P1", "P2"], values: [9, 11] }],
+  };
+  const response = await createWorkerHandler({ fetcher: async () => geminiOk() })(request("/v1/tao/respond", { method: "POST", body: payload }), env);
+  assert.equal(response.status, 200);
+});
+
 test("origine, mode et volume sont strictement refusés", async () => {
   const handler = createWorkerHandler({ fetcher: async () => geminiOk() });
   assert.equal((await handler(request("/v1/tao/respond", { method: "POST", body: validPayload(), origin: "https://evil.example" }), env)).status, 403);

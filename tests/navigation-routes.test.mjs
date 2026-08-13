@@ -6,9 +6,11 @@ test("les cinq espaces possèdent leurs sous-routes canoniques", () => {
   assert.deepEqual(Object.keys(SECTION_ROUTES), ["today", "theme", "pavilion", "yijing", "profiles"]);
   assert.deepEqual(parseAppRoute("#theme/ten-gods"), { view: "theme", section: "ten-gods" });
   assert.deepEqual(parseAppRoute("#yijing/learn"), { view: "yijing", section: "learn" });
+  assert.deepEqual(parseAppRoute("#profiles/family"), { view: "profiles", section: "family" });
 });
 
 test("une route inconnue revient au Pavillon sans écran cassé", () => {
   assert.deepEqual(parseAppRoute("#unknown/missing"), { view: "pavilion", section: "tao" });
   assert.equal(appRoute("profiles", "compatibility"), "#profiles/compatibility");
+  assert.equal(appRoute("profiles", "family"), "#profiles/family");
 });

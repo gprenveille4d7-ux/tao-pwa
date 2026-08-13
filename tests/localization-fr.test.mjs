@@ -28,7 +28,7 @@ function visit(value, path = "fr") {
 }
 
 test("le catalogue français est versionné et ne contient aucune valeur vide", () => {
-  assert.equal(LOCALIZATION_VERSION, "tao-localization-fr-1.3.0");
+  assert.equal(LOCALIZATION_VERSION, "tao-localization-fr-1.4.0");
   visit(fr);
   assert.ok(countTranslationStrings(fr) >= 300);
 });
