@@ -699,3 +699,77 @@
 
   .hexagram-library { columns: 1; }
 }
+
+/* Le dialogue mobile vit dans le viewport, jamais dans la grille du Pavillon. */
+@media (max-width: 600px) {
+  body.tao-ai-panel-open .pavilion-screen {
+    overflow-y: hidden;
+    overscroll-behavior: none;
+  }
+
+  .tao-ai-panel {
+    --tao-ai-visual-height: 100dvh;
+    --tao-ai-visual-bottom-gap: 0px;
+    --tao-ai-navigation-offset: calc(var(--main-nav-height) + max(.45rem, env(safe-area-inset-bottom)) + .25rem);
+    position: fixed;
+    inset-block-start: auto;
+    inset-block-end: calc(var(--tao-ai-visual-bottom-gap) + var(--tao-ai-navigation-offset));
+    inset-inline-start: max(.5rem, env(safe-area-inset-left));
+    inset-inline-end: max(.5rem, env(safe-area-inset-right));
+    width: auto;
+    height: min(42rem, calc(var(--tao-ai-visual-height) - var(--tao-ai-navigation-offset) - max(.5rem, env(safe-area-inset-top)) - .5rem));
+    max-height: none;
+    min-height: 0;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    overflow: hidden;
+    transform: none;
+  }
+
+  body.tao-ai-keyboard-open .tao-ai-panel {
+    --tao-ai-navigation-offset: max(.35rem, env(safe-area-inset-bottom));
+  }
+
+  .tao-ai-panel__header {
+    min-height: 2.75rem;
+  }
+
+  .tao-ai-notice,
+  .tao-ai-session {
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .tao-ai-session {
+    height: 100%;
+  }
+
+  .tao-ai-messages {
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tao-ai-form,
+  .tao-ai-form textarea,
+  .tao-ai-form button {
+    min-width: 0;
+  }
+
+  .tao-ai-form textarea {
+    resize: none;
+  }
+
+  .tao-ai-message,
+  .tao-ai-message p,
+  .tao-ai-notice,
+  .tao-ai-notice p,
+  .tao-ai-notice summary {
+    color: #eee6d5;
+  }
+
+  .tao-ai-form textarea::placeholder {
+    color: rgba(238, 230, 213, .68);
+    opacity: 1;
+  }
+}

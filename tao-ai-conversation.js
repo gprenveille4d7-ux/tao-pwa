@@ -8,6 +8,9 @@ const semanticDebug = new URLSearchParams(location.search).get("debug") === "sem
 let session = [];
 let requestContext = { mode: "conversation", contextOptions: {}, prompt: "" };
 let busy = false;
+let scrollSnapshot = null;
+
+const mobileConversation = window.matchMedia("(max-width: 600px)");
 
 function node(tag, className, text) {
   const element = document.createElement(tag);
@@ -22,6 +25,8 @@ function createInterface() {
   launch.setAttribute("aria-expanded", "false");
   const panel = node("section", "tao-ai-panel");
   panel.hidden = true;
+  panel.setAttribute("role", "dialog");
+  panel.setAttribute("aria-modal", "true");
   panel.setAttribute("aria-label", "Conversation avec TAO");
   panel.innerHTML = `
     <header class="tao-ai-panel__header"><div><small>LE NEBULA</small><h2>Parler avec TAO</h2></div><button type="button" data-ai-close aria-label="Fermer la conversation">×</button></header>
@@ -42,7 +47,8 @@ function createInterface() {
       <button type="button" class="tao-ai-disable" data-ai-disable>Intelligence conversationnelle : activée</button>
     </div>
     <details class="tao-ai-debug" data-ai-debug hidden><summary>TAO AI DEBUG</summary><pre data-ai-debug-output></pre></details>`;
-  host.append(launch, panel);
+  host.append(launch);
+  document.body.append(panel);
   return { launch, panel };
 }
 
@@ -57,6 +63,53 @@ const send = ui.panel.querySelector("[data-ai-send]");
 const status = ui.panel.querySelector("[data-ai-status]");
 const debugRoot = ui.panel.querySelector("[data-ai-debug]");
 const debugOutput = ui.panel.querySelector("[data-ai-debug-output]");
+
+function getPavilionScroller() {
+  return document.querySelector('.pavilion-screen');
+}
+
+function rememberScrollPosition() {
+  const pavilionScroller = getPavilionScroller();
+  scrollSnapshot = {
+    windowX: window.scrollX,
+    windowY: window.scrollY,
+    pavilionScroller,
+    pavilionTop: pavilionScroller?.scrollTop ?? 0,
+    pavilionLeft: pavilionScroller?.scrollLeft ?? 0,
+  };
+}
+
+function restoreScrollPosition() {
+  const snapshot = scrollSnapshot;
+  scrollSnapshot = null;
+  if (!snapshot) return;
+  window.requestAnimationFrame(() => {
+    if (snapshot.pavilionScroller?.isConnected) {
+      snapshot.pavilionScroller.scrollTop = snapshot.pavilionTop;
+      snapshot.pavilionScroller.scrollLeft = snapshot.pavilionLeft;
+    }
+    window.scrollTo(snapshot.windowX, snapshot.windowY);
+  });
+}
+
+function syncConversationViewport() {
+  if (ui.panel.hidden || !mobileConversation.matches) return;
+  const viewport = window.visualViewport;
+  const viewportHeight = viewport?.height ?? window.innerHeight;
+  const viewportTop = viewport?.offsetTop ?? 0;
+  const viewportBottomGap = Math.max(0, window.innerHeight - viewportTop - viewportHeight);
+  const keyboardOpen = viewportHeight < window.innerHeight - 120;
+
+  ui.panel.style.setProperty('--tao-ai-visual-height', `${viewportHeight}px`);
+  ui.panel.style.setProperty('--tao-ai-visual-bottom-gap', `${viewportBottomGap}px`);
+  document.body.classList.toggle('tao-ai-keyboard-open', keyboardOpen);
+}
+
+function clearConversationViewport() {
+  ui.panel.style.removeProperty('--tao-ai-visual-height');
+  ui.panel.style.removeProperty('--tao-ai-visual-bottom-gap');
+  document.body.classList.remove('tao-ai-keyboard-open');
+}
 
 function syncEnabledState() {
   const enabled = getTaoAISettings().enabled;
@@ -134,6 +187,7 @@ async function submitMessage(text) {
 
 function openPanel(detail = {}) {
   if (!syncAvailability()) return;
+  if (ui.panel.hidden) rememberScrollPosition();
   const nextMode = detail.mode ?? "conversation";
   if (nextMode !== requestContext.mode) {
     session = [];
@@ -145,10 +199,12 @@ function openPanel(detail = {}) {
   ui.panel.hidden = false;
   ui.launch.hidden = true;
   ui.launch.setAttribute("aria-expanded", "true");
+  document.body.classList.add('tao-ai-panel-open');
+  syncConversationViewport();
   syncEnabledState();
   if (requestContext.prompt) input.value = requestContext.prompt;
   window.setTimeout(() => {
-    ui.panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    syncConversationViewport();
     if (detail.autoSend && syncEnabledState()) submitMessage(requestContext.prompt);
     else (syncEnabledState() ? input : ui.panel.querySelector("[data-ai-enable]")).focus({ preventScroll: true });
   }, 80);
@@ -158,6 +214,9 @@ function closePanel() {
   ui.panel.hidden = true;
   ui.launch.hidden = false;
   ui.launch.setAttribute("aria-expanded", "false");
+  document.body.classList.remove('tao-ai-panel-open');
+  clearConversationViewport();
+  restoreScrollPosition();
   ui.launch.focus({ preventScroll: true });
 }
 
@@ -167,6 +226,9 @@ ui.panel.querySelector("[data-ai-enable]").addEventListener("click", () => { set
 ui.panel.querySelector("[data-ai-disable]").addEventListener("click", () => { setTaoAIEnabled(false); session = []; messagesRoot.replaceChildren(); syncEnabledState(); });
 form.addEventListener("submit", (event) => { event.preventDefault(); submitMessage(); });
 input.addEventListener("keydown", (event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); form.requestSubmit(); } });
+window.visualViewport?.addEventListener('resize', syncConversationViewport);
+window.visualViewport?.addEventListener('scroll', syncConversationViewport);
+window.addEventListener('resize', syncConversationViewport);
 window.addEventListener("tao:ai-open", (event) => openPanel(event.detail));
 window.addEventListener("tao:profile-created", syncAvailability);
 window.addEventListener("tao:profile-changed", () => { session = []; messagesRoot.replaceChildren(); syncAvailability(); });
