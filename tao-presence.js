@@ -6,6 +6,7 @@ let briefReady = false;
 let runToken = 0;
 let timer = null;
 let finishWait = null;
+let aiResumeTimer = null;
 
 function isPavilionVisible() {
   return document.body.dataset.currentView === "pavilion" && !document.body.classList.contains("is-onboarding") && document.visibilityState === "visible";
@@ -77,6 +78,12 @@ document.addEventListener("tao:dialogue-message-change", (event) => {
   preloadTaoPose("TAO_POSE_07_EXPLICATION")
     .then(() => setTaoPose("TAO_POSE_07_EXPLICATION"))
     .catch(() => undefined);
+});
+
+document.addEventListener("tao:ai-presence", () => {
+  stop();
+  window.clearTimeout(aiResumeTimer);
+  aiResumeTimer = window.setTimeout(() => runPresence(), 10_000);
 });
 
 window.addEventListener("tao:view-change", () => runPresence());

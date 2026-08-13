@@ -208,6 +208,21 @@ function guidanceSection(guidance) {
     profile.append(element("h3", { text: guidance.profile.title }), element("p", { text: guidance.profile.text }));
     wrap.append(profile);
   }
+  const deepen = button("Approfondir avec TAO", () => {
+    window.dispatchEvent(new CustomEvent("tao:ai-open", { detail: {
+      mode: "yijing",
+      prompt: "Explique-moi surtout ce qui change dans ce tirage.",
+      contextOptions: { yijing: {
+        question: state.question,
+        primaryHexagram: state.result.primary ? { number: state.result.primary.number, french: state.result.primary.french, pinyin: state.result.primary.pinyin, hanzi: state.result.primary.hanzi } : null,
+        changingLines: state.result.changingLines,
+        resultingHexagram: state.result.transformed ? { number: state.result.transformed.number, french: state.result.transformed.french, pinyin: state.result.transformed.pinyin, hanzi: state.result.transformed.hanzi } : null,
+        semanticGuidance: { essential: guidance.essential, movement: guidance.movement, lineReadings: guidance.lineReadings },
+      } },
+    } }));
+  }, { primary: true });
+  deepen.classList.add("semantic-talk");
+  wrap.append(deepen);
   return wrap;
 }
 

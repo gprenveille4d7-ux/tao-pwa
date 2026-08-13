@@ -16,6 +16,10 @@ LOCALISATION FRANÇAISE `tao-localization-fr-1.1.0` — **TECHNIQUEMENT TERMINÉ
 MODULE YI JING LOCAL `tao-yijing-engine-1.0.0` — **TECHNIQUEMENT TERMINÉ — VALIDATION UTILISATEUR ATTENDUE**
 PHASES LUNAIRES — **REPORTÉES**
 
+CERVEAU IA TAO `tao-brain-v1` — **IMPLÉMENTÉ — SECRET GEMINI ET DÉPLOIEMENT CLOUDFLARE ATTENDUS**
+
+La couche conversationnelle réutilise les moteurs BaZi, quotidien, Yi Jing et la couche sémantique. Le client minimise le contexte, conserve mémoire et cache localement, valide les faits cités et garde un fallback déterministe complet. Le Worker est déployé sur `https://tao-ai.g-prenveille4d7.workers.dev`, avec Gemini Interactions API, CORS strict, limites, rate limiting et schéma de sortie ; le healthcheck et une conversation réelle avec `gemini-3.6-flash` ont été validés le 13 août 2026. Aucune clé n’est présente dans le dépôt.
+
 ## Contrôles consolidés
 
 - Le contrôleur narratif central couvre uniquement `IDLE`, `WELCOME`, `OBSERVING`, `THINKING` et `EXPLAINING`.
