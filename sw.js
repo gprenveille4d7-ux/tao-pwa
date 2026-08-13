@@ -1,9 +1,9 @@
-const CACHE_VERSION = "tao-shell-2026-08-13-v16-ai";
+const CACHE_VERSION = "tao-shell-2026-08-13-v18-ai-mobile";
 const SHELL = [
   "./",
   "./index.html",
   "./styles.css?v=tao-environment-4",
-  "./product-experience.css?v=tao-ai-1",
+  "./product-experience.css?v=tao-ai-mobile-3",
   "./locales/index.js",
   "./locales/fr/semantics.js",
   "./semantic-layer.mjs?v=1.0.1",
@@ -14,7 +14,7 @@ const SHELL = [
   "./tao-ai-context.mjs",
   "./tao-ai-client.js",
   "./tao-ai-presence.js",
-  "./tao-ai-conversation.js?v=tao-brain-1",
+  "./tao-ai-conversation.js?v=tao-brain-mobile-2",
   "./navigation-routes.mjs",
   "./section-navigation.js",
   "./app-navigation.js?v=tao-tree-1",
