@@ -1,10 +1,12 @@
-const CACHE_VERSION = "tao-shell-2026-08-13-v18-ai-mobile";
+const CACHE_VERSION = "tao-shell-2026-08-13-v19-relations";
 const SHELL = [
   "./",
   "./index.html",
   "./styles.css?v=tao-environment-4",
-  "./product-experience.css?v=tao-ai-mobile-3",
-  "./locales/index.js",
+  "./product-experience.css?v=tao-relations-3",
+  "./locales/index.js?v=1.3.0",
+  "./locales/fr/index.js?v=1.3.0",
+  "./locales/fr/profiles.js?v=relations-1",
   "./locales/fr/semantics.js",
   "./semantic-layer.mjs?v=1.0.1",
   "./shared/tao-ai-contract.mjs",
@@ -20,7 +22,10 @@ const SHELL = [
   "./app-navigation.js?v=tao-tree-1",
   "./today-view.js?v=tao-semantics-2",
   "./bazi-theme.js?v=tao-semantics-2",
-  "./profiles-view.js?v=tao-semantics-2",
+  "./profiles-view.js?v=tao-relations-5",
+  "./relationships-view.js?v=1.0.4",
+  "./relationship-engine.mjs",
+  "./relationship-semantic.mjs?v=1.0.2",
   "./yijing-view.js?v=tao-semantics-2",
   "./pavilion-portals.js?v=tao-semantics-2",
   "./exterior-states.js?v=outside-environment-1",
