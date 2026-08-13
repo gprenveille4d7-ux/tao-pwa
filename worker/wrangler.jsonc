@@ -1,0 +1,22 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "tao-ai",
+  "main": "src/index.mjs",
+  "compatibility_date": "2026-08-04",
+  "workers_dev": true,
+  "observability": { "enabled": true, "head_sampling_rate": 1 },
+  "vars": {
+    "TAO_GEMINI_MODEL": "gemini-3.6-flash",
+    "TAO_GEMINI_FALLBACK_MODEL": "gemini-3.5-flash-lite",
+    "TAO_ALLOWED_ORIGIN": "https://gprenveille4d7-ux.github.io",
+    "TAO_PROMPT_VERSION": "tao-brain-v1"
+  },
+  "secrets": { "required": ["GEMINI_API_KEY"] },
+  "ratelimits": [
+    {
+      "name": "TAO_AI_RATE_LIMITER",
+      "namespace_id": "1001",
+      "simple": { "limit": 12, "period": 60 }
+    }
+  ]
+}

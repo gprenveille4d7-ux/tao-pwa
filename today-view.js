@@ -115,6 +115,13 @@ function createWhyDisclosure(result, natalTheme, semantic) {
     element("p", { text: `Relation : ${semantic.relation.humanLabel}` }),
   );
   content.append(traditional);
+  const talk = element("button", { className: "product-button semantic-talk", text: "En parler avec TAO", attributes: { type: "button" } });
+  talk.addEventListener("click", () => window.dispatchEvent(new CustomEvent("tao:ai-open", { detail: {
+    mode: "explanation",
+    prompt: "Montre-moi pourquoi cette lecture est liée à ma journée et à mon thème.",
+    contextOptions: { facts: semantic.trace.sourceFacts.map((value, index) => ({ id: `semantic_fact_${index + 1}`, type: "SEMANTIC_TRACE", value, label: value })) },
+  } })));
+  content.append(talk);
   if (semanticDebug) {
     const trace = element("details", { className: "semantic-debug" });
     trace.append(element("summary", { text: "Trace sémantique DEV" }), element("pre", { text: JSON.stringify(semantic.trace, null, 2) }));
@@ -204,6 +211,13 @@ function createGuidance(result) {
   const domains = element("div", { className: "domain-pills", attributes: { "aria-label": t("guidance.advice.supportedDomains") } });
   for (const domain of localizedAdvice.domains) domains.append(element("span", { text: domain }));
   section.append(grid, rhythm, domains);
+  const synthesis = element("button", { className: "product-button product-button--primary semantic-talk", text: "Demander une synthèse à TAO", attributes: { type: "button" } });
+  synthesis.addEventListener("click", () => window.dispatchEvent(new CustomEvent("tao:ai-open", { detail: {
+    mode: "daily_synthesis",
+    prompt: "Que dois-je retenir de cette journée ?",
+    autoSend: true,
+  } })));
+  section.append(synthesis);
   return section;
 }
 

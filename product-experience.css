@@ -529,6 +529,141 @@
   letter-spacing: .04em;
 }
 
+.tao-ai-launch {
+  width: 100%;
+  min-height: 3rem;
+  border: 1px solid rgba(205, 166, 100, .45);
+  border-radius: 1rem;
+  background: linear-gradient(135deg, rgba(14, 30, 49, .96), rgba(8, 17, 29, .96));
+  color: #ead3a1;
+  font: 600 .8rem/1.2 system-ui, sans-serif;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+
+.tao-ai-panel {
+  position: fixed;
+  z-index: 160;
+  inset-inline-start: 50%;
+  inset-block-end: calc(5.8rem + env(safe-area-inset-bottom));
+  width: min(36rem, calc(100vw - 1.5rem));
+  transform: translateX(-50%);
+  display: grid;
+  gap: .9rem;
+  max-height: min(68dvh, 42rem);
+  padding: 1rem;
+  border: 1px solid rgba(205, 166, 100, .42);
+  border-radius: 1rem;
+  background: linear-gradient(160deg, rgba(10, 23, 39, .98), rgba(5, 12, 21, .98));
+  box-shadow: 0 1.2rem 3rem rgba(0, 0, 0, .45);
+  color: #eee6d5;
+}
+
+.tao-ai-panel[hidden],
+.tao-ai-launch[hidden] { display: none; }
+
+.tao-ai-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.tao-ai-panel__header small { color: #c79c5d; letter-spacing: .14em; }
+.tao-ai-panel__header h2 { margin: .1rem 0 0; font: 1.25rem/1.2 Georgia, serif; }
+.tao-ai-panel__header button {
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  border: 1px solid rgba(205, 166, 100, .35);
+  border-radius: .8rem;
+  background: rgba(255, 255, 255, .04);
+  color: #ead3a1;
+  font-size: 1.5rem;
+}
+
+.tao-ai-notice,
+.tao-ai-session { min-height: 0; }
+.tao-ai-notice p { margin: 0 0 .8rem; color: rgba(238, 230, 213, .82); line-height: 1.55; }
+.tao-ai-notice details { margin-block: .75rem; }
+
+.tao-ai-session {
+  display: grid;
+  grid-template-rows: minmax(5rem, 1fr) auto auto auto;
+  gap: .65rem;
+  overflow: hidden;
+}
+.tao-ai-session[hidden] { display: none; }
+
+.tao-ai-messages {
+  display: grid;
+  align-content: start;
+  gap: .7rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: .2rem;
+}
+
+.tao-ai-message {
+  max-width: 92%;
+  padding: .78rem .88rem;
+  border: 1px solid rgba(205, 166, 100, .22);
+  border-radius: .85rem;
+  background: rgba(255, 255, 255, .035);
+}
+.tao-ai-message--user { justify-self: end; border-color: rgba(112, 154, 194, .35); }
+.tao-ai-message--assistant { justify-self: start; background: rgba(18, 34, 53, .76); }
+.tao-ai-message--system { max-width: 100%; color: #d7bd8a; }
+.tao-ai-message p { margin: 0; line-height: 1.52; }
+.tao-ai-message p + p { margin-top: .6rem; }
+.tao-ai-message__title { display: block; margin-bottom: .35rem; color: #e4c68c; font-family: Georgia, serif; }
+
+.tao-ai-suggestions { display: flex; gap: .45rem; overflow-x: auto; scrollbar-width: none; }
+.tao-ai-suggestions button {
+  flex: 0 0 auto;
+  min-height: 2.6rem;
+  padding-inline: .8rem;
+  border: 1px solid rgba(205, 166, 100, .32);
+  border-radius: 999px;
+  background: transparent;
+  color: #e4d9c3;
+}
+
+.tao-ai-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .55rem; align-items: end; }
+.tao-ai-form textarea {
+  min-width: 0;
+  max-height: 8rem;
+  resize: vertical;
+  border: 1px solid rgba(205, 166, 100, .4);
+  border-radius: .85rem;
+  background: rgba(0, 0, 0, .22);
+  color: #f5eee0;
+  padding: .78rem;
+  font: inherit;
+}
+.tao-ai-form button {
+  min-height: 3rem;
+  padding-inline: .85rem;
+  border: 1px solid #c89a55;
+  border-radius: .85rem;
+  background: rgba(171, 116, 47, .18);
+  color: #f0d39c;
+}
+.tao-ai-status { min-height: 1.2em; margin: 0; color: rgba(238, 230, 213, .65); font-size: .78rem; }
+.tao-ai-disable { justify-self: start; border: 0; background: transparent; color: rgba(238, 230, 213, .58); padding: .25rem 0; text-decoration: underline; }
+.tao-ai-debug pre { max-height: 14rem; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; font-size: .7rem; }
+.semantic-talk { margin-top: .85rem; }
+
+@media (max-width: 390px) {
+  .tao-ai-panel {
+    max-height: min(64dvh, 36rem);
+    padding: .8rem;
+    scroll-margin-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+  }
+  .tao-ai-form { grid-template-columns: 1fr; }
+  .tao-ai-form button { width: 100%; }
+  .tao-ai-message { max-width: 96%; }
+}
+
 @media (min-width: 700px) {
   .tao-glossary__content {
     grid-template-columns: repeat(2, minmax(0, 1fr));
