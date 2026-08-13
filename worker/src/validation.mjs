@@ -4,7 +4,7 @@ export const MAX_BODY_BYTES = 32 * 1024;
 const MAX_MESSAGES = 8;
 const MAX_MESSAGE_CHARS = 2000;
 const ROOT_KEYS = new Set(["mode", "context", "messages"]);
-const CONTEXT_KEYS = new Set(["version", "semanticVersion", "mode", "moment", "profile", "bazi", "today", "yijing", "continuity"]);
+const CONTEXT_KEYS = new Set(["version", "semanticVersion", "mode", "moment", "profile", "bazi", "today", "yijing", "familyConstellation", "continuity"]);
 
 function plainObject(value) {
   return value && typeof value === "object" && !Array.isArray(value);
