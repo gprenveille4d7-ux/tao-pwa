@@ -23,10 +23,13 @@ function publishDebug(update) {
 function mockResponse(context, message) {
   const relation = context.today.dominantFacts.find(({ id }) => id === "fact_today_relation");
   const isYijing = context.mode === "yijing";
+  const isFamily = context.mode === "family_constellation";
   return {
-    title: isYijing ? "Regarder ce qui se transforme" : "Un moment pour relier les signes",
+    title: isYijing ? "Regarder ce qui se transforme" : isFamily ? "Observer sans fabriquer" : "Un moment pour relier les signes",
     speech: isYijing
       ? "Ce tirage reste d’abord une invitation à observer la situation que tu as formulée. Les traits en mouvement indiquent où la dynamique se transforme ; je m’appuie ici sur le tirage déjà établi par le Yi Jing de TAO, sans le recalculer."
+      : isFamily
+        ? "Les correspondances que tu vois ont déjà été calculées par le moteur local de TAO. Je peux t’aider à comprendre pourquoi les plus simples ressortent, sans leur attribuer une causalité ou un pouvoir sur votre histoire."
       : `${relation?.label ?? "La dynamique du jour demande un peu d’attention."} Je peux t’aider à relier cette lecture à ta question, tout en restant fidèle aux faits calculés par TAO.`,
     supportingFactIds: isYijing ? [] : ["fact_today_relation", "fact_daymaster"],
     confidence: "medium",

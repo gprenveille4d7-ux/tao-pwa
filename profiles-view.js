@@ -11,17 +11,18 @@ import { calculateBazi } from "./bazi-engine.mjs";
 import { clearDailyCacheForProfile } from "./daily-cache.mjs";
 import { searchBirthPlaces } from "./geocoding.js";
 import { element, formatBirthDate, formatPlace } from "./tao-ui.js";
-import { t } from "./locales/index.js?v=1.2.0";
+import { t } from "./locales/index.js?v=1.4.0";
 import { createSectionNavigation, focusRequestedSection, markProductSection } from "./section-navigation.js";
 import { parseAppRoute } from "./navigation-routes.mjs";
 import { getSemanticConcept } from "./semantic-layer.mjs?v=1.0.1";
 import { clearTaoAIMemory, getTaoAISettings, setTaoAIEnabled } from "./tao-ai-memory.js";
 import { createRelationshipsModule } from "./relationships-view.js?v=1.0.4";
+import { createFamilyConstellationModule } from "./family-constellation-view.js?v=1.0.3";
 
 const root = document.querySelector("[data-profiles-root]");
 const RELATIONSHIPS = ["other", "family", "friend", "partner", "child", "parent"];
 const PROFILE_SECTIONS = Object.freeze([
-  { id: "me", label: "Mon profil" }, { id: "people", label: "Mes proches" }, { id: "compatibility", label: "Relations & harmonie" },
+  { id: "me", label: "Mon profil" }, { id: "people", label: "Mes proches" }, { id: "compatibility", label: "Relations & harmonie" }, { id: "family", label: "Constellation familiale" },
 ]);
 let searchTimer = null;
 let searchController = null;
@@ -276,8 +277,10 @@ export function renderProfilesView() {
   people.append(add, otherProfiles(getProfiles(), active.id));
   const compatibility = markProductSection(element("section", { className: "product-depth-section" }), "profiles", "compatibility");
   compatibility.append(createRelationshipsModule({ profiles: getProfiles(), activeProfile: active, onAddProfile: () => openEditor() }));
+  const family = markProductSection(element("section", { className: "product-depth-section" }), "profiles", "family");
+  family.append(createFamilyConstellationModule({ profiles: getProfiles(), onAddProfile: () => openEditor() }));
   const route = parseAppRoute(location.hash);
-  root.replaceChildren(pageHeader, createSectionNavigation("profiles", PROFILE_SECTIONS, "Explorer Profils"), me, people, compatibility);
+  root.replaceChildren(pageHeader, createSectionNavigation("profiles", PROFILE_SECTIONS, "Explorer Profils"), me, people, compatibility, family);
   focusRequestedSection(root, "profiles", route.section, { scroll: route.section !== "me" });
 }
 

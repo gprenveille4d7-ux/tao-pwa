@@ -150,6 +150,7 @@ export function createRelationshipsModule({ profiles, activeProfile, onAddProfil
   const intro = element("section", { className: "product-card relationship-intro" });
   intro.append(heading(t("profiles.relations.eyebrow"), t("profiles.relations.title"), t("profiles.relations.copy")));
   intro.append(element("p", { className: "method-note", text: t("profiles.relations.noScore") }));
+  intro.append(element("a", { className: "product-button product-button--quiet", text: t("profiles.constellation.openFromRelations"), attributes: { href: "#profiles/family" } }));
 
   if (profiles.length < 2) {
     const empty = element("div", { className: "relationship-empty" });

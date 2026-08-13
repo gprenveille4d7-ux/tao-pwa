@@ -39,6 +39,24 @@ function normalizedYijing(yijing) {
   };
 }
 
+function normalizedFamilyConstellation(value) {
+  if (!value || !Array.isArray(value.familyMembers) || !Array.isArray(value.observations)) return null;
+  return Object.freeze({
+    familyMembers: Object.freeze(value.familyMembers.slice(0, 6).map((member) => Object.freeze({
+      id: String(member.id).slice(0, 120),
+      displayName: String(member.displayName ?? "Personne").slice(0, 80),
+      relationship: String(member.relationship ?? "other").slice(0, 40),
+    }))),
+    observations: Object.freeze(value.observations.slice(0, 16).map((observation) => Object.freeze({
+      id: String(observation.id).slice(0, 120),
+      type: String(observation.type).slice(0, 80),
+      interest: String(observation.interest).slice(0, 30),
+      participantIds: Object.freeze((observation.participantIds ?? []).slice(0, 6).map(String)),
+      values: Object.freeze((observation.values ?? []).slice(0, 6).map(Number).filter(Number.isFinite)),
+    }))),
+  });
+}
+
 export function buildTaoAIContext(mode = "conversation", options = {}) {
   if (!TAO_AI_MODES.includes(mode)) throw new TypeError(`Mode IA inconnu : ${mode}`);
   const profile = getActiveProfile();
@@ -62,7 +80,7 @@ export function buildTaoAIContext(mode = "conversation", options = {}) {
     fact("fact_today_relation", "ELEMENT_RELATION", daily.semantic.relation.id, daily.semantic.relation.explanation),
     fact("fact_today_solar_term", "SOLAR_TERM", daily.result.solarTerm.id, daily.result.solarTerm.name),
   ];
-  if (mode === "explanation" && Array.isArray(options.facts)) {
+  if (["explanation", "family_constellation"].includes(mode) && Array.isArray(options.facts)) {
     for (const supplied of options.facts.slice(0, 20)) {
       if (supplied?.id && supplied?.type) facts.push(fact(supplied.id, supplied.type, supplied.value, supplied.label));
     }
@@ -86,6 +104,7 @@ export function buildTaoAIContext(mode = "conversation", options = {}) {
     }),
     today: Object.freeze({ dominantFacts: Object.freeze(facts), recommendations: Object.freeze(daily.result.guidance.favor.slice(0, 3)), warnings: Object.freeze(daily.result.guidance.moderate.slice(0, 3)), sourceFacts: daily.semantic.trace.sourceFacts }),
     yijing: normalizedYijing(options.yijing),
+    familyConstellation: normalizedFamilyConstellation(options.familyConstellation),
     continuity: Object.freeze({ ...continuity, recentConsultations: Object.freeze(recentConsultations) }),
   });
 }
