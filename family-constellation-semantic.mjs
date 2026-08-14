@@ -6,6 +6,7 @@ const TITLES = Object.freeze({
   EVENT_SIGNATURE_MATCH: "Une date importante fait écho",
   INTERVAL_MATCHES_SIGNATURE: "Un intervalle reproduit une signature",
   NUMBER_MIRROR: "Deux nombres se répondent",
+  ORDINAL_MIRROR: "Deux jours de l’année forment un miroir",
   SHARED_VALUE: "Une valeur commune",
   SIMPLE_ARITHMETIC: "Une relation arithmétique simple",
   PALINDROME_VALUE: "Une valeur palindrome",
@@ -19,10 +20,16 @@ const TITLES = Object.freeze({
   PALINDROME_FAMILY: "Un palindrome partagé",
   MULTI_PERSON_CLUSTER: "Une valeur relie plusieurs personnes",
   CONVERGENT_NUMBER: "Plusieurs chemins convergent",
+  SHARED_BIRTH_PLACE: "Un lieu relie plusieurs naissances",
+  MULTI_EVENT_AGE_ECHO: "Deux âges rejoignent le même événement",
+  PARENT_PAIR_CHILD_SUM: "Deux valeurs parentales se rejoignent chez un enfant",
+  SIBLING_MULTI_DOMAIN_ECHO: "Une signature de fratrie particulièrement nette",
+  EVENT_INTERVAL_ECHO: "Un intervalle rejoint une signature familiale",
 });
 
-const CATEGORY_LABELS = Object.freeze({ recurring: "Nombres récurrents", mirrors: "Miroirs", generations: "Générations", dates_times: "Dates & heures", events: "Événements", curiosities: "Curiosités" });
+const CATEGORY_LABELS = Object.freeze({ recurring: "Nombres récurrents", mirrors: "Effets miroir", generations: "Générations", siblings: "Entre les enfants", dates_times: "Dates & heures", events: "Événements", places: "Lieux", chronology: "Chronologie", curiosities: "Curiosités" });
 const INTEREST_LABELS = Object.freeze({ HIGH: "✦✦✦ Correspondance très nette", MEDIUM: "✦✦ Correspondance intéressante", CURIOSITY: "✦ Curiosité numérique" });
+const FORCE_LABELS = Object.freeze({ DIRECT: "Direct", STRONG: "Fort", NOTABLE: "Notable", SECONDARY: "Secondaire", EXPLORATORY: "Exploratoire" });
 
 function names(observation, profileMap) {
   return observation.participantIds.map((id) => profileMap.get(id)?.firstName ?? "Une personne");
@@ -43,6 +50,7 @@ function describe(observation, profileMap, eventMap) {
     case "EVENT_AGE_MATCH": return `Lors de « ${eventMap.get(observation.eventIds[0])?.title ?? "cet événement"} », l’âge de ${people[0]} rejoint exactement la somme des chiffres de sa date de naissance.`;
     case "EVENT_SIGNATURE_MATCH": return `La date de « ${eventMap.get(observation.eventIds[0])?.title ?? "cet événement"} » reprend une valeur déjà présente chez ${joinNames(people)}.`;
     case "NUMBER_MIRROR": return `${observation.values[0]} et ${observation.values[1]} utilisent les mêmes chiffres dans l’ordre inverse.`;
+    case "ORDINAL_MIRROR": return `Les jours ordinaux ${observation.values[0]} et ${observation.values[1]} utilisent les mêmes chiffres en ordre miroir.`;
     case "SHARED_VALUE": return `La valeur ${value} apparaît indépendamment chez ${joinNames(people)}.`;
     case "SIMPLE_ARITHMETIC": return `Les valeurs de ${joinNames(people)} forment une égalité simple qui rejoint une signature déjà présente.`;
     case "PALINDROME_VALUE": return `${value} se lit de la même manière dans les deux sens. Ce motif reste une curiosité s’il n’est pas repris ailleurs.`;
@@ -55,6 +63,11 @@ function describe(observation, profileMap, eventMap) {
     case "PALINDROME_FAMILY": return `La valeur palindrome ${value} apparaît chez plusieurs membres de la constellation.`;
     case "MULTI_PERSON_CLUSTER": return `La valeur ${value} relie directement ou par une dérivation courte ${joinNames(people)}.`;
     case "CONVERGENT_NUMBER": return `La valeur ${value} est retrouvée par ${observation.independentPathCount} chemins indépendants issus de ${observation.sourceDiversity} catégories de données.`;
+    case "SHARED_BIRTH_PLACE": return `${joinNames(people)} partagent le même lieu de naissance. Cette relation est géographique et directe ; aucun nombre n’est fabriqué à partir du nom du lieu.`;
+    case "MULTI_EVENT_AGE_ECHO": return `Au même événement familial, l’âge de ${joinNames(people)} rejoint pour chacun la somme de sa propre date de naissance.`;
+    case "PARENT_PAIR_CHILD_SUM": return `Deux valeurs directes des parents s’additionnent pour rejoindre une valeur directe chez ${people.at(-1)}.`;
+    case "SIBLING_MULTI_DOMAIN_ECHO": return `${joinNames(people)} partagent la même somme de date et la même somme d’heure. Leur total commun en découle ; il n’est donc pas compté comme une troisième preuve indépendante.`;
+    case "EVENT_INTERVAL_ECHO": return `La durée exacte entre deux événements rejoint une valeur déjà présente indépendamment dans la constellation.`;
     default: return `Une correspondance simple relie ${joinNames(people)} autour de ${observation.values.join(", ")}.`;
   }
 }
@@ -78,18 +91,56 @@ export function buildFamilyConstellationReading({ analysis, profiles, events = [
     facts: observation.facts,
     independentPathCount: observation.independentPathCount ?? 1,
     sourceDiversity: observation.sourceDiversity ?? 1,
+    force: observation.force ?? (observation.interestScore >= 92 ? "DIRECT" : observation.interestScore >= 82 ? "STRONG" : observation.interestScore >= 68 ? "NOTABLE" : observation.interestScore >= 54 ? "SECONDARY" : "EXPLORATORY"),
+    forceLabel: FORCE_LABELS[observation.force] ?? (observation.interestScore >= 92 ? "Direct" : observation.interestScore >= 82 ? "Fort" : observation.interestScore >= 68 ? "Notable" : observation.interestScore >= 54 ? "Secondaire" : "Exploratoire"),
+    complexityCost: observation.complexityCost ?? observation.transformations ?? 0,
+    evidenceIds: Object.freeze(observation.evidenceIds ?? observation.facts ?? []),
   }));
-  const strong = cards.filter(({ interest }) => interest === "HIGH");
-  const headline = strong.length
-    ? `TAO a trouvé ${strong.length} correspondance${strong.length > 1 ? "s" : ""} particulièrement nette${strong.length > 1 ? "s" : ""} dans cette constellation.`
+  const selected = [];
+  const selectedKeys = new Set();
+  for (const card of cards.filter(({ force }) => ["DIRECT", "STRONG", "NOTABLE"].includes(force))) {
+    const key = `${card.category}|${card.values[0] ?? "none"}|${[...card.participantNames].sort().join(".")}`;
+    if (selectedKeys.has(key)) continue;
+    selectedKeys.add(key);
+    selected.push(card);
+    if (selected.length === 4) break;
+  }
+  const headline = selected.length
+    ? `${selected.length === 1 ? "Un motif ressort" : `${selected.length} motifs ressortent`} particulièrement de cette constellation.`
     : cards.length
       ? "TAO observe quelques échos discrets, sans symétrie dominante."
       : "TAO n’a pas trouvé de symétrie particulièrement forte dans ces dates.";
-  const selected = cards.slice(0, 3);
   const synthesis = selected.length
     ? `Parmi les correspondances calculées, ${joinNames(selected.map(({ title }) => title.toLocaleLowerCase("fr-FR")))} ${selected.length === 1 ? "ressort" : "ressortent"} le plus clairement. ${selected.length === 1 ? "Elle a" : "Elles ont"} été retenue${selected.length === 1 ? "" : "s"} parce qu’${selected.length === 1 ? "elle repose" : "elles reposent"} sur des relations courtes et vérifiables, sans longue chaîne de transformations.`
     : "Aucun motif n’est forcé : l’absence de correspondance nette est aussi un résultat valable.";
-  return Object.freeze({ headline, synthesis, cards: Object.freeze(cards), primaryCards: Object.freeze(selected), categoryLabels: CATEGORY_LABELS, disclaimer: "Ces correspondances sont des observations mathématiques et symboliques. Elles ne prouvent pas qu’un nombre influence les événements." });
+  const cardsById = new Map(cards.map((card) => [card.id, card]));
+  const section = (items = []) => Object.freeze(items.map(({ id }) => cardsById.get(id)).filter(Boolean));
+  const sections = Object.freeze({
+    parents: section(analysis.sections?.parents),
+    parentChild: section(analysis.sections?.parentChild),
+    siblings: section(analysis.sections?.siblings),
+    generations: section(analysis.sections?.generations),
+    mirrors: section(analysis.sections?.mirrors),
+    events: section(analysis.sections?.events),
+    places: section(analysis.sections?.places),
+    chronology: section(analysis.sections?.chronology),
+  });
+  const dominantValues = [...new Set(selected.flatMap(({ values }) => values))];
+  const overview = selected.length
+    ? `${selected.length} structure${selected.length > 1 ? "s" : ""} ressort${selected.length > 1 ? "ent" : ""} réellement. ${dominantValues.length ? `Elles se répondent autour de ${joinNames(dominantValues.slice(0, 4).map(String))}, mais leur intérêt vient surtout de la manière dont ces valeurs circulent entre personnes, dates, heures et événements.` : "Leur intérêt vient de leur simplicité et de leur présence dans plusieurs branches de la famille."}`
+    : "Peu de motifs structurés ressortent de ces données. TAO préfère conserver ce résultat sobre plutôt que fabriquer un axe familial artificiel.";
+  return Object.freeze({
+    headline,
+    overview,
+    synthesis,
+    cards: Object.freeze(cards),
+    primaryCards: Object.freeze(selected),
+    sections,
+    categoryLabels: CATEGORY_LABELS,
+    forceLabels: FORCE_LABELS,
+    disclaimer: "Ces correspondances sont des observations factuelles et structurelles. Elles ne prouvent ni causalité, ni destin, ni transmission surnaturelle.",
+    methodology: "TAO calcule largement, filtre selon la simplicité, regroupe les résultats dépendants et ne retient que les motifs explicables par des preuves vérifiables.",
+  });
 }
 
 export function familyObservationFacts(analysis) {

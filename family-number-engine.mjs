@@ -4,9 +4,14 @@ import {
   discoverDeepPatterns,
   FAMILY_PATTERN_ENGINE_VERSION,
 } from "./family-pattern-engine.mjs";
+import {
+  buildEvidenceGraph,
+  discoverDeepFamilyStructures,
+  FAMILY_DEEP_ENGINE_VERSION,
+} from "./family-deep-engine.mjs";
 
-export const FAMILY_NUMBER_ENGINE_VERSION = "tao-family-number-2.0.0";
-export const familyConstellationEngineVersion = `${FAMILY_NUMBER_ENGINE_VERSION}+${FAMILY_PATTERN_ENGINE_VERSION}`;
+export const FAMILY_NUMBER_ENGINE_VERSION = "tao-family-number-3.0.0";
+export const familyConstellationEngineVersion = `${FAMILY_NUMBER_ENGINE_VERSION}+${FAMILY_PATTERN_ENGINE_VERSION}+${FAMILY_DEEP_ENGINE_VERSION}`;
 
 const DAY_MS = 86_400_000;
 const WEEKDAYS_FR = Object.freeze(["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"]);
@@ -166,7 +171,7 @@ export function detectSharedValue(signatures, kind) {
     facts: entries.map(({ profileId, displayName }) => `${profileId}.${kind}=${value}|${displayName}`),
     calculations: entries.map(({ displayName }) => `${displayName} · ${KIND_LABELS[kind]} = ${value}`),
     score: Math.min(88, 68 + entries.length * 5 + (kind === "dateDigitSum" || kind === "dateTimeSum" ? 6 : 0)),
-    clusterKey: `shared.${participantsKey(entries.map(({ profileId }) => profileId))}`,
+    clusterKey: `shared.${participantsKey(entries.map(({ profileId }) => profileId))}.${value}`,
   })] : []);
 }
 
@@ -197,7 +202,7 @@ export function detectCrossGeneration(signatures, roles = {}) {
 }
 
 export function scoreObservation(candidate) {
-  const base = { DATE_MIRROR: 94, MULTI_SIGNATURE_MATCH: 97, CROSS_GENERATION_VALUE: 88, EVENT_AGE_MATCH: 89, EVENT_SIGNATURE_MATCH: 74, INTERVAL_MATCHES_SIGNATURE: 86, NUMBER_MIRROR: 78, SHARED_VALUE: 70, SIMPLE_ARITHMETIC: 68, PALINDROME_VALUE: 56, SIMPLE_MULTIPLE: 64, WEEKDAY_MATCH: 25 }[candidate.type] ?? 40;
+  const base = { DATE_MIRROR: 94, ORDINAL_MIRROR: 88, MULTI_SIGNATURE_MATCH: 97, CROSS_GENERATION_VALUE: 88, EVENT_AGE_MATCH: 89, EVENT_SIGNATURE_MATCH: 74, INTERVAL_MATCHES_SIGNATURE: 86, NUMBER_MIRROR: 78, SHARED_VALUE: 70, SIMPLE_ARITHMETIC: 68, PALINDROME_VALUE: 56, SIMPLE_MULTIPLE: 64, WEEKDAY_MATCH: 25 }[candidate.type] ?? 40;
   const peopleBonus = Math.min(10, Math.max(0, (candidate.participantIds?.length ?? 0) - 2) * 3);
   return Math.max(0, Math.min(100, base + peopleBonus - Math.max(0, (candidate.transformations ?? 0) - 1) * 8));
 }
@@ -262,7 +267,7 @@ function multiSignatureMatches(signatures) {
     type: "MULTI_SIGNATURE_MATCH", category: "dates_times", participants: entries.map(({ profileId }) => profileId), values: key.split(".").map(Number),
     facts: entries.flatMap(({ profileId, dateDigitSum, timeDigitSum, dateTimeSum }) => [`${profileId}.dateDigitSum=${dateDigitSum}`, `${profileId}.timeDigitSum=${timeDigitSum}`, `${profileId}.dateTimeSum=${dateTimeSum}`]),
     calculations: entries.map(({ displayName, dateDigitSum, timeDigitSum, dateTimeSum }) => `${displayName} · date ${dateDigitSum} + heure ${timeDigitSum} = ${dateTimeSum}`),
-    score: 97, clusterKey: `shared.${participantsKey(entries.map(({ profileId }) => profileId))}`,
+    score: 97, clusterKey: `signature.${participantsKey(entries.map(({ profileId }) => profileId))}`,
   })] : []);
 }
 
@@ -276,12 +281,18 @@ function pairObservations(signatures) {
       if (detectDateMirror(left, right)) found.push(observation({ type: "DATE_MIRROR", category: "mirrors", participants, values: [left.day, left.month], facts: [`${left.profileId}.day=${left.day}`, `${left.profileId}.month=${left.month}`, `${right.profileId}.day=${right.day}`, `${right.profileId}.month=${right.month}`], calculations: [`${String(left.day).padStart(2, "0")}/${String(left.month).padStart(2, "0")} ↔ ${String(right.day).padStart(2, "0")}/${String(right.month).padStart(2, "0")}`], score: 94 }));
       const directPairs = [["day", left.day, right.day], ["dayOfYear", left.dayOfYear, right.dayOfYear], ["dateDigitSum", left.dateDigitSum, right.dateDigitSum], ["timeDigitSum", left.timeDigitSum, right.timeDigitSum], ["dateTimeSum", left.dateTimeSum, right.dateTimeSum]];
       for (const [kind, leftValue, rightValue] of directPairs) {
-        if (leftValue !== null && rightValue !== null && leftValue >= 10 && rightValue >= 10 && leftValue !== rightValue && reverseDigits(leftValue) === rightValue) found.push(observation({ type: "NUMBER_MIRROR", category: "mirrors", participants, values: [leftValue, rightValue], facts: [`${left.profileId}.${kind}=${leftValue}`, `${right.profileId}.${kind}=${rightValue}`], calculations: [`${leftValue} ↔ ${rightValue}`], score: kind === "dayOfYear" ? 82 : 76, transformations: 1 }));
+        if (leftValue !== null && rightValue !== null && leftValue >= 10 && rightValue >= 10 && leftValue !== rightValue && reverseDigits(leftValue) === rightValue) found.push(observation({ type: kind === "dayOfYear" ? "ORDINAL_MIRROR" : "NUMBER_MIRROR", category: "mirrors", participants, values: [leftValue, rightValue], facts: [`${left.profileId}.${kind}=${leftValue}`, `${right.profileId}.${kind}=${rightValue}`], calculations: [`${leftValue} ↔ ${rightValue}`], score: kind === "dayOfYear" ? 88 : 76, transformations: 1 }));
+        const leftText = String(leftValue);
+        const rightText = String(rightValue);
+        const ordinalSymmetry = kind === "dayOfYear" && leftText.length === 3 && rightText.length === 3
+          && isPalindrome(leftValue) && isPalindrome(rightValue)
+          && leftText[0] === rightText[1] && leftText[1] === rightText[0];
+        if (ordinalSymmetry) found.push(observation({ type: "ORDINAL_MIRROR", category: "mirrors", participants, values: [leftValue, rightValue], facts: [`${left.profileId}.dayOfYear=${leftValue}`, `${right.profileId}.dayOfYear=${rightValue}`], calculations: [`Jour ordinal ${leftValue} ↔ ${rightValue} · deux palindromes aux chiffres alternés`], score: 90, transformations: 1 }));
       }
       const targets = [...new Set([left.dateDigitSum, right.dateDigitSum, left.timeDigitSum, right.timeDigitSum, left.dateTimeSum, right.dateTimeSum].filter((value) => Number.isInteger(value)))];
       for (const target of targets) {
-        if (detectSimpleSum(left.day, right.day, target)) found.push(observation({ type: "SIMPLE_ARITHMETIC", category: "curiosities", participants, values: [left.day, right.day, target], facts: [`${left.profileId}.day=${left.day}`, `${right.profileId}.day=${right.day}`, `target=${target}`], calculations: [`${left.day} + ${right.day} = ${target}`], score: 72, transformations: 1, clusterKey: `shared.${participantsKey(participants)}` }));
-        if (detectSimpleDifference(left.day, right.day, target) && target > 0) found.push(observation({ type: "SIMPLE_ARITHMETIC", category: "curiosities", participants, values: [left.day, right.day, target], facts: [`${left.profileId}.day=${left.day}`, `${right.profileId}.day=${right.day}`, `target=${target}`], calculations: [`|${left.day} − ${right.day}| = ${target}`], score: 72, transformations: 1, clusterKey: `shared.${participantsKey(participants)}` }));
+        if (detectSimpleSum(left.day, right.day, target)) found.push(observation({ type: "SIMPLE_ARITHMETIC", category: "curiosities", participants, values: [left.day, right.day, target], facts: [`${left.profileId}.day=${left.day}`, `${right.profileId}.day=${right.day}`, `target=${target}`], calculations: [`${left.day} + ${right.day} = ${target}`], score: 72, transformations: 1, clusterKey: `arithmetic.${participantsKey(participants)}.${target}` }));
+        if (detectSimpleDifference(left.day, right.day, target) && target > 0) found.push(observation({ type: "SIMPLE_ARITHMETIC", category: "curiosities", participants, values: [left.day, right.day, target], facts: [`${left.profileId}.day=${left.day}`, `${right.profileId}.day=${right.day}`, `target=${target}`], calculations: [`|${left.day} − ${right.day}| = ${target}`], score: 72, transformations: 1, clusterKey: `arithmetic.${participantsKey(participants)}.${target}` }));
       }
       if (left.time && right.time) {
         const minutes = timeDifference(left.time, right.time);
@@ -367,6 +378,21 @@ function eventObservations(signatures, events) {
   return found;
 }
 
+function editorialPriority(item) {
+  return ({
+    MULTI_EVENT_AGE_ECHO: 120,
+    SIBLING_MULTI_DOMAIN_ECHO: 118,
+    CROSS_GENERATION_TRANSFER: 116,
+    CROSS_GENERATION_VALUE: 114,
+    DATE_MIRROR: 112,
+    ORDINAL_MIRROR: 110,
+    MULTI_SIGNATURE_MATCH: 108,
+    INTERVAL_MATCHES_SIGNATURE: 106,
+    PARENT_PAIR_CHILD_SUM: 104,
+    SHARED_BIRTH_PLACE: 96,
+  })[item.type] ?? item.interestScore;
+}
+
 export function analyzeFamilyConstellation({ profiles, events = [], roles = {} }) {
   const safeProfiles = [...new Map((profiles ?? []).filter((profile) => profile?.id && profile?.birthDate).map((profile) => [profile.id, profile])).values()];
   if (safeProfiles.length < 2) throw new TypeError("Deux profils minimum sont nécessaires.");
@@ -387,10 +413,23 @@ export function analyzeFamilyConstellation({ profiles, events = [], roles = {} }
   const clusteredObservations = Object.freeze(consolidateClusters(clusters).filter(({ interestScore }) => interestScore >= 48).slice(0, 24));
   const numericGraph = buildNumericGraph({ signatures, intervals });
   const discoveredPatterns = discoverDeepPatterns({ graph: numericGraph, observations: unique });
-  const displayObservations = Object.freeze([...discoveredPatterns, ...clusteredObservations]
-    .sort((left, right) => right.interestScore - left.interestScore || left.id.localeCompare(right.id))
+  const deep = discoverDeepFamilyStructures({ profiles: safeProfiles, signatures, roles, events });
+  const displayObservations = Object.freeze([...deep.observations, ...discoveredPatterns, ...clusteredObservations]
+    .filter((item, index, all) => all.findIndex(({ id }) => id === item.id) === index)
+    .sort((left, right) => editorialPriority(right) - editorialPriority(left) || right.interestScore - left.interestScore || left.id.localeCompare(right.id))
     .slice(0, 36));
   const density = calculateConstellationDensity(discoveredPatterns, clusteredObservations);
+  const evidenceGraph = buildEvidenceGraph(displayObservations, deep.familyGraph);
+  const sections = Object.freeze({
+    parents: Object.freeze(displayObservations.filter(({ participantIds = [] }) => participantIds.length >= 2 && participantIds.every((id) => ["parent", "partner"].includes(roles[id])))),
+    parentChild: Object.freeze(displayObservations.filter(({ participantIds = [] }) => participantIds.some((id) => roles[id] === "parent") && participantIds.some((id) => roles[id] === "child"))),
+    siblings: Object.freeze(displayObservations.filter(({ participantIds = [] }) => participantIds.length >= 2 && participantIds.every((id) => ["child", "sibling", "grandchild"].includes(roles[id])))),
+    generations: Object.freeze(displayObservations.filter(({ category }) => category === "generations")),
+    mirrors: Object.freeze(displayObservations.filter(({ category, type }) => category === "mirrors" || type.includes("MIRROR"))),
+    events: Object.freeze(displayObservations.filter(({ category }) => category === "events")),
+    places: Object.freeze(displayObservations.filter(({ category }) => category === "places")),
+    chronology: Object.freeze(displayObservations.filter(({ category }) => category === "chronology")),
+  });
   return Object.freeze({
     version: familyConstellationEngineVersion,
     signatures,
@@ -398,13 +437,18 @@ export function analyzeFamilyConstellation({ profiles, events = [], roles = {} }
     numericGraph,
     discoveredPatterns,
     density,
+    deepAnalysis: deep,
+    familyGraph: deep.familyGraph,
+    evidenceGraph,
+    sections,
     candidates: Object.freeze(unique.sort((a, b) => b.interestScore - a.interestScore)),
-    discardedObservations: Object.freeze(unique.filter(({ interestScore }) => interestScore < 48)),
+    discardedObservations: Object.freeze([...unique.filter(({ interestScore }) => interestScore < 48), ...deep.rejected]),
     clusters,
     selectedObservations,
     clusteredObservations,
     displayObservations,
-    primaryObservations: Object.freeze(displayObservations.slice(0, 5)),
+    primaryObservations: Object.freeze(displayObservations.slice(0, Math.min(5, displayObservations.length))),
+    topInsights: Object.freeze(displayObservations.filter(({ interestScore }) => interestScore >= 68).slice(0, 8)),
     summary: Object.freeze({ total: displayObservations.length, strong: displayObservations.filter(({ interest }) => interest === LEVELS.high).length, discreet: displayObservations.filter(({ interest }) => interest !== LEVELS.high).length }),
   });
 }

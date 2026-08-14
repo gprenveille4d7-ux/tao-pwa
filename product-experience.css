@@ -959,6 +959,7 @@ body.tao-ai-panel-open .main-navigation {
 .family-number-view,
 .family-synthesis,
 .family-symbolic,
+.family-deep-reading,
 .family-rarity-panel { display: grid; min-width: 0; gap: var(--space-4); }
 .family-intro .product-section__header p,
 .family-result-hero p,
@@ -1003,6 +1004,13 @@ body.tao-ai-panel-open .main-navigation {
 .family-observation-card h3 { margin: 0; color: var(--product-ivory); font: 500 1.25rem/1.25 Georgia, serif; }
 .family-observation-card__people { color: var(--product-gold); font: 650 .76rem/1.35 system-ui, sans-serif; overflow-wrap: anywhere; }
 .family-interest { color: var(--product-gold); font: 750 .68rem/1.3 system-ui, sans-serif; letter-spacing: .04em; text-transform: uppercase; }
+.family-force { margin: 0; color: #dbe4ec; font: 700 .72rem/1.4 system-ui, sans-serif; letter-spacing: .025em; }
+.family-overview { color: #dbe4ec; font: 500 .92rem/1.65 system-ui, sans-serif; }
+.family-deep-reading { align-content: start; }
+.family-reading-section { min-width: 0; border-top: 1px solid rgb(215 180 119 / 14%); }
+.family-reading-section > summary { min-height: 3rem; display: flex; align-items: center; padding-right: .25rem; color: var(--product-gold); cursor: pointer; font: 700 .82rem/1.4 system-ui, sans-serif; overflow-wrap: anywhere; }
+.family-reading-section > .method-note { margin: 0 0 var(--space-4); }
+.family-reading-section > .family-observation-list { padding-bottom: var(--space-3); }
 .family-number-row { display: flex; flex-wrap: wrap; gap: .45rem; }
 .family-number-row span,
 .family-number-buttons button { min-width: 2.75rem; min-height: 2.75rem; display: inline-grid; place-items: center; padding: .4rem .55rem; border: 1px solid rgb(215 180 119 / 28%); border-radius: 999px; color: var(--product-gold); background: rgb(215 180 119 / 7%); font: 700 .86rem/1 system-ui, sans-serif; }

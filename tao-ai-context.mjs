@@ -42,7 +42,7 @@ function normalizedYijing(yijing) {
 function normalizedFamilyConstellation(value) {
   if (!value || !Array.isArray(value.familyMembers) || !Array.isArray(value.observations)) return null;
   return Object.freeze({
-    familyMembers: Object.freeze(value.familyMembers.slice(0, 6).map((member) => Object.freeze({
+    familyMembers: Object.freeze(value.familyMembers.slice(0, 12).map((member) => Object.freeze({
       id: String(member.id).slice(0, 120),
       displayName: String(member.displayName ?? "Personne").slice(0, 80),
       relationship: String(member.relationship ?? "other").slice(0, 40),
@@ -51,10 +51,13 @@ function normalizedFamilyConstellation(value) {
       id: String(observation.id).slice(0, 120),
       type: String(observation.type).slice(0, 80),
       interest: String(observation.interest).slice(0, 30),
-      participantIds: Object.freeze((observation.participantIds ?? []).slice(0, 6).map(String)),
+      participantIds: Object.freeze((observation.participantIds ?? []).slice(0, 12).map(String)),
       values: Object.freeze((observation.values ?? []).slice(0, 6).map(Number).filter(Number.isFinite)),
       independentPathCount: Math.max(1, Math.min(20, Number(observation.independentPathCount) || 1)),
       sourceDiversity: Math.max(1, Math.min(10, Number(observation.sourceDiversity) || 1)),
+      complexityCost: Math.max(0, Math.min(2, Number(observation.complexityCost) || 0)),
+      force: ["DIRECT", "STRONG", "NOTABLE", "SECONDARY", "EXPLORATORY"].includes(observation.force) ? observation.force : "NOTABLE",
+      evidenceIds: Object.freeze((observation.evidenceIds ?? []).slice(0, 20).map((id) => String(id).slice(0, 160))),
     }))),
     statistics: value.statistics && typeof value.statistics === "object" ? Object.freeze({
       estimatedRandomFrequency: Number(value.statistics.estimatedRandomFrequency),

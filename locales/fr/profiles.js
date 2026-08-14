@@ -93,7 +93,7 @@ export const profiles = Object.freeze({
     eventTime: "Heure facultative",
     eventType: "Type",
     concernedPeople: "Personnes concernées",
-    eventTypes: Object.freeze({ meeting: "Rencontre", marriage: "Mariage", birth: "Naissance", move: "Déménagement", union: "Union", separation: "Séparation", personal: "Événement personnel", other: "Autre" }),
+    eventTypes: Object.freeze({ meeting: "Rencontre", marriage: "Mariage", pacs: "PACS", birth: "Naissance", move: "Déménagement", union: "Union", separation: "Séparation", family: "Événement familial", personal: "Événement personnel", other: "Autre" }),
     saveEvent: "Conserver cet événement",
     eventPersonError: "Choisis au moins une personne concernée.",
     noEvents: "Aucun événement familial n’est encore enregistré.",

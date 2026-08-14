@@ -1,85 +1,115 @@
 # Constellation familiale
 
-Versions : `tao-family-number-2.0.0`, `tao-family-pattern-2.0.0` et `tao-family-rarity-2.0.0`
+Versions : `tao-family-number-3.0.0`, `tao-family-pattern-2.0.0` et `tao-family-deep-3.0.0`.
 
-## Principe
+## Positionnement
 
-Le module observe des correspondances calculées à partir des dates, heures, âges et événements familiaux. Il sépare strictement le calcul local, la sélection des motifs, la formulation française et l’approfondissement facultatif avec TAO. Une correspondance n’est jamais présentée comme une preuve de causalité, de destin ou d’influence surnaturelle.
+La Constellation familiale de TAO est une cartographie factuelle, temporelle et symbolique des liens entre profils locaux. Ce n’est ni le moteur BaZi, ni une thérapie de constellations familiales, ni une preuve de causalité. TAO observe des structures vérifiables sans inventer de traumatisme, de secret familial, de destin ou de transmission surnaturelle.
 
-## Données utilisées
+La chaîne de traitement est :
 
-- deux profils locaux ou davantage ;
-- date de naissance ;
-- heure de naissance lorsqu’elle est connue ;
-- rôle familial choisi pour la lecture ;
-- événements familiaux facultatifs, conservés localement.
+`profils et événements → normalisation → valeurs dérivées → candidats → motifs familiaux → dépendances → rejet du bruit → hiérarchisation → graphe → sémantique française → conversation facultative`.
 
-L’absence d’heure n’empêche pas l’analyse. Le moteur ignore simplement les signatures horaires impossibles à calculer.
+## Données et séparation des responsabilités
 
-## Valeurs dérivées
+Les données brutes restent intactes dans les profils et événements : date, heure civile connue ou inconnue, lieu, participants et type d’événement. Les moteurs produisent séparément les données dérivées. La lecture numérologique appartient à une troisième couche facultative.
 
-Pour chaque profil, le moteur conserve le jour, le mois, l’année, la somme brute des chiffres de la date, sa réduction, le jour de l’année et le jour de la semaine. Lorsque l’heure est connue, il conserve aussi l’heure, les minutes, la somme brute des chiffres de l’heure et la somme date + heure. Les valeurs brutes ne sont jamais remplacées par leur réduction.
+Le module réutilise `profile-store.js`, `family-constellation-store.js` et les lieux de naissance déjà résolus. Il ne crée pas une seconde base de profils.
 
-Les intervalles calendaires utilisent une arithmétique exacte en années, mois et jours. Les âges tiennent compte du passage effectif de l’anniversaire. Un mois n’est jamais assimilé arbitrairement à trente jours.
+Un événement local peut représenter une rencontre, un mariage, un PACS, une naissance, un déménagement, une union, une séparation ou un événement libre. Son heure et son lieu sont facultatifs. L’utilisateur l’ajoute volontairement.
+
+## Signatures calculées
+
+Pour chaque naissance : jour, mois, année, siècle, deux derniers chiffres de l’année, chiffres individuels, somme brute, réduction, jour + mois, différence jour/mois, produit exploratoire jour × mois, jour de semaine, jour ordinal, semaine ISO, trimestre et saison civile.
+
+Lorsque l’heure est connue : heure, minutes, somme des chiffres, réduction, heure + minutes, différence heure/minutes, minutes depuis minuit et total date + heure. L’heure civile reste distincte de toute éventuelle correction solaire BaZi.
+
+Pour les événements : âge exact en années, mois et jours, intervalles calendaires, durée totale en jours et liens avec les signatures déjà présentes.
+
+Pour les lieux : identité stable du lieu, ville, région, pays, fuseau et coordonnées lorsqu’elles existent. TAO peut détecter un lieu partagé, mais ne convertit jamais les lettres d’une ville en nombres.
 
 ## Opérations autorisées
 
-Niveau direct : égalité, date miroir jour/mois, inversion de nombres, palindrome, répétition, intervalle réel et correspondance événement/âge.
+Niveau A, coût minimal : égalité directe, même jour ou mois, croisement jour/mois, date miroir, même lieu, même jour ordinal, symétrie ordinale, même somme directe, âge égal à une signature et intervalle réel.
 
-Niveau relation simple : somme, différence, double, triple et réduction numérique déjà dérivée.
+Niveau B, une opération naturelle : somme, différence, double, triple et relation directe entre deux valeurs déjà présentes.
 
-Niveau curiosité : multiplication simple et jour de semaine. Ces motifs reçoivent un poids inférieur. Le moteur n’enchaîne jamais des opérations telles que `(A × B) - C + D` et limite les transformations à deux.
+Niveau C, exploratoire : au maximum deux transformations simples et seulement lorsqu’elles renforcent un motif déjà établi indépendamment.
 
-## Sélection, score et clusters
+Sont interdites les chaînes construites pour atteindre un nombre choisi, par exemple `(année - heure) × mois ÷ jour`, ainsi que toute suite de réduction, inversion et soustraction opportuniste.
 
-`interestScore` est un score purement technique destiné à l’interface. Il favorise les égalités indépendantes, dates miroirs, motifs partagés par plusieurs profils, passages intergénérationnels et événements indépendants. Il pénalise les transformations et opérations moins directes.
+## Coût de complexité et indépendance
 
-L’utilisateur ne voit jamais ce score. L’interface emploie seulement « Correspondance très nette », « Correspondance intéressante » ou « Curiosité numérique ».
+Chaque observation conserve `complexityCost`, `independenceGroups`, `sourceCategories`, `independentPathCount` et des identifiants de preuve. Plus une opération est longue, plus elle est dévalorisée. Une observation exigeant plus de deux transformations est rejetée.
 
-Les observations liées partagent une clé de cluster. Elles sont regroupées pour éviter de transformer un même motif en une série de cartes redondantes. L’écran principal montre au maximum trois motifs majeurs et la carte de constellation seulement cinq liens.
+Les dépendances sont explicites. Si deux enfants partagent une somme de date égale à 18 et une somme d’heure égale à 13, le total 31 est bien affiché, mais n’est pas compté comme une troisième confirmation indépendante puisqu’il dépend de `18 + 13`.
 
-## Graphe numérique universel
+Une convergence entre date, heure, événement, âge, lieu ou intervalle est favorisée par rapport à plusieurs variations du même calcul.
 
-La V2 construit des nœuds numériques pour les valeurs directes et dérivées de chaque profil, puis des arêtes pour les relations autorisées. Aucune valeur de démonstration n’est recherchée. Les index sont construits à partir des nombres réellement présents dans le jeu de données.
+## Graphe familial et graphe de preuves
 
-Chaque chemin conserve ses sources, sa profondeur de transformation et ses `dependencyGroups`. Deux résultats issus du même arbre de dérivation ne deviennent donc pas deux chemins indépendants. Les motifs profonds couvrent notamment les valeurs dérivées partagées, différences ou sommes répétées, convergences, transferts intergénérationnels, chaînes miroir et motifs multi-personnes.
+`FamilyGraph` contient les nœuds `PERSON` et `EVENT`. Les arêtes structurelles couvrent `PARTNER`, `PARENT_CHILD`, `SIBLING`, `GRANDPARENT_DESCENDANT` et `PARTICIPATES_IN`.
 
-`sourceDiversity` distingue les catégories date, heure, intervalle, événement et génération. Une convergence issue de plusieurs catégories est favorisée par le score d’intérêt, tandis qu’une série de variations sur une seule somme n’est pas artificiellement amplifiée.
+`EvidenceGraph` ajoute les nœuds de motif et les arêtes `SUPPORTS`. Il permet de remonter d’une phrase affichée aux personnes, événements et preuves qui la justifient.
 
-## Estimation statistique
+Le graphe numérique conserve parallèlement les valeurs dérivées et les relations `DIFFERENCE`, `SUM`, `MIRROR` et `INTERVAL` avec leurs groupes de dépendance.
 
-`interestScore` reste une priorité éditoriale interne. `rarityEstimate` est une mesure distincte : elle estime la fréquence à laquelle le même moteur complet trouve un motif de force comparable ou supérieure dans des ensembles aléatoires de même structure.
+## Passes d’analyse
 
-Le modèle public par défaut est `FAMILY_CONDITIONAL` : il conserve les années de naissance, les rôles, la présence ou l’absence d’heure et la structure des événements, puis randomise des jours, mois et heures calendaires valides. Le modèle `SIMPLE_CALENDAR` est disponible pour les tests méthodologiques.
+Le moteur examine successivement le couple parental, chaque parent avec chaque enfant, la fratrie, les combinaisons parents → enfants, les générations, les événements, les intervalles, les lieux et les convergences entre motifs.
 
-La simulation rejoue exactement toutes les règles sur chaque famille synthétique. Elle corrige donc le *look-elsewhere effect* : la fréquence tient compte du fait que TAO cherche simultanément égalités, miroirs, sommes, différences, intervalles et autres motifs autorisés. Pour une date miroir entre deux années connues, une fréquence combinatoire exacte est également calculée par énumération du calendrier valide.
+Les hyper-motifs actuellement explicités comprennent notamment :
 
-L’analyse rapide utilise 2 000 simulations. L’analyse approfondie en utilise 20 000. Les calculs s’exécutent dans `family-rarity-worker.js`, avec une progression, sans bloquer l’interface. Le générateur pseudo-aléatoire est seedé à partir du dataset, de la version du moteur, du modèle et du nombre de simulations. Le même jeu de données produit donc la même estimation.
+- `CROSS_GENERATION_TRANSFER` ;
+- `SIBLING_MULTI_DOMAIN_ECHO` ;
+- `MULTI_EVENT_AGE_ECHO` ;
+- `PARENT_PAIR_CHILD_SUM` ;
+- `ORDINAL_MIRROR` ;
+- `SHARED_BIRTH_PLACE` ;
+- `EVENT_INTERVAL_ECHO` ;
+- `CONVERGENT_NUMBER`.
 
-Les catégories « Fréquente », « Assez courante », « Peu fréquente », « Rare dans la simulation » et « Très rare dans la simulation » sont des seuils UX documentés, pas une échelle scientifique canonique. Une fréquence faible n’est jamais transformée en probabilité de causalité, de destin ou de signification.
+## Hiérarchisation et anti-cherry-picking
 
-## IA TAO
+Le score interne sert uniquement au tri éditorial. L’utilisateur voit `Direct`, `Fort`, `Notable`, `Secondaire` ou `Exploratoire`. Ce classement n’est jamais une probabilité.
 
-Le mode `family_constellation` reçoit uniquement les identifiants des profils, leur prénom d’affichage, leur rôle, les observations déjà calculées et, lorsqu’elle existe, l’estimation statistique normalisée. Les dates, heures et lieux de naissance bruts ne sont pas transmis. Gemini peut expliquer et relier ces observations ; il ne peut ni chercher un nouveau nombre, ni créer une nouvelle relation.
+Le moteur calcule largement puis filtre sévèrement : déduplication, regroupement des observations dépendantes, pénalité de complexité, exigence de diversité pour les convergences et sélection de quatre motifs majeurs au maximum. Une famille pauvre en structures reçoit une lecture sobre ; TAO ne force jamais un axe familial.
 
-Le prompt du Worker interdit les formulations de causalité, de preuve du destin ou de lien surnaturel. Le moteur local reste la seule source des nombres.
+La simulation statistique V2 reste du code expérimental historique mais n’est plus lancée ni affichée dans l’expérience publique V3. La nouvelle règle produit ne présente aucune « probabilité de hasard ».
 
-## Vie privée et persistance
+## Numérologie facultative
 
-Les événements sont stockés dans `localStorage` sous `tao.familyEvents.v1`. Les préférences de sélection et de rôle utilisent `tao.familyConstellationPreferences.v1`. Les résultats mathématiques sont recalculés localement. Les simulations sont mises en cache sous `tao.familyRarity.v2.*` avec le hash du dataset, la version des moteurs, le modèle et le nombre de simulations. La suppression d’un événement est immédiate après confirmation.
+Convention `TAO_NUMEROLOGY_V1` : réduction décimale répétée, avec conservation facultative de 11, 22 et 33 dans la couche symbolique. Cette convention ne modifie jamais les valeurs arithmétiques. Une valeur sans définition documentée n’acquiert aucune personnalité inventée.
 
-## Interface
+## Gemini
 
-Le module se trouve dans `Profils → Constellation familiale` et reste accessible depuis `Relations & harmonie`. Il propose une sélection de profils, les événements, les correspondances majeures, les calculs vérifiables, une carte limitée, une vue par paire et une vue par nombre. La lecture symbolique est facultative et visuellement séparée des observations mathématiques.
+Le mode `family_constellation` intervient après tous les calculs. Il reçoit des profils minimisés, les rôles, les observations validées, leur force, leur coût, leur indépendance et leurs `evidenceIds`. Les dates, heures, coordonnées et lieux bruts ne sont pas transmis.
 
-## Debug et tests
+Le Worker interdit à Gemini de créer un nombre, une relation ou un événement. Il lui demande de privilégier les motifs directs, de distinguer les totaux dépendants et d’être sceptique envers les observations secondaires.
 
-`?debug=family-constellation#profiles/family` expose profils minimisés, valeurs dérivées, nœuds, arêtes, groupes de dépendance, candidats, rejets, clusters, motifs profonds, densité, scores et identifiants transmis à TAO. Aucun secret n’est affiché.
+## Golden regression test
 
-Les tests couvrent sommes, réductions, inversions, palindromes, jour de l’année, âge exact, intervalles, heures, date miroir, valeurs partagées, génération, clusters, dépendances, convergences, score, déterminisme, cache et faux positifs. Des tests génératifs analysent des centaines de familles aléatoires, des familles de plus de six membres et une fixture dont le motif principal est un nombre absent des exemples historiques. Une vérification anti-surapprentissage interdit les comparaisons de production avec les nombres des fixtures.
+La fixture de référence est exclusivement un jeu de test. L’algorithme de production ne contient aucun nom ni nombre propre à cette famille.
+
+Le moteur retrouve automatiquement :
+
+1. le 11 comme jour chez les deux parents et mois chez les deux enfants ;
+2. le miroir `11/09 ↔ 09/11` ;
+3. la somme de date 18 chez Alice et Marcel ;
+4. la somme d’heure 13 chez Alice et Marcel ;
+5. le total dépendant 31, sans le compter comme troisième preuve ;
+6. `22 - 9 = 13` et `22 + 9 = 31` comme renforcements de niveau B ;
+7. les âges 34 et 32 des parents à la naissance d’Alice, chacun égal à sa propre somme de date ;
+8. la symétrie ordinale `131 ↔ 313` ;
+9. le lieu de naissance partagé à Caen ;
+10. le double parental `11 + 11 = 22` lorsqu’il rejoint directement le jour d’un enfant.
+
+Un test de sensibilité change `02:38` en `02:39` et vérifie que le motif horaire de fratrie disparaît. Des centaines de familles générées vérifient l’absence de crash, de `NaN` et de règle dépendant des valeurs de démonstration.
+
+## Vie privée et debug
+
+Profils, événements et préférences restent locaux. `?debug=family#profiles/family` ou `?debug=family-constellation#profiles/family` affiche données brutes minimisées, valeurs dérivées, candidats, rejets, complexité, dépendances, graphes, forces, preuves et identifiants transmis à TAO. Aucun secret n’y apparaît.
 
 ## Limites
 
-Le modèle conditionnel ne reproduit pas la distribution réelle des naissances humaines : saisons, jours de semaine, pratiques médicales et habitudes horaires restent des biais connus. La fréquence affichée est donc une estimation sous un modèle aléatoire, jamais une fréquence absolue dans la population.
-
-Le module ne transforme pas les lettres, adresses, téléphones ou coordonnées en nombres. Il ne se mélange pas au BaZi. Les lectures symboliques restent séparées et n’inventent aucune signification pour une valeur non documentée.
+Une structure numérique peut être exacte tout en restant une coïncidence. Le moteur mesure la simplicité et la convergence, pas la signification. Les relations familiales sont celles déclarées par l’utilisateur. Une heure inconnue n’est jamais inventée. Les distances géographiques ne sont exploitables que lorsque les coordonnées sont fiables.

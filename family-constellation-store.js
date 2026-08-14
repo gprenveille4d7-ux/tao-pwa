@@ -1,7 +1,7 @@
 const EVENTS_KEY = "tao.familyEvents.v1";
 const PREFERENCES_KEY = "tao.familyConstellationPreferences.v1";
 
-export const FAMILY_EVENT_TYPES = Object.freeze(["meeting", "marriage", "birth", "move", "union", "separation", "personal", "other"]);
+export const FAMILY_EVENT_TYPES = Object.freeze(["meeting", "marriage", "pacs", "birth", "move", "union", "separation", "family", "personal", "other"]);
 export const FAMILY_ROLES = Object.freeze(["parent", "child", "partner", "sibling", "grandparent", "grandchild", "other"]);
 
 function readJson(storage, key, fallback) {
@@ -26,6 +26,7 @@ export function isValidFamilyEvent(event) {
     event && typeof event.id === "string" && event.id &&
     typeof event.title === "string" && event.title.trim() &&
     validIsoDate(event.date) && validTime(event.time ?? null) &&
+    (event.place === null || event.place === undefined || (typeof event.place === "string" && event.place.trim().length <= 120)) &&
     FAMILY_EVENT_TYPES.includes(event.type) &&
     Array.isArray(event.profileIds) && event.profileIds.length > 0 && event.profileIds.every((id) => typeof id === "string" && id),
   );
@@ -39,7 +40,9 @@ export function getFamilyEvents(storage = localStorage) {
 export function saveFamilyEvent(event, storage = localStorage) {
   if (!isValidFamilyEvent(event)) throw new TypeError("L’événement familial est incomplet.");
   const next = getFamilyEvents(storage).filter(({ id }) => id !== event.id);
-  next.push(Object.freeze({ ...event, profileIds: [...new Set(event.profileIds)] }));
+  const normalized = { ...event, profileIds: [...new Set(event.profileIds)] };
+  if (event.place) normalized.place = String(event.place).trim();
+  next.push(Object.freeze(normalized));
   next.sort((left, right) => left.date.localeCompare(right.date));
   storage.setItem(EVENTS_KEY, JSON.stringify(next));
   return event;
