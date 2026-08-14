@@ -1,4 +1,4 @@
-const CACHE_VERSION = "tao-shell-2026-08-14-v25-conversation-sheet";
+const CACHE_VERSION = "tao-shell-2026-08-14-v26-family-v2";
 const SHELL = [
   "./",
   "./index.html",
@@ -23,7 +23,7 @@ const SHELL = [
   "./app-navigation.js?v=tao-tree-1",
   "./today-view.js?v=tao-semantics-2",
   "./bazi-theme.js?v=tao-semantics-2",
-  "./profiles-view.js?v=tao-family-6",
+  "./profiles-view.js?v=tao-family-v2-1",
   "./relationships-view.js?v=1.0.4",
   "./relationship-engine.mjs",
   "./relationship-semantic.mjs?v=1.0.2",

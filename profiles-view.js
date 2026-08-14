@@ -11,7 +11,7 @@ import { calculateBazi } from "./bazi-engine.mjs";
 import { clearDailyCacheForProfile } from "./daily-cache.mjs";
 import { searchBirthPlaces } from "./geocoding.js";
 import { element, formatBirthDate, formatPlace } from "./tao-ui.js";
-import { t } from "./locales/index.js?v=1.4.0";
+import { t } from "./locales/index.js?v=1.5.0";
 import { createSectionNavigation, focusRequestedSection, markProductSection } from "./section-navigation.js";
 import { parseAppRoute } from "./navigation-routes.mjs";
 import { getSemanticConcept } from "./semantic-layer.mjs?v=1.0.1";
