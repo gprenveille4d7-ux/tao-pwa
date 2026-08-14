@@ -11,15 +11,18 @@ import { calculateBazi } from "./bazi-engine.mjs";
 import { clearDailyCacheForProfile } from "./daily-cache.mjs";
 import { searchBirthPlaces } from "./geocoding.js";
 import { element, formatBirthDate, formatPlace } from "./tao-ui.js";
-import { t } from "./locales/index.js?v=1.2.0";
+import { t } from "./locales/index.js?v=1.4.0";
 import { createSectionNavigation, focusRequestedSection, markProductSection } from "./section-navigation.js";
 import { parseAppRoute } from "./navigation-routes.mjs";
 import { getSemanticConcept } from "./semantic-layer.mjs?v=1.0.1";
+import { clearTaoAIMemory, getTaoAISettings, setTaoAIEnabled } from "./tao-ai-memory.js";
+import { createRelationshipsModule } from "./relationships-view.js?v=1.0.4";
+import { createFamilyConstellationModule } from "./family-constellation-view.js?v=2.0.1";
 
 const root = document.querySelector("[data-profiles-root]");
 const RELATIONSHIPS = ["other", "family", "friend", "partner", "child", "parent"];
 const PROFILE_SECTIONS = Object.freeze([
-  { id: "me", label: "Mon profil" }, { id: "people", label: "Mes proches" }, { id: "compatibility", label: "Compatibilité" },
+  { id: "me", label: "Mon profil" }, { id: "people", label: "Mes proches" }, { id: "compatibility", label: "Relations & harmonie" }, { id: "family", label: "Constellation familiale" },
 ]);
 let searchTimer = null;
 let searchController = null;
@@ -54,6 +57,35 @@ function activeCard(profile) {
   const edit = element("button", { className: "product-button product-button--primary", text: t("profiles.actions.edit"), attributes: { type: "button" } });
   edit.addEventListener("click", () => openEditor(profile));
   actions.append(edit);
+  card.append(actions);
+  return card;
+}
+
+function aiSettingsCard() {
+  const settings = getTaoAISettings();
+  const card = element("section", { className: "product-card ai-settings-card" });
+  card.append(
+    element("p", { className: "product-eyebrow", text: "Réglages" }),
+    element("h2", { text: "Intelligence conversationnelle" }),
+    element("p", { text: "Cette fonction ajoute Gemini aux conversations approfondies. TAO transmet uniquement le contexte utile ; tes données natales brutes et tes coordonnées restent locales." }),
+    element("p", { className: "method-note", text: "Les calculs BaZi, le Yi Jing, les profils et la guidance locale continuent de fonctionner lorsque cette option est désactivée." }),
+  );
+  const toggle = element("button", {
+    className: `product-button ${settings.enabled ? "product-button--quiet" : "product-button--primary"}`,
+    text: settings.enabled ? "Désactiver l’intelligence conversationnelle" : "Activer l’intelligence conversationnelle",
+    attributes: { type: "button", "aria-pressed": String(settings.enabled) },
+  });
+  toggle.addEventListener("click", () => {
+    setTaoAIEnabled(!getTaoAISettings().enabled);
+    renderProfilesView();
+  });
+  const clear = element("button", { className: "product-button product-button--quiet", text: "Effacer la mémoire locale de TAO", attributes: { type: "button" } });
+  clear.addEventListener("click", () => {
+    if (!window.confirm("Effacer les sujets récents, les souvenirs explicites et les synthèses IA en cache pour ce profil ?")) return;
+    clearTaoAIMemory(getActiveProfile()?.id);
+  });
+  const actions = element("div", { className: "product-actions" });
+  actions.append(toggle, clear);
   card.append(actions);
   return card;
 }
@@ -239,19 +271,16 @@ export function renderProfilesView() {
   pageHeader.append(element("p", { className: "product-eyebrow", text: t("profiles.page.eyebrow") }), element("h1", { text: t("profiles.page.title") }), element("p", { className: "product-lead", text: t("profiles.page.lead") }));
   const add = element("button", { className: "product-button product-button--add", text: t("profiles.actions.addPerson"), attributes: { type: "button" } });
   add.addEventListener("click", () => openEditor());
-  const compare = element("section", { className: "product-card compare-card" });
-  compare.append(element("div", { html: `<p class="product-eyebrow">${t("profiles.compare.eyebrow")}</p><h2>${t("profiles.compare.title")}</h2><p>${t("profiles.compare.copy")}</p>` }));
-  const status = element("aside", { className: "engine-status", attributes: { role: "note" } });
-  status.append(element("strong", { text: "Lecture en préparation" }), element("p", { text: "Les énergies fondamentales et les repères de naissance de chaque profil sont déjà conservés séparément. Aucun score relationnel arbitraire ne sera affiché." }));
-  compare.append(status);
   const me = markProductSection(element("section", { className: "product-depth-section" }), "profiles", "me");
-  me.append(activeCard(active));
+  me.append(activeCard(active), aiSettingsCard());
   const people = markProductSection(element("section", { className: "product-depth-section" }), "profiles", "people");
   people.append(add, otherProfiles(getProfiles(), active.id));
   const compatibility = markProductSection(element("section", { className: "product-depth-section" }), "profiles", "compatibility");
-  compatibility.append(compare);
+  compatibility.append(createRelationshipsModule({ profiles: getProfiles(), activeProfile: active, onAddProfile: () => openEditor() }));
+  const family = markProductSection(element("section", { className: "product-depth-section" }), "profiles", "family");
+  family.append(createFamilyConstellationModule({ profiles: getProfiles(), onAddProfile: () => openEditor() }));
   const route = parseAppRoute(location.hash);
-  root.replaceChildren(pageHeader, createSectionNavigation("profiles", PROFILE_SECTIONS, "Explorer Profils"), me, people, compatibility);
+  root.replaceChildren(pageHeader, createSectionNavigation("profiles", PROFILE_SECTIONS, "Explorer Profils"), me, people, compatibility, family);
   focusRequestedSection(root, "profiles", route.section, { scroll: route.section !== "me" });
 }
 

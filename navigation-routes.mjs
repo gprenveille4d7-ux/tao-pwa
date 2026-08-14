@@ -5,7 +5,7 @@ export const SECTION_ROUTES = Object.freeze({
   theme: ["overview", "pillars", "elements", "structure", "ten-gods", "cycles", "life"],
   pavilion: ["tao", "sky", "desk", "library", "almanac"],
   yijing: ["consult", "history", "learn"],
-  profiles: ["me", "people", "compatibility"],
+  profiles: ["me", "people", "compatibility", "family"],
 });
 
 export function parseAppRoute(hash = "") {

@@ -12,9 +12,15 @@
 ÉTAPE 9 — **TECHNIQUEMENT TERMINÉE — VALIDATION UTILISATEUR ATTENDUE**  
 ÉTAPE 10 — **TECHNIQUEMENT TERMINÉE — VALIDATION UTILISATEUR ATTENDUE**  
 EXPÉRIENCE ASTROLOGIE TAOÏSTE V1 — **TECHNIQUEMENT TERMINÉE — VALIDATION UTILISATEUR ATTENDUE**  
-LOCALISATION FRANÇAISE `tao-localization-fr-1.1.0` — **TECHNIQUEMENT TERMINÉE — VALIDATION UTILISATEUR ATTENDUE**
+LOCALISATION FRANÇAISE `tao-localization-fr-1.5.0` — **TECHNIQUEMENT TERMINÉE — VALIDATION UTILISATEUR ATTENDUE**
 MODULE YI JING LOCAL `tao-yijing-engine-1.0.0` — **TECHNIQUEMENT TERMINÉ — VALIDATION UTILISATEUR ATTENDUE**
+RELATIONS & HARMONIE `tao-relationship-1.0.0` — **TECHNIQUEMENT TERMINÉ — VALIDATION UTILISATEUR ATTENDUE**
+CONSTELLATION FAMILIALE V2 `tao-family-number-2.0.0` + motifs profonds + rareté seedée — **TECHNIQUEMENT TERMINÉE — VALIDATION UTILISATEUR ATTENDUE**
 PHASES LUNAIRES — **REPORTÉES**
+
+CERVEAU IA TAO `tao-brain-v1` — **IMPLÉMENTÉ — SECRET GEMINI ET DÉPLOIEMENT CLOUDFLARE ATTENDUS**
+
+La couche conversationnelle réutilise les moteurs BaZi, quotidien, Yi Jing et la couche sémantique. Le client minimise le contexte, conserve mémoire et cache localement, valide les faits cités et garde un fallback déterministe complet. Le Worker est déployé sur `https://tao-ai.g-prenveille4d7.workers.dev`, avec Gemini Interactions API, CORS strict, limites, rate limiting et schéma de sortie ; le healthcheck et une conversation réelle avec `gemini-3.6-flash` ont été validés le 13 août 2026. Aucune clé n’est présente dans le dépôt.
 
 ## Contrôles consolidés
 
@@ -29,7 +35,9 @@ PHASES LUNAIRES — **REPORTÉES**
 - Le Pavillon affiche désormais quatre paroles contextualisées par la journée (énergie, terme solaire, conseil et résonance). Pendant cette parole, TAO alterne directement sept PNG canoniques selon un rythme irrégulier, sans fondu ni morphing.
 - Un écran d’ouverture immédiat masque le chargement des calques lourds ; un service worker met en cache les ressources déjà consultées pour accélérer les lancements suivants. L’ancien bureau fusionné masqué n’est plus téléchargé au démarrage.
 - Le Yi Jing local comprend la question, la méthode des trois pièces, le tirage progressif ou rapide, 64 hexagrammes, 384 lectures de lignes, les mutations, la transformation, une guidance structurée et un carnet local filtré par profil.
-- Le ciel et la météo sont automatisés par `tao-environment-1.0.0` à partir du lieu du profil. Les phases lunaires, événements célestes rares, cycles de chance, compatibilités avancées et IA restent inactifs.
+- Le ciel et la météo sont automatisés par `tao-environment-1.0.0` à partir du lieu du profil. Les phases lunaires, événements célestes rares et cycles de chance restent inactifs.
+- Le module « Relations & harmonie » compare deux profils dans les deux sens à partir de faits BaZi déterministes. Il affiche des repères qualitatifs sans score, adapte la guidance au type de relation et peut transmettre à TAO des faits minimisés pour approfondissement.
+- Le module « Constellation familiale » construit un graphe numérique universel pour deux profils ou davantage, découvre les convergences propres à chaque famille sans nombre cible, regroupe les chemins dépendants et estime la fréquence aléatoire des motifs par Monte-Carlo seedé dans un Web Worker. Les dates et heures brutes ne sont pas transmises à Gemini.
 
 ## Prototypes non validés
 

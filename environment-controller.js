@@ -99,6 +99,7 @@ function applyCurrentEnvironment(realNow = Date.now()) {
   if (weatherAttribution) weatherAttribution.hidden = !weatherReading || weatherReading.source === "unavailable";
   celestialLayer.hidden = true;
   lastEnvironment = Object.freeze({ ...environment, location, solar: context.solar, local: context.local, weatherSource: weatherReading?.source ?? "unavailable" });
+  globalThis.taoEnvironmentState = lastEnvironment;
   updateDebugOutput(context, environment);
   window.dispatchEvent(new CustomEvent("tao:environment-change", { detail: lastEnvironment }));
   return lastEnvironment;
