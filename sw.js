@@ -1,4 +1,4 @@
-const CACHE_VERSION = "tao-shell-2026-08-14-v27-family-v3";
+const CACHE_VERSION = "tao-shell-2026-08-14-v28-family-v3";
 const SHELL = [
   "./",
   "./index.html",
@@ -23,7 +23,7 @@ const SHELL = [
   "./app-navigation.js?v=tao-tree-1",
   "./today-view.js?v=tao-semantics-2",
   "./bazi-theme.js?v=tao-semantics-2",
-  "./profiles-view.js?v=tao-family-v3-1",
+  "./profiles-view.js?v=tao-family-v3-2",
   "./relationships-view.js?v=1.0.4",
   "./relationship-engine.mjs",
   "./relationship-semantic.mjs?v=1.0.2",
@@ -34,8 +34,8 @@ const SHELL = [
   "./family-deep-engine.mjs",
   "./family-pattern-engine.mjs?v=2.0.0",
   "./family-pattern-engine.mjs",
-  "./family-constellation-semantic.mjs?v=3.0.0",
-  "./family-constellation-view.js?v=3.0.0",
+  "./family-constellation-semantic.mjs?v=3.0.1",
+  "./family-constellation-view.js?v=3.0.1",
   "./yijing-view.js?v=tao-semantics-2",
   "./pavilion-portals.js?v=tao-semantics-2",
   "./exterior-states.js?v=outside-environment-1",

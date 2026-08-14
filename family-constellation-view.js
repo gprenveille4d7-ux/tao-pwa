@@ -2,7 +2,7 @@ import { analyzeFamilyConstellation } from "./family-number-engine.mjs?v=3.0.0";
 import {
   buildFamilyConstellationReading,
   familyObservationFacts,
-} from "./family-constellation-semantic.mjs?v=3.0.0";
+} from "./family-constellation-semantic.mjs?v=3.0.1";
 import {
   createFamilyEventId,
   deleteFamilyEvent,
