@@ -71,6 +71,7 @@ test("la synthèse de référence hiérarchise les structures et explique les d�
   assert.ok(reading.sections.siblings.some(({ description }) => /troisième preuve indépendante/i.test(description)));
   assert.ok(reading.sections.events.some(({ description }) => /âge/i.test(description)));
   assert.ok(reading.sections.places.some(({ description }) => /lieu de naissance/i.test(description)));
+  assert.ok(reading.sections.generations.filter(({ title }) => /valeurs parentales/i.test(title)).every(({ description }) => /génération suivante/i.test(description)));
   assert.match(reading.disclaimer, /ne prouvent ni causalité, ni destin/i);
 });
 

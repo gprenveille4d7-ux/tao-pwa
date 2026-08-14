@@ -65,7 +65,7 @@ function describe(observation, profileMap, eventMap) {
     case "CONVERGENT_NUMBER": return `La valeur ${value} est retrouvée par ${observation.independentPathCount} chemins indépendants issus de ${observation.sourceDiversity} catégories de données.`;
     case "SHARED_BIRTH_PLACE": return `${joinNames(people)} partagent le même lieu de naissance. Cette relation est géographique et directe ; aucun nombre n’est fabriqué à partir du nom du lieu.`;
     case "MULTI_EVENT_AGE_ECHO": return `Au même événement familial, l’âge de ${joinNames(people)} rejoint pour chacun la somme de sa propre date de naissance.`;
-    case "PARENT_PAIR_CHILD_SUM": return `Deux valeurs directes des parents s’additionnent pour rejoindre une valeur directe chez ${people.at(-1)}.`;
+    case "PARENT_PAIR_CHILD_SUM": return "Deux valeurs directes des parents s’additionnent pour rejoindre une valeur directe dans la génération suivante.";
     case "SIBLING_MULTI_DOMAIN_ECHO": return `${joinNames(people)} partagent la même somme de date et la même somme d’heure. Leur total commun en découle ; il n’est donc pas compté comme une troisième preuve indépendante.`;
     case "EVENT_INTERVAL_ECHO": return `La durée exacte entre deux événements rejoint une valeur déjà présente indépendamment dans la constellation.`;
     default: return `Une correspondance simple relie ${joinNames(people)} autour de ${observation.values.join(", ")}.`;
