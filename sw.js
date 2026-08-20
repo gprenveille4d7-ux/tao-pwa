@@ -1,4 +1,4 @@
-const CACHE_VERSION = "tao-shell-2026-08-20-v30-relationship-goals";
+const CACHE_VERSION = "tao-shell-2026-08-20-v31-relationship-goals-cachefix";
 const SHELL = [
   "./",
   "./index.html",
@@ -28,7 +28,7 @@ const SHELL = [
   "./bazi-theme.js?v=tao-semantics-2",
   "./profiles-view.js?v=tao-relationship-goals-1",
   "./relationships-view.js?v=1.1.0",
-  "./relationship-engine.mjs",
+  "./relationship-engine.mjs?v=1.1.0",
   "./relationship-semantic.mjs?v=1.1.0",
   "./relationship-cache.mjs?v=1.0.0",
   "./family-constellation-store.js",
