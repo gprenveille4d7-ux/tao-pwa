@@ -4,7 +4,7 @@ import {
   compareBaziProfiles,
   RELATIONSHIP_GOALS,
   RELATIONSHIP_TYPES,
-} from "./relationship-engine.mjs";
+} from "./relationship-engine.mjs?v=1.1.0";
 import { buildRelationshipSemanticReading } from "./relationship-semantic.mjs?v=1.1.0";
 import { getCachedRelationshipReading, setCachedRelationshipReading } from "./relationship-cache.mjs?v=1.0.0";
 import { t } from "./locales/index.js?v=1.5.1";
