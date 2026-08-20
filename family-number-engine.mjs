@@ -9,9 +9,13 @@ import {
   discoverDeepFamilyStructures,
   FAMILY_DEEP_ENGINE_VERSION,
 } from "./family-deep-engine.mjs";
+import {
+  buildFamilyPatternInventory,
+  FAMILY_INVENTORY_ENGINE_VERSION,
+} from "./family-inventory-engine.mjs";
 
-export const FAMILY_NUMBER_ENGINE_VERSION = "tao-family-number-3.0.0";
-export const familyConstellationEngineVersion = `${FAMILY_NUMBER_ENGINE_VERSION}+${FAMILY_PATTERN_ENGINE_VERSION}+${FAMILY_DEEP_ENGINE_VERSION}`;
+export const FAMILY_NUMBER_ENGINE_VERSION = "tao-family-number-3.1.0";
+export const familyConstellationEngineVersion = `${FAMILY_NUMBER_ENGINE_VERSION}+${FAMILY_PATTERN_ENGINE_VERSION}+${FAMILY_DEEP_ENGINE_VERSION}+${FAMILY_INVENTORY_ENGINE_VERSION}`;
 
 const DAY_MS = 86_400_000;
 const WEEKDAYS_FR = Object.freeze(["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"]);
@@ -418,6 +422,7 @@ export function analyzeFamilyConstellation({ profiles, events = [], roles = {} }
     .filter((item, index, all) => all.findIndex(({ id }) => id === item.id) === index)
     .sort((left, right) => editorialPriority(right) - editorialPriority(left) || right.interestScore - left.interestScore || left.id.localeCompare(right.id))
     .slice(0, 36));
+  const patternInventory = buildFamilyPatternInventory({ observations: displayObservations, signatures, profiles: safeProfiles, roles });
   const density = calculateConstellationDensity(discoveredPatterns, clusteredObservations);
   const evidenceGraph = buildEvidenceGraph(displayObservations, deep.familyGraph);
   const sections = Object.freeze({
@@ -447,8 +452,9 @@ export function analyzeFamilyConstellation({ profiles, events = [], roles = {} }
     selectedObservations,
     clusteredObservations,
     displayObservations,
+    patternInventory,
     primaryObservations: Object.freeze(displayObservations.slice(0, Math.min(5, displayObservations.length))),
-    topInsights: Object.freeze(displayObservations.filter(({ interestScore }) => interestScore >= 68).slice(0, 8)),
-    summary: Object.freeze({ total: displayObservations.length, strong: displayObservations.filter(({ interest }) => interest === LEVELS.high).length, discreet: displayObservations.filter(({ interest }) => interest !== LEVELS.high).length }),
+    topInsights: Object.freeze(patternInventory.patterns.filter(({ importance }) => importance !== "curiosity").slice(0, 8)),
+    summary: Object.freeze({ total: patternInventory.total, major: patternInventory.importance.major, strong: patternInventory.importance.major, notable: patternInventory.importance.notable, curiosity: patternInventory.importance.curiosity }),
   });
 }

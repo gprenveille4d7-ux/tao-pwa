@@ -9,12 +9,14 @@ test("le lexique familial traduit les clés techniques visibles", () => {
   assert.ok(listFamilyLexiconEntries().every(({ label }) => label.trim()));
 });
 
-test("la constellation utilise cinq vues progressives et une feuille de calcul mobile", async () => {
+test("la constellation utilise un inventaire progressif et une feuille de détail mobile", async () => {
   const [view, css] = await Promise.all([
     readFile(new URL("../family-constellation-view.js", import.meta.url), "utf8"),
     readFile(new URL("../product-experience.css", import.meta.url), "utf8"),
   ]);
-  for (const label of ["Synthèse", "Motifs", "Famille", "Chronologie", "Explorer"]) assert.match(view, new RegExp(label));
+  for (const label of ["Synthèse", "Inventaire", "Famille", "Chronologie", "Explorer", "Voir le détail", "Où apparaît-il", "Particularités liées"]) assert.match(view, new RegExp(label));
+  assert.match(view, /data-pattern-id/);
+  assert.doesNotMatch(view, /reading\.primaryCards\.forEach\(\(card\) => primary\.append/);
   assert.match(view, /family-calculation-sheet/);
   assert.match(css, /position:\s*fixed/);
   assert.match(css, /100dvh/);

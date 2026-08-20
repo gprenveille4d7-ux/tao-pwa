@@ -1,8 +1,8 @@
-import { analyzeFamilyConstellation } from "./family-number-engine.mjs?v=3.0.0";
+import { analyzeFamilyConstellation } from "./family-number-engine.mjs?v=3.1.0";
 import {
   buildFamilyConstellationReading,
   familyObservationFacts,
-} from "./family-constellation-semantic.mjs?v=3.0.1";
+} from "./family-constellation-semantic.mjs?v=4.0.0";
 import {
   createFamilyEventId,
   deleteFamilyEvent,
@@ -17,7 +17,7 @@ import { element, formatBirthDate } from "./tao-ui.js";
 import { t } from "./locales/index.js?v=1.5.0";
 import { humanizeFamilyCalculation } from "./family-constellation-lexicon.mjs?v=1.0.0";
 
-const CATEGORY_ORDER = ["recurring", "mirrors", "generations", "siblings", "dates_times", "events", "places", "chronology", "curiosities"];
+const IMPORTANCE_ORDER = ["major", "notable", "curiosity"];
 const SYMBOLS = Object.freeze({ 1: "élan et commencement", 2: "relation et réceptivité", 3: "expression et mise en mouvement", 4: "structure et stabilité", 5: "passage et mobilité", 6: "harmonie et responsabilité", 7: "recul et recherche", 8: "organisation et accomplissement", 9: "aboutissement et transmission", 11: "nombre maître associé à l’intuition dans certaines écoles", 22: "nombre maître associé à la construction dans certaines écoles" });
 
 function heading(eyebrow, title, copy) {
@@ -48,6 +48,19 @@ function openCalculationSheet(card, opener) {
   header.append(title, close);
   const body = element("div", { className: "family-calculation-sheet__body" });
   body.append(element("p", { className: "method-note", text: card.description }));
+  if (card.occurrences.length) {
+    body.append(element("h3", { text: "Où apparaît-il ?" }));
+    const occurrences = element("ul", { className: "family-occurrence-list" });
+    card.occurrences.forEach((occurrence) => occurrences.append(element("li", { text: `${occurrence.personName} · ${occurrence.sourceLabel}${occurrence.rawValue ? ` · ${["birthDay", "birthMonth"].includes(occurrence.sourceType) ? formatBirthDate(occurrence.rawValue) : occurrence.rawValue}` : ""} → ${occurrence.sourceValue}` })));
+    body.append(occurrences);
+  }
+  if (card.relatedFeatures.length) {
+    body.append(element("h3", { text: "Particularités liées" }));
+    const related = element("ul", { className: "family-related-list" });
+    card.relatedFeatures.forEach((feature) => related.append(element("li", { text: (feature.calculations ?? []).slice(0, 1).map(humanizeFamilyCalculation).join("") || "Une relation simple renforce ce motif." })));
+    body.append(related);
+  }
+  body.append(element("h3", { text: "Calculs vérifiables" }));
   const list = element("ol");
   card.calculations.forEach((calculation) => list.append(element("li", { text: humanizeFamilyCalculation(calculation) })));
   body.append(
@@ -73,20 +86,20 @@ function openCalculationSheet(card, opener) {
 }
 
 function createObservationCard(card) {
-  const article = element("article", { className: "product-card family-observation-card", attributes: { "data-observation-id": card.id, "data-category": card.category, "data-participants": card.participantNames.join("|") } });
+  const article = element("article", { className: "product-card family-observation-card family-pattern-card", attributes: { "data-pattern-id": card.canonicalPatternId, "data-importance": card.importance, "data-category": card.category, "data-participants": card.participantIds.join("|") } });
   article.append(
-    element("p", { className: "family-interest", text: card.interestLabel }),
+    element("p", { className: "family-interest", text: `${card.importanceLabel} · ${card.categoryLabel}` }),
     element("h3", { text: card.title }),
-    element("p", { className: "family-observation-card__people", text: card.participantNames.join(" ↔ ") }),
+    element("p", { className: "family-observation-card__people", text: `${card.personCount} personne${card.personCount > 1 ? "s" : ""} · ${card.generationCount} génération${card.generationCount > 1 ? "s" : ""} · ${card.occurrenceCount} occurrence${card.occurrenceCount > 1 ? "s" : ""}` }),
     element("p", { text: card.description }),
-    element("p", { className: "family-force", text: `Force du motif · ${card.forceLabel}` }),
   );
   if (card.values.length) {
     const values = element("div", { className: "family-number-row", attributes: { "aria-label": `Valeurs : ${card.values.join(", ")}` } });
     card.values.forEach((value) => values.append(element("span", { text: String(value) })));
     article.append(values);
   }
-  const calculations = element("button", { className: "family-calculation-open", text: t("profiles.constellation.showCalculations"), attributes: { type: "button", "aria-haspopup": "dialog" } });
+  if (card.relatedFeatureCount) article.append(element("p", { className: "family-force", text: `${card.relatedFeatureCount} particularité${card.relatedFeatureCount > 1 ? "s" : ""} liée${card.relatedFeatureCount > 1 ? "s" : ""}` }));
+  const calculations = element("button", { className: "family-calculation-open", text: "Voir le détail", attributes: { type: "button", "aria-haspopup": "dialog" } });
   calculations.addEventListener("click", () => openCalculationSheet(card, calculations));
   article.append(calculations);
   return article;
@@ -107,8 +120,7 @@ function renderChronology(profiles, events) {
 
 function installFamilyViews(host) {
   const views = Object.freeze([
-    ["summary", "Synthèse", ["family-result-hero", "family-synthesis"]],
-    ["patterns", "Motifs", ["family-deep-reading", "family-all"]],
+    ["summary", "Synthèse", ["family-result-hero", "family-all", "family-synthesis"]],
     ["family", "Famille", ["family-map-card", "family-pair-view"]],
     ["chronology", "Chronologie", ["family-chronology"]],
     ["explore", "Explorer", ["family-number-view", "family-symbolic", "family-debug"]],
@@ -128,34 +140,6 @@ function installFamilyViews(host) {
   host.insertBefore(nav, host.children[1] ?? null);
 }
 
-function renderAnalyticalSections(host, reading) {
-  const definitions = [
-    ["parents", "Le couple fondateur", "Les motifs qui relient les adultes placés comme parents ou conjoints."],
-    ["parentChild", "Parents ↔ enfants", "Les structures directes ou simples qui passent d’une génération à l’autre."],
-    ["siblings", "Les échos entre les enfants", "Les correspondances de fratrie, en distinguant les faits indépendants des totaux qui en découlent."],
-    ["generations", "Ce qui semble traverser les générations", "Une réapparition numérique, jamais une transmission génétique ou une preuve de destin."],
-    ["mirrors", "Les effets miroir", "Dates, valeurs ou jours ordinaux qui utilisent la même structure en sens inverse."],
-    ["events", "Les âges qui résonnent avec les dates", "Les correspondances vérifiables entre personnes et événements saisis volontairement."],
-    ["places", "Les lieux", "Les liens géographiques réels, sans transformer les noms de villes en nombres."],
-    ["chronology", "La chronologie", "Les intervalles exacts entre événements qui rejoignent une signature déjà présente."],
-  ];
-  const section = element("section", { className: "product-card family-deep-reading" });
-  section.append(heading("Analyse structurée", "Les branches de la constellation", reading.methodology));
-  let rendered = 0;
-  for (const [key, title, copy] of definitions) {
-    const cards = reading.sections[key] ?? [];
-    if (!cards.length) continue;
-    const details = element("details", { className: "family-reading-section", attributes: rendered < 2 ? { open: "" } : {} });
-    details.append(element("summary", { text: `${title} · ${cards.length}` }), element("p", { className: "method-note", text: copy }));
-    const list = element("div", { className: "family-observation-list" });
-    cards.slice(0, 6).forEach((card) => list.append(createObservationCard(card)));
-    details.append(list);
-    section.append(details);
-    rendered += 1;
-  }
-  if (rendered) host.append(section);
-}
-
 function renderConstellationMap(host, analysis, reading, profiles, onFilter) {
   const section = element("section", { className: "product-card family-map-card" });
   section.append(heading(t("profiles.constellation.mapEyebrow"), t("profiles.constellation.mapTitle"), t("profiles.constellation.mapCopy")));
@@ -170,9 +154,8 @@ function renderConstellationMap(host, analysis, reading, profiles, onFilter) {
   lines.setAttribute("class", "family-star-lines");
   lines.setAttribute("viewBox", "0 0 100 100");
   lines.setAttribute("aria-hidden", "true");
-  const displayObservations = analysis.displayObservations ?? analysis.clusteredObservations ?? analysis.selectedObservations;
   reading.primaryCards.slice(0, 5).forEach((card) => {
-    const participants = displayObservations.find(({ id }) => id === card.id)?.participantIds.filter((id) => positions.has(id)).slice(0, 2) ?? [];
+    const participants = card.participantIds.filter((id) => positions.has(id)).slice(0, 2);
     if (participants.length !== 2) return;
     const start = positions.get(participants[0]);
     const end = positions.get(participants[1]);
@@ -289,7 +272,7 @@ function debugPanel(analysis, selectedProfiles, roles) {
   if (!["family-constellation", "family"].includes(new URLSearchParams(location.search).get("debug"))) return null;
   const details = element("details", { className: "product-card family-debug", attributes: { open: "" } });
   details.append(element("summary", { text: "TAO FAMILY CONSTELLATION DEBUG" }));
-  details.append(element("pre", { text: JSON.stringify({ profiles: selectedProfiles.map(({ id, firstName }) => ({ id, firstName, role: roles[id] })), rawFacts: selectedProfiles.map(({ id, birthDate, birthTime, birthPlace }) => ({ id, birthDate, birthTime, birthPlace })), derivedFacts: analysis.deepAnalysis.extendedSignatures, intervals: analysis.intervals, familyGraph: analysis.familyGraph, evidenceGraph: analysis.evidenceGraph, numericGraph: analysis.numericGraph, candidatePatterns: analysis.candidates, rejectedPatterns: analysis.discardedObservations, complexityCosts: analysis.displayObservations.map(({ id, complexityCost, transformations }) => ({ id, complexityCost: complexityCost ?? transformations ?? 0 })), dependencyGraph: analysis.displayObservations.map(({ id, dependencyGroups, independenceGroups }) => ({ id, dependencyGroups, independenceGroups })), deepPatterns: [...analysis.discoveredPatterns, ...analysis.deepAnalysis.observations], density: analysis.density, patternStrength: analysis.displayObservations.map(({ id, interestScore, force, independentPathCount, sourceDiversity }) => ({ id, interestScore, force, independentPathCount, sourceDiversity })), topInsights: analysis.topInsights.map(({ id }) => id), evidenceIds: analysis.displayObservations.flatMap(({ evidenceIds = [], facts = [] }) => evidenceIds.length ? evidenceIds : facts), aiObservationIds: analysis.displayObservations.slice(0, 16).map(({ id }) => id) }, null, 2) }));
+  details.append(element("pre", { text: JSON.stringify({ profiles: selectedProfiles.map(({ id, firstName }) => ({ id, firstName, role: roles[id] })), rawFacts: selectedProfiles.map(({ id, birthDate, birthTime, birthPlace }) => ({ id, birthDate, birthTime, birthPlace })), derivedFacts: analysis.deepAnalysis.extendedSignatures, canonicalInventory: analysis.patternInventory.patterns.map(({ canonicalPatternId, importance, occurrenceCount, personCount, generationCount, observationIds, dependencyGroupIds }) => ({ canonicalPatternId, importance, occurrenceCount, personCount, generationCount, observationIds, dependencyGroupIds })), inventorySummary: analysis.patternInventory.importance, intervals: analysis.intervals, candidatePatterns: analysis.candidates, rejectedPatterns: analysis.discardedObservations, rawObservationCount: analysis.displayObservations.length, canonicalPatternCount: analysis.patternInventory.total, aiPatternIds: analysis.patternInventory.patterns.slice(0, 16).map(({ canonicalPatternId }) => canonicalPatternId) }, null, 2) }));
   return details;
 }
 
@@ -363,36 +346,61 @@ export function createFamilyConstellationModule({ profiles, onAddProfile }) {
         element("p", { className: "family-overview", text: reading.overview }),
         element("p", { className: "method-note", text: reading.disclaimer }),
       );
-      const primary = element("div", { className: "family-primary-grid" });
-      reading.primaryCards.forEach((card) => primary.append(createObservationCard(card)));
-      hero.append(primary);
-      if (reading.cards.length > reading.primaryCards.length) hero.append(element("a", { className: "product-button product-button--quiet", text: t("profiles.constellation.seeAll"), attributes: { href: "#family-all-observations" } }));
+      hero.append(element("a", { className: "product-button product-button--quiet", text: "Voir l’inventaire", attributes: { href: "#family-all-observations" } }));
       resultHost.append(hero);
-      renderAnalyticalSections(resultHost, reading);
 
       const all = element("section", { className: "product-card family-all", attributes: { id: "family-all-observations" } });
-      all.append(heading(t("profiles.constellation.correspondencesEyebrow"), t("profiles.constellation.correspondencesTitle"), t("profiles.constellation.correspondencesCopy")));
-      const filters = element("div", { className: "family-filter-row", attributes: { role: "group", "aria-label": t("profiles.constellation.filters") } });
+      all.append(heading("Inventaire", "Les motifs de la constellation", "Une idée n’apparaît qu’une seule fois. Ses occurrences et ses particularités sont réunies dans sa fiche."));
+      const filters = element("div", { className: "family-filter-row", attributes: { role: "group", "aria-label": "Importance des motifs" } });
       const cardsHost = element("div", { className: "family-observation-list" });
-      const renderCards = (cards) => { cardsHost.replaceChildren(); cards.forEach((card) => cardsHost.append(createObservationCard(card))); if (!cards.length) cardsHost.append(element("p", { className: "empty-state", text: t("profiles.constellation.noCategoryResults") })); };
+      const renderCards = (cards) => {
+        cardsHost.replaceChildren();
+        for (const importance of IMPORTANCE_ORDER) {
+          const group = cards.filter((card) => card.importance === importance);
+          if (!group.length) continue;
+          cardsHost.append(element("h3", { className: "family-inventory-heading", text: reading.importanceLabels[importance] }));
+          group.forEach((card) => cardsHost.append(createObservationCard(card)));
+        }
+        if (!cards.length) cardsHost.append(element("p", { className: "empty-state", text: t("profiles.constellation.noCategoryResults") }));
+      };
       const allButton = element("button", { className: "is-active", text: t("profiles.constellation.all"), attributes: { type: "button", "aria-pressed": "true" } });
       allButton.addEventListener("click", () => { filters.querySelectorAll("button").forEach((button) => { button.classList.toggle("is-active", button === allButton); button.setAttribute("aria-pressed", String(button === allButton)); }); renderCards(reading.cards); });
       filters.append(allButton);
-      CATEGORY_ORDER.filter((category) => reading.cards.some((card) => card.category === category)).forEach((category) => {
-        const button = element("button", { text: reading.categoryLabels[category], attributes: { type: "button", "aria-pressed": "false" } });
-        button.addEventListener("click", () => { filters.querySelectorAll("button").forEach((item) => { item.classList.toggle("is-active", item === button); item.setAttribute("aria-pressed", String(item === button)); }); renderCards(reading.cards.filter((card) => card.category === category)); });
+      IMPORTANCE_ORDER.filter((importance) => reading.inventory[importance].length).forEach((importance) => {
+        const button = element("button", { text: reading.importanceLabels[importance], attributes: { type: "button", "aria-pressed": "false" } });
+        button.addEventListener("click", () => { filters.querySelectorAll("button").forEach((item) => { item.classList.toggle("is-active", item === button); item.setAttribute("aria-pressed", String(item === button)); }); renderCards(reading.inventory[importance]); });
         filters.append(button);
       });
       renderCards(reading.cards);
       all.append(filters, cardsHost);
       resultHost.append(all);
 
-      const displayObservations = analysis.displayObservations ?? analysis.clusteredObservations ?? analysis.selectedObservations;
       const filterReading = ({ profileId, observationId }) => {
-        const cards = observationId ? reading.cards.filter(({ id }) => id === observationId) : reading.cards.filter((card) => displayObservations.find(({ id }) => id === card.id)?.participantIds.includes(profileId));
+        const cards = observationId ? reading.cards.filter(({ id }) => id === observationId) : reading.cards.filter((card) => card.participantIds.includes(profileId));
         renderCards(cards);
         all.scrollIntoView({ behavior: "smooth", block: "start" });
       };
+
+      const synthesis = element("section", { className: "product-card family-synthesis" });
+      synthesis.append(heading(t("profiles.constellation.taoNoticesEyebrow"), t("profiles.constellation.taoNoticesTitle")), element("p", { text: reading.synthesis }));
+      const talk = element("button", { className: "product-button product-button--primary", text: t("profiles.constellation.talk"), attributes: { type: "button" } });
+      talk.addEventListener("click", () => {
+        const facts = familyObservationFacts(analysis);
+        window.dispatchEvent(new CustomEvent("tao:ai-open", { detail: {
+          mode: "family_constellation",
+          prompt: t("profiles.constellation.aiPrompt"),
+          contextOptions: {
+            facts,
+            familyConstellation: {
+              familyMembers: selectedProfiles.map((profile) => ({ id: profile.id, displayName: profile.firstName, relationship: selectedRoles[profile.id] })),
+              observations: facts.map(({ id, canonicalPatternId, type, importance, value, occurrenceCount, generationCount, participantIds, occurrences, relatedFeatureIds, evidenceIds }) => ({ id, canonicalPatternId, type, importance, values: value ? value.split("/").map(Number).filter(Number.isFinite) : [], occurrenceCount, generationCount, participantIds, occurrences, relatedFeatureIds, evidenceIds })),
+              statistics: null,
+            },
+          },
+        } }));
+      });
+      synthesis.append(talk);
+      resultHost.append(synthesis);
       resultHost.append(renderConstellationMap(resultHost, analysis, reading, selectedProfiles, filterReading));
 
       const pair = element("section", { className: "product-card family-pair-view" });
@@ -403,7 +411,7 @@ export function createFamilyConstellationModule({ profiles, onAddProfile }) {
       selectedProfiles.forEach((profile, index) => { left.append(element("option", { text: profile.firstName, attributes: { value: profile.id } })); right.append(element("option", { text: profile.firstName, attributes: { value: profile.id } })); if (index === 1) right.value = profile.id; });
       const showPair = element("button", { className: "product-button product-button--quiet", text: t("profiles.constellation.showPair"), attributes: { type: "button" } });
       const pairResults = element("div", { className: "family-pair-results" });
-      showPair.addEventListener("click", () => { const cards = reading.cards.filter((card) => { const item = displayObservations.find(({ id }) => id === card.id); return item?.participantIds.includes(left.value) && item?.participantIds.includes(right.value); }); pairResults.replaceChildren(); cards.forEach((card) => pairResults.append(createObservationCard(card))); if (!cards.length) pairResults.append(element("p", { className: "empty-state", text: t("profiles.constellation.noPairResults") })); });
+      showPair.addEventListener("click", () => { const cards = reading.cards.filter((card) => card.participantIds.includes(left.value) && card.participantIds.includes(right.value)); pairResults.replaceChildren(); cards.forEach((card) => pairResults.append(createObservationCard(card))); if (!cards.length) pairResults.append(element("p", { className: "empty-state", text: t("profiles.constellation.noPairResults") })); });
       pairControls.append(left, right, showPair);
       pair.append(pairControls, pairResults);
       resultHost.append(pair);
@@ -416,26 +424,6 @@ export function createFamilyConstellationModule({ profiles, onAddProfile }) {
       numberView.append(numberButtons, numberResults);
       resultHost.append(numberView);
 
-      const synthesis = element("section", { className: "product-card family-synthesis" });
-      synthesis.append(heading(t("profiles.constellation.taoNoticesEyebrow"), t("profiles.constellation.taoNoticesTitle")), element("p", { text: reading.synthesis }));
-      const talk = element("button", { className: "product-button product-button--primary", text: t("profiles.constellation.talk"), attributes: { type: "button" } });
-      talk.addEventListener("click", () => {
-        const detail = {
-          mode: "family_constellation",
-          prompt: t("profiles.constellation.aiPrompt"),
-          contextOptions: {
-            facts: familyObservationFacts(analysis),
-            familyConstellation: {
-              familyMembers: selectedProfiles.map((profile) => ({ id: profile.id, displayName: profile.firstName, relationship: selectedRoles[profile.id] })),
-              observations: displayObservations.map(({ id, type, interest, force, participantIds, values, independentPathCount, sourceDiversity, complexityCost = 0, evidenceIds = [] }) => ({ id, type, interest, force, participantIds, values, independentPathCount: independentPathCount ?? 1, sourceDiversity: sourceDiversity ?? 1, complexityCost, evidenceIds })),
-              statistics: null,
-            },
-          },
-        };
-        window.dispatchEvent(new CustomEvent("tao:ai-open", { detail }));
-      });
-      synthesis.append(talk);
-      resultHost.append(synthesis);
       resultHost.append(renderChronology(selectedProfiles, selectedEvents));
       if (symbolicInput.checked) renderSymbolicReading(resultHost, reading);
       const debug = debugPanel(analysis, selectedProfiles, selectedRoles); if (debug) resultHost.append(debug);

@@ -1009,6 +1009,9 @@ body.tao-ai-panel-open .main-navigation {
 .family-pair-results,
 .family-number-results { display: grid; min-width: 0; gap: var(--space-4); }
 .family-observation-card { display: grid; min-width: 0; gap: .65rem; }
+.family-pattern-card { padding: 1rem; border-color: rgb(215 180 119 / 15%); background: rgb(5 14 25 / 36%); }
+.family-inventory-heading { margin: .7rem 0 0; padding-top: .9rem; border-top: 1px solid rgb(215 180 119 / 13%); color: var(--product-gold); font: 700 .75rem/1.35 system-ui, sans-serif; letter-spacing: .08em; text-transform: uppercase; }
+.family-inventory-heading:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
 .family-observation-card h3 { margin: 0; color: var(--product-ivory); font: 500 1.25rem/1.25 Georgia, serif; }
 .family-observation-card__people { color: var(--product-gold); font: 650 .76rem/1.35 system-ui, sans-serif; overflow-wrap: anywhere; }
 .family-interest { color: var(--product-gold); font: 750 .68rem/1.3 system-ui, sans-serif; letter-spacing: .04em; text-transform: uppercase; }
@@ -1055,6 +1058,11 @@ body.tao-ai-panel-open .main-navigation {
 .family-calculation-sheet h2 { margin: 0; color: var(--product-ivory); font: 500 1.2rem/1.25 Georgia, serif; }
 .family-calculation-sheet__close { width: 2.75rem; height: 2.75rem; border: 1px solid rgb(215 180 119 / 24%); border-radius: 50%; color: var(--product-ivory); background: rgb(255 255 255 / 5%); font: 300 1.5rem/1 system-ui, sans-serif; }
 .family-calculation-sheet__body { min-height: 0; overflow-y: auto; padding: .9rem 1.2rem calc(1.2rem + env(safe-area-inset-bottom)); overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+.family-calculation-sheet__body h3 { margin: 1.15rem 0 .45rem; color: var(--product-gold); font: 700 .78rem/1.35 system-ui, sans-serif; letter-spacing: .04em; text-transform: uppercase; }
+.family-occurrence-list,
+.family-related-list { display: grid; gap: .55rem; margin: 0; padding: 0; list-style: none; color: #dce5ed; font: 500 .88rem/1.5 system-ui, sans-serif; }
+.family-occurrence-list li,
+.family-related-list li { padding: .65rem .75rem; border-left: 2px solid rgb(215 180 119 / 45%); background: rgb(215 180 119 / 5%); }
 .family-calculation-sheet__body ol { display: grid; gap: .65rem; margin: .8rem 0; padding-left: 1.25rem; color: #dce5ed; font: 500 .9rem/1.55 system-ui, sans-serif; }
 .family-calculation-sheet__independence { padding: .8rem; border-left: 2px solid var(--product-gold); color: #dce5ed; background: rgb(215 180 119 / 6%); font: 650 .8rem/1.5 system-ui, sans-serif; }
 body.has-family-sheet { overflow: hidden; }
