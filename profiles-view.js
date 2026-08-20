@@ -11,12 +11,12 @@ import { calculateBazi } from "./bazi-engine.mjs";
 import { clearDailyCacheForProfile } from "./daily-cache.mjs";
 import { searchBirthPlaces } from "./geocoding.js";
 import { element, formatBirthDate, formatPlace } from "./tao-ui.js";
-import { t } from "./locales/index.js?v=1.5.0";
+import { t } from "./locales/index.js?v=1.5.1";
 import { createSectionNavigation, focusRequestedSection, markProductSection } from "./section-navigation.js";
 import { parseAppRoute } from "./navigation-routes.mjs";
 import { getSemanticConcept } from "./semantic-layer.mjs?v=1.0.1";
 import { clearTaoAIMemory, getTaoAISettings, setTaoAIEnabled } from "./tao-ai-memory.js";
-import { createRelationshipsModule } from "./relationships-view.js?v=1.0.4";
+import { createRelationshipsModule } from "./relationships-view.js?v=1.1.0";
 import { createFamilyConstellationModule } from "./family-constellation-view.js?v=4.0.0";
 
 const root = document.querySelector("[data-profiles-root]");

@@ -2,7 +2,7 @@ import { common } from "./common.js";
 import { bazi } from "./bazi.js";
 import { calendar } from "./calendar.js";
 import { guidance } from "./guidance.js";
-import { profiles } from "./profiles.js?v=constellation-2";
+import { profiles } from "./profiles.js?v=relationship-goals-1";
 import { yijing } from "./yijing.js";
 import { glossary } from "./glossary.js";
 import { semantics } from "./semantics.js";

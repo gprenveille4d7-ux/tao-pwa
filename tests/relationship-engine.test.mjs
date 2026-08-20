@@ -80,7 +80,7 @@ test("le contexte choisi modifie les conseils sans inventer de cycle", () => {
     rightProfile: marcel,
     leftTheme: theme(jia, branch("zi", "Zi", "子")),
     rightTheme: theme(ji, branch("wu", "Wu", "午"), { unknownHour: true }),
-    focus: "better_together",
+    relationshipGoal: "cooperation",
   };
   const couple = buildRelationshipSemanticReading({ comparison: compareBaziProfiles({ ...base, relationshipType: "couple" }), leftProfile: alice, rightProfile: marcel });
   const work = buildRelationshipSemanticReading({ comparison: compareBaziProfiles({ ...base, relationshipType: "work" }), leftProfile: alice, rightProfile: marcel });
