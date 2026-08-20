@@ -68,12 +68,12 @@ test("une relation parent-enfant n'est pas classée comme motif de fratrie", () 
 test("la synthèse de référence hiérarchise les structures et explique les dépendances", () => {
   const analysis = analyzeFamilyConstellation({ profiles, roles, events });
   const reading = buildFamilyConstellationReading({ analysis, profiles, events });
-  assert.match(reading.headline, /motifs? ressort/i);
-  assert.match(reading.overview, /circulent entre personnes, dates, heures et événements/i);
-  assert.ok(reading.sections.siblings.some(({ description }) => /troisième preuve indépendante/i.test(description)));
-  assert.ok(reading.sections.events.some(({ description }) => /âge/i.test(description)));
-  assert.ok(reading.sections.places.some(({ description }) => /lieu de naissance/i.test(description)));
-  assert.ok(reading.sections.generations.filter(({ title }) => /valeurs parentales/i.test(title)).every(({ description }) => /génération suivante/i.test(description)));
+  assert.match(reading.headline, /motifs? détectés/i);
+  assert.match(reading.overview, /motif dominant/i);
+  assert.ok(reading.sections.time.some(({ description }) => /troisième preuve indépendante|totaux qui en découlent/i.test(description)));
+  assert.ok(reading.sections.cycle.some(({ title, relatedFeatures }) => /événement/i.test(title) && relatedFeatures.some(({ type }) => /AGE/.test(type))));
+  assert.ok(reading.sections.location.some(({ description }) => /lieu de naissance/i.test(description)));
+  assert.ok(reading.cards.find(({ canonicalPatternId }) => canonicalPatternId === "number:11").relatedFeatures.some(({ type }) => type === "PARENT_PAIR_CHILD_SUM"));
   assert.match(reading.disclaimer, /ne prouvent ni causalité, ni destin/i);
 });
 

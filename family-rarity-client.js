@@ -4,7 +4,7 @@ import {
   FAMILY_RARITY_ENGINE_VERSION,
   FAMILY_RARITY_MODELS,
 } from "./family-rarity-engine.mjs?v=2.0.1";
-import { familyConstellationEngineVersion } from "./family-number-engine.mjs?v=2.0.0";
+import { familyConstellationEngineVersion } from "./family-number-engine.mjs?v=3.1.0";
 
 const CACHE_PREFIX = "tao.familyRarity.v2.";
 

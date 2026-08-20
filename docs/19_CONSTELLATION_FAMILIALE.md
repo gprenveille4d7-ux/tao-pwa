@@ -1,14 +1,24 @@
 # Constellation familiale
 
-## Interface progressive V4
+## Interface progressive V4.1 — inventaire canonique
 
-L’analyse n’est plus rendue comme un document vertical unique. Après sélection des personnes, cinq vues conservent la profondeur du moteur sans tout afficher simultanément : **Synthèse**, **Motifs**, **Famille**, **Chronologie** et **Explorer**. Les calculs exacts sont ouverts dans une feuille mobile dédiée ; le lexique `family-constellation-lexicon.mjs` empêche les clés techniques telles que `dateDigitSum` d’atteindre l’utilisateur.
+La vue principale suit désormais l’ordre **Résumé → Inventaire → détail à la demande → Lecture de TAO**. Quatre vues secondaires conservent la profondeur du moteur : **Synthèse**, **Famille**, **Chronologie** et **Explorer**. Les calculs exacts sont ouverts dans une feuille mobile dédiée ; le lexique `family-constellation-lexicon.mjs` empêche les clés techniques telles que `dateDigitSum` d’atteindre l’utilisateur.
+
+L’inventaire est construit avant toute présentation par `family-inventory-engine.mjs`. Il sépare trois niveaux : une **occurrence** est un fait élémentaire, un **motif** regroupe toutes les occurrences sémantiquement équivalentes, et une **interprétation** explique ce motif une seule fois. La couche sémantique, l’interface et le contexte Gemini consomment tous ce même inventaire.
 
 Le graphe déterministe comprend désormais trois natures de nœuds : `PERSON`, `EVENT` et `PLACE`. Les arêtes `BORN_AT`, `OCCURRED_AT` et `PARTICIPATES_IN` restent factuelles. Aucun calcul numérique n’est fabriqué à partir du nom d’un lieu.
 
 Les événements acceptent rencontre, mariage, PACS, naissance, décès, déménagement, union, séparation et événement libre. La date est obligatoire ; heure, lieu et note restent facultatifs et locaux.
 
-Versions : `tao-family-number-3.0.0`, `tao-family-pattern-2.0.0` et `tao-family-deep-3.0.0`.
+Versions : `tao-family-number-3.1.0`, `tao-family-inventory-1.0.0`, `tao-family-pattern-2.0.0` et `tao-family-deep-3.1.0`.
+
+### Identités canoniques et dépendances
+
+Chaque motif possède un `canonicalPatternId` stable, par exemple `number:11`, `signature:c:d`, `date-mirror:09-11:11-09` ou `mirror:131:313`. Avant de créer une carte, le moteur vérifie si cet identifiant existe déjà. Une nouvelle occurrence enrichit alors le motif existant.
+
+Chaque occurrence conserve aussi ses `dependencyGroupIds`. La somme d’une date, la somme d’une heure et leur total appartiennent à des arbres de dérivation explicites : le total reste visible dans le détail, mais ne devient pas une troisième preuve indépendante. Les anciennes observations de présence, génération ou convergence deviennent des `relatedFeatures` du motif au lieu de recréer des cartes.
+
+Sur la fixture Guillaume, Lucile, Alice et Marcel, le pipeline brut produit de nombreuses observations intermédiaires. L’inventaire public les ramène actuellement à huit motifs distincts : trois majeurs et cinq notables. `number:11` apparaît une seule fois avec quatre occurrences et deux générations.
 
 ## Positionnement
 
@@ -91,7 +101,7 @@ Convention `TAO_NUMEROLOGY_V1` : réduction décimale répétée, avec conservat
 
 ## Gemini
 
-Le mode `family_constellation` intervient après tous les calculs. Il reçoit des profils minimisés, les rôles, les observations validées, leur force, leur coût, leur indépendance et leurs `evidenceIds`. Les dates, heures, coordonnées et lieux bruts ne sont pas transmis.
+Le mode `family_constellation` intervient après tous les calculs. Il reçoit des profils minimisés et uniquement les motifs canoniques dédupliqués, avec leur importance, leurs occurrences minimisées, leurs particularités liées et leurs `evidenceIds`. Les dates, heures, coordonnées et lieux bruts ne sont pas transmis.
 
 Le Worker interdit à Gemini de créer un nombre, une relation ou un événement. Il lui demande de privilégier les motifs directs, de distinguer les totaux dépendants et d’être sceptique envers les observations secondaires.
 

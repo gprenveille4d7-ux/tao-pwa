@@ -1,4 +1,4 @@
-import { analyzeFamilyConstellation, familyConstellationEngineVersion } from "./family-number-engine.mjs?v=2.0.0";
+import { analyzeFamilyConstellation, familyConstellationEngineVersion } from "./family-number-engine.mjs?v=3.1.0";
 
 export const FAMILY_RARITY_ENGINE_VERSION = "tao-family-rarity-2.0.0";
 export const FAMILY_RARITY_MODELS = Object.freeze({

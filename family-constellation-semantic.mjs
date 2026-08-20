@@ -1,154 +1,126 @@
-const TITLES = Object.freeze({
-  DATE_MIRROR: "Une date miroir",
-  MULTI_SIGNATURE_MATCH: "Le même trio numérique",
-  CROSS_GENERATION_VALUE: "Un nombre traverse les générations",
-  EVENT_AGE_MATCH: "Un âge rejoint une signature",
-  EVENT_SIGNATURE_MATCH: "Une date importante fait écho",
-  INTERVAL_MATCHES_SIGNATURE: "Un intervalle reproduit une signature",
-  NUMBER_MIRROR: "Deux nombres se répondent",
-  ORDINAL_MIRROR: "Deux jours de l’année forment un miroir",
-  SHARED_VALUE: "Une valeur commune",
-  SIMPLE_ARITHMETIC: "Une relation arithmétique simple",
-  PALINDROME_VALUE: "Une valeur palindrome",
-  SIMPLE_MULTIPLE: "Un multiple simple",
-  WEEKDAY_MATCH: "Un même jour de semaine",
-  SHARED_DERIVED_VALUE: "Une valeur relie plusieurs dimensions",
-  REPEATED_DIFFERENCE: "Le même écart réapparaît",
-  REPEATED_SUM: "La même somme se répète",
-  CROSS_GENERATION_TRANSFER: "Une valeur passe entre les générations",
-  MIRROR_CHAIN: "Une chaîne de nombres miroirs",
-  PALINDROME_FAMILY: "Un palindrome partagé",
-  MULTI_PERSON_CLUSTER: "Une valeur relie plusieurs personnes",
-  CONVERGENT_NUMBER: "Plusieurs chemins convergent",
-  SHARED_BIRTH_PLACE: "Un lieu relie plusieurs naissances",
-  MULTI_EVENT_AGE_ECHO: "Deux âges rejoignent le même événement",
-  PARENT_PAIR_CHILD_SUM: "Deux valeurs parentales se rejoignent chez un enfant",
-  SIBLING_MULTI_DOMAIN_ECHO: "Une signature de fratrie particulièrement nette",
-  EVENT_INTERVAL_ECHO: "Un intervalle rejoint une signature familiale",
+export const FAMILY_CONSTELLATION_SEMANTIC_VERSION = "tao-family-semantic-4.0.0";
+
+const CATEGORY_LABELS = Object.freeze({
+  number: "Nombres",
+  date: "Dates et miroirs",
+  time: "Dates et heures",
+  cycle: "Événements et intervalles",
+  generation: "Générations",
+  location: "Lieux",
+  bazi: "Résonances BaZi",
+  singularity: "Singularités",
 });
 
-const CATEGORY_LABELS = Object.freeze({ recurring: "Nombres récurrents", mirrors: "Effets miroir", generations: "Générations", siblings: "Entre les enfants", dates_times: "Dates & heures", events: "Événements", places: "Lieux", chronology: "Chronologie", curiosities: "Curiosités" });
-const INTEREST_LABELS = Object.freeze({ HIGH: "✦✦✦ Correspondance très nette", MEDIUM: "✦✦ Correspondance intéressante", CURIOSITY: "✦ Curiosité numérique" });
-const FORCE_LABELS = Object.freeze({ DIRECT: "Direct", STRONG: "Fort", NOTABLE: "Notable", SECONDARY: "Secondaire", EXPLORATORY: "Exploratoire" });
-
-function names(observation, profileMap) {
-  return observation.participantIds.map((id) => profileMap.get(id)?.firstName ?? "Une personne");
-}
+const IMPORTANCE_LABELS = Object.freeze({ major: "Motif majeur", notable: "Motif notable", curiosity: "Curiosité" });
+const FORCE_LABELS = Object.freeze({ major: "Direct ou fortement structuré", notable: "Notable", curiosity: "Exploratoire" });
 
 function joinNames(values) {
   return new Intl.ListFormat("fr-FR", { style: "long", type: "conjunction" }).format(values);
 }
 
-function describe(observation, profileMap, eventMap) {
-  const people = names(observation, profileMap);
-  const value = observation.values[0];
-  switch (observation.type) {
-    case "DATE_MIRROR": return `Le jour et le mois de ${people[0]} et ${people[1]} sont exactement inversés.`;
-    case "MULTI_SIGNATURE_MATCH": return `${joinNames(people)} produisent le même ensemble : date ${observation.values[0]}, heure ${observation.values[1]}, puis total ${observation.values[2]}.`;
-    case "CROSS_GENERATION_VALUE": return `Le ${value} change de place entre les générations : il apparaît directement comme jour chez certains membres et comme mois chez d’autres.`;
-    case "INTERVAL_MATCHES_SIGNATURE": return `Un écart réel de ${value} minutes entre deux heures rejoint la somme de date d’un autre membre de la famille.`;
-    case "EVENT_AGE_MATCH": return `Lors de « ${eventMap.get(observation.eventIds[0])?.title ?? "cet événement"} », l’âge de ${people[0]} rejoint exactement la somme des chiffres de sa date de naissance.`;
-    case "EVENT_SIGNATURE_MATCH": return `La date de « ${eventMap.get(observation.eventIds[0])?.title ?? "cet événement"} » reprend une valeur déjà présente chez ${joinNames(people)}.`;
-    case "NUMBER_MIRROR": return `${observation.values[0]} et ${observation.values[1]} utilisent les mêmes chiffres dans l’ordre inverse.`;
-    case "ORDINAL_MIRROR": return `Les jours ordinaux ${observation.values[0]} et ${observation.values[1]} utilisent les mêmes chiffres en ordre miroir.`;
-    case "SHARED_VALUE": return `La valeur ${value} apparaît indépendamment chez ${joinNames(people)}.`;
-    case "SIMPLE_ARITHMETIC": return `Les valeurs de ${joinNames(people)} forment une égalité simple qui rejoint une signature déjà présente.`;
-    case "PALINDROME_VALUE": return `${value} se lit de la même manière dans les deux sens. Ce motif reste une curiosité s’il n’est pas repris ailleurs.`;
-    case "SIMPLE_MULTIPLE": return `${observation.values[1]} reprend exactement ${observation.values[0]} sous la forme d’un double ou d’un triple déjà présent dans la famille.`;
-    case "SHARED_DERIVED_VALUE": return `La valeur ${value} apparaît dans plusieurs dimensions indépendantes chez ${joinNames(people)}.`;
-    case "REPEATED_DIFFERENCE": return `Le même écart ${value} réapparaît dans ${observation.independentPathCount} dimensions indépendantes.`;
-    case "REPEATED_SUM": return `La somme ${value} est obtenue par ${observation.independentPathCount} chemins distincts.`;
-    case "CROSS_GENERATION_TRANSFER": return `La valeur ${value} traverse plusieurs générations sans dépendre d’une longue chaîne de calculs.`;
-    case "MIRROR_CHAIN": return `Plusieurs inversions numériques se répondent autour de ${value}.`;
-    case "PALINDROME_FAMILY": return `La valeur palindrome ${value} apparaît chez plusieurs membres de la constellation.`;
-    case "MULTI_PERSON_CLUSTER": return `La valeur ${value} relie directement ou par une dérivation courte ${joinNames(people)}.`;
-    case "CONVERGENT_NUMBER": return `La valeur ${value} est retrouvée par ${observation.independentPathCount} chemins indépendants issus de ${observation.sourceDiversity} catégories de données.`;
-    case "SHARED_BIRTH_PLACE": return `${joinNames(people)} partagent le même lieu de naissance. Cette relation est géographique et directe ; aucun nombre n’est fabriqué à partir du nom du lieu.`;
-    case "MULTI_EVENT_AGE_ECHO": return `Au même événement familial, l’âge de ${joinNames(people)} rejoint pour chacun la somme de sa propre date de naissance.`;
-    case "PARENT_PAIR_CHILD_SUM": return "Deux valeurs directes des parents s’additionnent pour rejoindre une valeur directe dans la génération suivante.";
-    case "SIBLING_MULTI_DOMAIN_ECHO": return `${joinNames(people)} partagent la même somme de date et la même somme d’heure. Leur total commun en découle ; il n’est donc pas compté comme une troisième preuve indépendante.`;
-    case "EVENT_INTERVAL_ECHO": return `La durée exacte entre deux événements rejoint une valeur déjà présente indépendamment dans la constellation.`;
-    default: return `Une correspondance simple relie ${joinNames(people)} autour de ${observation.values.join(", ")}.`;
-  }
+function patternTitle(pattern) {
+  return pattern.canonicalPatternId.startsWith("number:") ? `Le ${pattern.label} dans la famille` : pattern.label;
 }
 
-export function buildFamilyConstellationReading({ analysis, profiles, events = [] }) {
-  const profileMap = new Map(profiles.map((profile) => [profile.id, profile]));
-  const eventMap = new Map(events.map((event) => [event.id, event]));
-  const observations = analysis.displayObservations ?? analysis.clusteredObservations ?? analysis.selectedObservations;
-  const cards = observations.map((observation) => Object.freeze({
-    id: observation.id,
-    type: observation.type,
-    category: observation.category,
-    categoryLabel: CATEGORY_LABELS[observation.category] ?? "Correspondances",
-    title: TITLES[observation.type] ?? "Un écho numérique",
-    interest: observation.interest,
-    interestLabel: INTEREST_LABELS[observation.interest],
-    participantNames: Object.freeze(names(observation, profileMap)),
-    values: observation.values,
-    description: describe(observation, profileMap, eventMap),
-    calculations: observation.calculations,
-    facts: observation.facts,
-    independentPathCount: observation.independentPathCount ?? 1,
-    sourceDiversity: observation.sourceDiversity ?? 1,
-    force: observation.force ?? (observation.interestScore >= 92 ? "DIRECT" : observation.interestScore >= 82 ? "STRONG" : observation.interestScore >= 68 ? "NOTABLE" : observation.interestScore >= 54 ? "SECONDARY" : "EXPLORATORY"),
-    forceLabel: FORCE_LABELS[observation.force] ?? (observation.interestScore >= 92 ? "Direct" : observation.interestScore >= 82 ? "Fort" : observation.interestScore >= 68 ? "Notable" : observation.interestScore >= 54 ? "Secondaire" : "Exploratoire"),
-    complexityCost: observation.complexityCost ?? observation.transformations ?? 0,
-    evidenceIds: Object.freeze(observation.evidenceIds ?? observation.facts ?? []),
-  }));
-  const selected = [];
-  const selectedKeys = new Set();
-  for (const card of cards.filter(({ force }) => ["DIRECT", "STRONG", "NOTABLE"].includes(force))) {
-    const key = `${card.category}|${card.values[0] ?? "none"}|${[...card.participantNames].sort().join(".")}`;
-    if (selectedKeys.has(key)) continue;
-    selectedKeys.add(key);
-    selected.push(card);
-    if (selected.length === 4) break;
+function patternDescription(pattern, participantNames) {
+  if (pattern.canonicalPatternId.startsWith("number:")) {
+    const generations = pattern.generationCount > 1 ? ` sur ${pattern.generationCount} générations` : "";
+    return `${pattern.label} apparaît directement ${pattern.occurrenceCount} fois chez ${joinNames(participantNames)}${generations}. Les variantes qui en découlent sont rattachées à ce motif unique.`;
   }
-  const headline = selected.length
-    ? `${selected.length === 1 ? "Un motif ressort" : `${selected.length} motifs ressortent`} particulièrement de cette constellation.`
-    : cards.length
-      ? "TAO observe quelques échos discrets, sans symétrie dominante."
-      : "TAO n’a pas trouvé de symétrie particulièrement forte dans ces dates.";
-  const synthesis = selected.length
-    ? `Parmi les correspondances calculées, ${joinNames(selected.map(({ title }) => title.toLocaleLowerCase("fr-FR")))} ${selected.length === 1 ? "ressort" : "ressortent"} le plus clairement. ${selected.length === 1 ? "Elle a" : "Elles ont"} été retenue${selected.length === 1 ? "" : "s"} parce qu’${selected.length === 1 ? "elle repose" : "elles reposent"} sur des relations courtes et vérifiables, sans longue chaîne de transformations.`
-    : "Aucun motif n’est forcé : l’absence de correspondance nette est aussi un résultat valable.";
-  const cardsById = new Map(cards.map((card) => [card.id, card]));
-  const section = (items = []) => Object.freeze(items.map(({ id }) => cardsById.get(id)).filter(Boolean));
-  const sections = Object.freeze({
-    parents: section(analysis.sections?.parents),
-    parentChild: section(analysis.sections?.parentChild),
-    siblings: section(analysis.sections?.siblings),
-    generations: section(analysis.sections?.generations),
-    mirrors: section(analysis.sections?.mirrors),
-    events: section(analysis.sections?.events),
-    places: section(analysis.sections?.places),
-    chronology: section(analysis.sections?.chronology),
+  return pattern.explanation;
+}
+
+function patternCard(pattern, profileMap) {
+  const participantNames = pattern.participantIds.map((id) => profileMap.get(id)?.firstName ?? "Une personne");
+  return Object.freeze({
+    id: pattern.id,
+    canonicalPatternId: pattern.canonicalPatternId,
+    type: "CANONICAL_FAMILY_PATTERN",
+    category: pattern.category,
+    categoryLabel: CATEGORY_LABELS[pattern.category] ?? "Correspondances",
+    title: patternTitle(pattern),
+    label: pattern.label,
+    importance: pattern.importance,
+    importanceLabel: IMPORTANCE_LABELS[pattern.importance],
+    interest: pattern.importance === "major" ? "HIGH" : pattern.importance === "notable" ? "MEDIUM" : "CURIOSITY",
+    interestLabel: IMPORTANCE_LABELS[pattern.importance],
+    participantIds: pattern.participantIds,
+    participantNames: Object.freeze(participantNames),
+    personCount: pattern.personCount,
+    generationCount: pattern.generationCount,
+    occurrenceCount: pattern.occurrenceCount,
+    occurrences: pattern.occurrences,
+    relatedFeatures: pattern.relatedFeatures,
+    relatedFeatureCount: pattern.relatedFeatures.length,
+    dependencyGroupIds: pattern.dependencyGroupIds,
+    values: pattern.values,
+    description: patternDescription(pattern, participantNames),
+    explanation: pattern.explanation,
+    calculations: pattern.calculationDetails,
+    calculationDetails: pattern.calculationDetails,
+    facts: pattern.evidenceIds,
+    evidenceIds: pattern.evidenceIds,
+    observationIds: pattern.observationIds,
+    relatedFeatureIds: Object.freeze(pattern.relatedFeatures.map(({ id }) => id).filter(Boolean)),
+    independentPathCount: pattern.dependencyGroupIds.length || 1,
+    sourceDiversity: pattern.sourceDiversity,
+    force: pattern.importance === "major" ? "DIRECT" : pattern.importance === "notable" ? "NOTABLE" : "EXPLORATORY",
+    forceLabel: FORCE_LABELS[pattern.importance],
+    complexityCost: pattern.directness === "direct" ? 0 : 1,
   });
-  const dominantValues = [...new Set(selected.flatMap(({ values }) => values))];
-  const overview = selected.length
-    ? `${selected.length} structure${selected.length > 1 ? "s" : ""} ressort${selected.length > 1 ? "ent" : ""} réellement. ${dominantValues.length ? `Elles se répondent autour de ${joinNames(dominantValues.slice(0, 4).map(String))}, mais leur intérêt vient surtout de la manière dont ces valeurs circulent entre personnes, dates, heures et événements.` : "Leur intérêt vient de leur simplicité et de leur présence dans plusieurs branches de la famille."}`
-    : "Peu de motifs structurés ressortent de ces données. TAO préfère conserver ce résultat sobre plutôt que fabriquer un axe familial artificiel.";
+}
+
+export function buildFamilyConstellationReading({ analysis, profiles }) {
+  const profileMap = new Map(profiles.map((profile) => [profile.id, profile]));
+  const inventory = analysis.patternInventory ?? { patterns: [], importance: { major: 0, notable: 0, curiosity: 0 }, total: 0 };
+  const cards = inventory.patterns.map((pattern) => patternCard(pattern, profileMap));
+  const primaryCards = cards.filter(({ importance }) => importance === "major").slice(0, 4);
+  const dominant = cards[0] ?? null;
+  const headline = cards.length && inventory.importance.major === 0
+    ? `Aucun motif familial majeur détecté dans les règles actuellement analysées · ${inventory.importance.notable} notable${inventory.importance.notable > 1 ? "s" : ""} · ${inventory.importance.curiosity} curiosité${inventory.importance.curiosity > 1 ? "s" : ""}`
+    : cards.length
+      ? `${cards.length} motif${cards.length > 1 ? "s" : ""} détecté${cards.length > 1 ? "s" : ""} · ${inventory.importance.major} majeur${inventory.importance.major > 1 ? "s" : ""} · ${inventory.importance.notable} notable${inventory.importance.notable > 1 ? "s" : ""} · ${inventory.importance.curiosity} curiosité${inventory.importance.curiosity > 1 ? "s" : ""}`
+      : "Aucun motif structuré ne ressort de ces données.";
+  const overview = dominant
+    ? `Le motif dominant est « ${dominant.title} ». Il relie ${dominant.personCount} personne${dominant.personCount > 1 ? "s" : ""}, ${dominant.generationCount} génération${dominant.generationCount > 1 ? "s" : ""} et ${dominant.occurrenceCount} occurrence${dominant.occurrenceCount > 1 ? "s" : ""} vérifiable${dominant.occurrenceCount > 1 ? "s" : ""}.`
+    : "TAO préfère conserver un résultat sobre plutôt que fabriquer une correspondance.";
+  const majorTitles = primaryCards.map(({ title }) => title.toLocaleLowerCase("fr-FR"));
+  const synthesis = majorTitles.length
+    ? `${joinNames(majorTitles)} ${majorTitles.length > 1 ? "forment" : "forme"} le cœur de cette constellation. Chaque idée n’est comptée qu’une fois ; ses répétitions, transformations simples et échos générationnels restent regroupés dans sa fiche.`
+    : cards.length ? "Quelques singularités existent, mais aucune ne mérite d’être placée au centre de la lecture." : "Aucun motif n’est forcé : l’absence de correspondance nette est aussi un résultat valable.";
+  const byImportance = (importance) => Object.freeze(cards.filter((card) => card.importance === importance));
+  const byCategory = (category) => Object.freeze(cards.filter((card) => card.category === category));
   return Object.freeze({
     headline,
     overview,
     synthesis,
     cards: Object.freeze(cards),
-    primaryCards: Object.freeze(selected),
-    sections,
+    primaryCards: Object.freeze(primaryCards),
+    inventory: Object.freeze({ major: byImportance("major"), notable: byImportance("notable"), curiosity: byImportance("curiosity") }),
+    sections: Object.freeze(Object.fromEntries(Object.keys(CATEGORY_LABELS).map((category) => [category, byCategory(category)]))),
     categoryLabels: CATEGORY_LABELS,
+    importanceLabels: IMPORTANCE_LABELS,
     forceLabels: FORCE_LABELS,
     disclaimer: "Ces correspondances sont des observations factuelles et structurelles. Elles ne prouvent ni causalité, ni destin, ni transmission surnaturelle.",
-    methodology: "TAO calcule largement, filtre selon la simplicité, regroupe les résultats dépendants et ne retient que les motifs explicables par des preuves vérifiables.",
+    methodology: "TAO calcule largement, déduplique par identité canonique, regroupe les résultats dépendants et ne présente chaque motif qu’une seule fois.",
   });
 }
 
 export function familyObservationFacts(analysis) {
-  return Object.freeze((analysis.displayObservations ?? analysis.clusteredObservations ?? analysis.selectedObservations).slice(0, 16).map((observation) => Object.freeze({
-    id: observation.id,
-    type: `FAMILY_${observation.type}`,
-    value: observation.values.join("/"),
-    label: observation.calculations.slice(0, 3).join(" · "),
+  const patterns = analysis.patternInventory?.patterns ?? [];
+  return Object.freeze(patterns.slice(0, 16).map((pattern) => Object.freeze({
+    id: pattern.id,
+    canonicalPatternId: pattern.canonicalPatternId,
+    type: "FAMILY_CANONICAL_PATTERN",
+    value: pattern.values.join("/"),
+    label: `${pattern.label} · ${pattern.personCount} personne${pattern.personCount > 1 ? "s" : ""} · ${pattern.occurrenceCount} occurrence${pattern.occurrenceCount > 1 ? "s" : ""}`,
+    importance: pattern.importance,
+    occurrenceCount: pattern.occurrenceCount,
+    generationCount: pattern.generationCount,
+    participantIds: pattern.participantIds,
+    occurrences: pattern.occurrences.map(({ personId, sourceType, sourceLabel, sourceValue }) => ({ personId, sourceType, sourceLabel, sourceValue })),
+    relatedFeatureIds: pattern.observationIds,
+    evidenceIds: pattern.evidenceIds,
   })));
 }
 
@@ -160,11 +132,5 @@ export function formatEstimatedFrequency(frequency, simulationCount) {
 }
 
 export function familyRarityLabel(category) {
-  return ({
-    COMMON: "Fréquente",
-    FAIRLY_COMMON: "Assez courante",
-    UNCOMMON: "Peu fréquente",
-    RARE: "Rare dans la simulation",
-    VERY_RARE: "Très rare dans la simulation",
-  })[category] ?? "Estimation indisponible";
+  return ({ COMMON: "Fréquente", FAIRLY_COMMON: "Assez courante", UNCOMMON: "Peu fréquente", RARE: "Rare dans la simulation", VERY_RARE: "Très rare dans la simulation" })[category] ?? "Estimation indisponible";
 }
