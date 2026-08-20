@@ -1,7 +1,7 @@
 const EVENTS_KEY = "tao.familyEvents.v1";
 const PREFERENCES_KEY = "tao.familyConstellationPreferences.v1";
 
-export const FAMILY_EVENT_TYPES = Object.freeze(["meeting", "marriage", "pacs", "birth", "move", "union", "separation", "family", "personal", "other"]);
+export const FAMILY_EVENT_TYPES = Object.freeze(["meeting", "marriage", "pacs", "birth", "death", "move", "union", "separation", "family", "personal", "other"]);
 export const FAMILY_ROLES = Object.freeze(["parent", "child", "partner", "sibling", "grandparent", "grandchild", "other"]);
 
 function readJson(storage, key, fallback) {
@@ -21,12 +21,21 @@ function validTime(value) {
   return value === null || /^([01]\d|2[0-3]):[0-5]\d$/.test(value ?? "");
 }
 
+function validPlace(value) {
+  if (value === null || value === undefined) return true;
+  if (typeof value === "string") return value.trim().length <= 120;
+  return typeof value === "object" && typeof value.label === "string" && value.label.trim().length <= 120 &&
+    (value.latitude === undefined || Number.isFinite(Number(value.latitude))) &&
+    (value.longitude === undefined || Number.isFinite(Number(value.longitude)));
+}
+
 export function isValidFamilyEvent(event) {
   return Boolean(
     event && typeof event.id === "string" && event.id &&
     typeof event.title === "string" && event.title.trim() &&
     validIsoDate(event.date) && validTime(event.time ?? null) &&
-    (event.place === null || event.place === undefined || (typeof event.place === "string" && event.place.trim().length <= 120)) &&
+    validPlace(event.place) &&
+    (event.note === null || event.note === undefined || (typeof event.note === "string" && event.note.length <= 500)) &&
     FAMILY_EVENT_TYPES.includes(event.type) &&
     Array.isArray(event.profileIds) && event.profileIds.length > 0 && event.profileIds.every((id) => typeof id === "string" && id),
   );
@@ -41,7 +50,13 @@ export function saveFamilyEvent(event, storage = localStorage) {
   if (!isValidFamilyEvent(event)) throw new TypeError("L’événement familial est incomplet.");
   const next = getFamilyEvents(storage).filter(({ id }) => id !== event.id);
   const normalized = { ...event, profileIds: [...new Set(event.profileIds)] };
-  if (event.place) normalized.place = String(event.place).trim();
+  if (typeof event.place === "string") normalized.place = event.place.trim();
+  else if (event.place) normalized.place = {
+    ...event.place,
+    label: event.place.label.trim(),
+    ...(event.place.latitude === undefined ? {} : { latitude: Number(event.place.latitude) }),
+    ...(event.place.longitude === undefined ? {} : { longitude: Number(event.place.longitude) }),
+  };
   next.push(Object.freeze(normalized));
   next.sort((left, right) => left.date.localeCompare(right.date));
   storage.setItem(EVENTS_KEY, JSON.stringify(next));

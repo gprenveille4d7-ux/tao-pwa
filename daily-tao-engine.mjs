@@ -3,8 +3,9 @@ import {
   calculateTemporalPillars,
   getSolarTermInstant,
 } from "./bazi-engine.mjs";
+import { buildDailyPersonalSignature } from "./daily-personal-signature.mjs";
 
-export const DAILY_CALCULATION_VERSION = "tao-daily-1.1.0";
+export const DAILY_CALCULATION_VERSION = "tao-daily-2.0.0";
 
 const ELEMENTS = Object.freeze(["wood", "fire", "earth", "metal", "water"]);
 const ELEMENT_LABELS = Object.freeze({ wood: "Bois", fire: "Feu", earth: "Terre", metal: "Métal", water: "Eau" });
@@ -144,7 +145,8 @@ export function calculateDailyTao({ date, timeZone, profile, natalTheme }) {
   const season = currentSolarTerm(temporal.epochMs, Number(date.slice(0, 4)));
   const elements = createElementImpact(natalTheme, day);
   const resonance = createResonance(natalTheme, day);
-  const domains = createDomainSignals(natalTheme, day, elements, resonance);
+  const personalSignature = buildDailyPersonalSignature({ date, profile, natalTheme, dayPillar: day });
+  const domains = { ...createDomainSignals(natalTheme, day, elements, resonance), ...personalSignature.dimensions };
   const guidance = GUIDANCE[day.stem.element];
   const polarity = day.stem.polarity === "yang" ? "Yang" : "Yin";
   const rhythm = day.stem.polarity === "yang" ? "mouvement mesuré" : "observation active";
@@ -174,6 +176,7 @@ export function calculateDailyTao({ date, timeZone, profile, natalTheme }) {
       attention: ELEMENT_LABELS[attentionElement],
     },
     resonance,
+    personalSignature,
     domains,
     elements,
     guidance: {

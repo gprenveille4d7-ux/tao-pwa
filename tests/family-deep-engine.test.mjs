@@ -50,6 +50,8 @@ test("le graphe familial distingue personnes, événements, filiation, couple et
   assert.equal(familyGraph.edges.filter(({ type }) => type === "PARENT_CHILD").length, 4);
   assert.ok(familyGraph.edges.some(({ type }) => type === "SIBLING"));
   assert.ok(familyGraph.edges.some(({ type }) => type === "PARTICIPATES_IN"));
+  assert.ok(familyGraph.nodes.some(({ type }) => type === "PLACE"));
+  assert.ok(familyGraph.edges.some(({ type }) => type === "BORN_AT"));
   assert.ok(evidenceGraph.nodes.some(({ type }) => type === "MOTIF"));
 });
 

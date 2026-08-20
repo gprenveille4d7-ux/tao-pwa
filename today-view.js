@@ -1,8 +1,8 @@
 import { getActiveProfile } from "./profile-store.js";
 import { calculateBazi } from "./bazi-engine.mjs";
 import { getCachedBazi, setCachedBazi } from "./bazi-cache.mjs";
-import { calculateDailyTao } from "./daily-tao-engine.mjs?v=1.1.0";
-import { getCachedDaily, setCachedDaily } from "./daily-cache.mjs?v=1.1.0";
+import { calculateDailyTao } from "./daily-tao-engine.mjs?v=2.0.0";
+import { getCachedDaily, setCachedDaily } from "./daily-cache.mjs?v=2.0.0";
 import { element, formatLongDate, localDateIso } from "./tao-ui.js";
 import { setTaoDailyBrief } from "./tao-dialogue.js";
 import { setTaoNarrativeState } from "./tao-narrative.js";
@@ -79,13 +79,14 @@ function createHumanGuidance(result, natalTheme, profile) {
   const semantic = buildDailySemanticReading({ result, natalTheme, firstName: profile.firstName });
   const advice = getConcept("guidance.elementAdvice", result.dayEnergy.stem.element);
   const card = element("section", { className: "product-card semantic-lead" });
+  const personal = result.personalSignature;
   card.append(
     element("p", { className: "product-eyebrow", text: `Bonjour ${profile.firstName}` }),
-    element("h2", { text: semantic.lead }),
-    element("p", { className: "semantic-lead__personal", text: semantic.personal }),
+    element("h2", { text: personal?.primarySignal ?? semantic.lead }),
+    element("p", { className: "semantic-lead__personal", text: personal?.concreteAdvice ?? semantic.personal }),
   );
   const guidance = element("div", { className: "semantic-guidance-grid" });
-  for (const [title, items] of [["À favoriser", advice.favor], ["À surveiller", advice.moderate]]) {
+  for (const [title, items] of [["Ce qui te soutient", personal?.supports ?? advice.favor], ["Ce qui demande de l’attention", personal?.attentions ?? advice.moderate]]) {
     const group = element("section");
     group.append(element("h3", { text: title }), element("p", { text: items.join(" · ") }));
     guidance.append(group);
@@ -98,12 +99,14 @@ function createWhyDisclosure(result, natalTheme, semantic) {
   const details = element("details", { className: "product-disclosure semantic-why" });
   details.append(element("summary", { text: "Pourquoi TAO me dit ça ?" }));
   const content = element("div", { className: "product-disclosure__content semantic-why__content" });
+  const signature = result.personalSignature;
   content.append(
     sectionHeader("Ce que TAO observe", "La rencontre entre cette journée et ton thème"),
     element("h3", { text: "Le mouvement de la journée" }),
     element("p", { text: `${semantic.dailyStem.humanTitle} donne la tonalité du jour. ${semantic.dailyStem.humanDescription}` }),
     element("h3", { text: "Sa rencontre avec ton thème" }),
-    element("p", { text: semantic.relation.explanation }),
+    element("p", { text: signature?.primarySignal ?? semantic.relation.explanation }),
+    ...(signature?.facts?.length ? [element("h3", { text: "Les faits réellement utilisés" }), (() => { const list = element("ul"); signature.facts.forEach((fact) => list.append(element("li", { text: fact.label }))); return list; })()] : []),
     element("h3", { text: "Ce qui nuance la lecture" }),
     element("p", { text: "Cette observation dépend aussi des autres éléments, des branches et de l’équilibre général du thème. Elle indique une dynamique symbolique, jamais un événement certain." }),
   );
@@ -119,7 +122,7 @@ function createWhyDisclosure(result, natalTheme, semantic) {
   talk.addEventListener("click", () => window.dispatchEvent(new CustomEvent("tao:ai-open", { detail: {
     mode: "explanation",
     prompt: "Montre-moi pourquoi cette lecture est liée à ma journée et à mon thème.",
-    contextOptions: { facts: semantic.trace.sourceFacts.map((value, index) => ({ id: `semantic_fact_${index + 1}`, type: "SEMANTIC_TRACE", value, label: value })) },
+    contextOptions: { facts: signature?.facts ?? semantic.trace.sourceFacts.map((value, index) => ({ id: `semantic_fact_${index + 1}`, type: "SEMANTIC_TRACE", value, label: value })) },
   } })));
   content.append(talk);
   if (semanticDebug) {
