@@ -86,3 +86,21 @@ test("le cache quotidien est isolé par date et profil", () => {
   assert.equal(getCachedDaily(input({ date: "2026-08-13" }), storage), null);
   assert.equal(getCachedDaily(input({ profile: profile("profile-b") }), storage), null);
 });
+
+test("deux profils reçoivent une signature réellement différente le même jour", () => {
+  const aliceInput = input();
+  const lucile = { ...profile("profile-b"), firstName: "Lucile", birthDate: "1987-05-11", birthTime: "14:08" };
+  const lucileInput = input({ profile: lucile });
+  const alice = calculateDailyTao(aliceInput);
+  const other = calculateDailyTao(lucileInput);
+  assert.notEqual(alice.personalSignature.fingerprint, other.personalSignature.fingerprint);
+  assert.notEqual(`${alice.personalSignature.tenGod}|${alice.personalSignature.interactions.map(({ type, pillarId }) => `${type}:${pillarId}`).join(",")}`, `${other.personalSignature.tenGod}|${other.personalSignature.interactions.map(({ type, pillarId }) => `${type}:${pillarId}`).join(",")}`);
+  assert.ok(alice.personalSignature.facts.every(({ label }) => !label.includes(aliceInput.profile.birthDate)));
+});
+
+test("un même profil change de signature lorsque le pilier du jour change", () => {
+  const first = calculateDailyTao(input({ date: "2026-08-12" }));
+  const next = calculateDailyTao(input({ date: "2026-08-13" }));
+  assert.notEqual(first.personalSignature.fingerprint, next.personalSignature.fingerprint);
+  assert.notEqual(first.personalSignature.facts.find(({ type }) => type === "DAY_STEM").value, next.personalSignature.facts.find(({ type }) => type === "DAY_STEM").value);
+});

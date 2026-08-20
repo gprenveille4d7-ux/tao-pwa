@@ -17,7 +17,7 @@ import { parseAppRoute } from "./navigation-routes.mjs";
 import { getSemanticConcept } from "./semantic-layer.mjs?v=1.0.1";
 import { clearTaoAIMemory, getTaoAISettings, setTaoAIEnabled } from "./tao-ai-memory.js";
 import { createRelationshipsModule } from "./relationships-view.js?v=1.0.4";
-import { createFamilyConstellationModule } from "./family-constellation-view.js?v=3.0.1";
+import { createFamilyConstellationModule } from "./family-constellation-view.js?v=4.0.0";
 
 const root = document.querySelector("[data-profiles-root]");
 const RELATIONSHIPS = ["other", "family", "friend", "partner", "child", "parent"];

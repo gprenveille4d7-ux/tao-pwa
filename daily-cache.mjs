@@ -1,6 +1,6 @@
-import { DAILY_CALCULATION_VERSION } from "./daily-tao-engine.mjs?v=1.1.0";
+import { DAILY_CALCULATION_VERSION } from "./daily-tao-engine.mjs?v=2.0.0";
 
-const CACHE_PREFIX = "tao.daily.v1";
+const CACHE_PREFIX = "tao.daily.v2";
 
 function key(profileId, date) {
   return `${CACHE_PREFIX}.${profileId}.${date}`;

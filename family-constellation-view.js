@@ -15,6 +15,7 @@ import {
 } from "./family-constellation-store.js";
 import { element, formatBirthDate } from "./tao-ui.js";
 import { t } from "./locales/index.js?v=1.5.0";
+import { humanizeFamilyCalculation } from "./family-constellation-lexicon.mjs?v=1.0.0";
 
 const CATEGORY_ORDER = ["recurring", "mirrors", "generations", "siblings", "dates_times", "events", "places", "chronology", "curiosities"];
 const SYMBOLS = Object.freeze({ 1: "élan et commencement", 2: "relation et réceptivité", 3: "expression et mise en mouvement", 4: "structure et stabilité", 5: "passage et mobilité", 6: "harmonie et responsabilité", 7: "recul et recherche", 8: "organisation et accomplissement", 9: "aboutissement et transmission", 11: "nombre maître associé à l’intuition dans certaines écoles", 22: "nombre maître associé à la construction dans certaines écoles" });
@@ -38,6 +39,39 @@ function scrollResultIntoView(node) {
   scroller.scrollTo({ top: Math.max(0, target), behavior: "smooth" });
 }
 
+function openCalculationSheet(card, opener) {
+  const backdrop = element("div", { className: "family-calculation-backdrop" });
+  const sheet = element("section", { className: "family-calculation-sheet", attributes: { role: "dialog", "aria-modal": "true", "aria-labelledby": "family-calculation-title" } });
+  const header = element("header");
+  const title = element("h2", { text: card.title, attributes: { id: "family-calculation-title" } });
+  const close = element("button", { className: "family-calculation-sheet__close", text: "×", attributes: { type: "button", "aria-label": "Fermer les calculs" } });
+  header.append(title, close);
+  const body = element("div", { className: "family-calculation-sheet__body" });
+  body.append(element("p", { className: "method-note", text: card.description }));
+  const list = element("ol");
+  card.calculations.forEach((calculation) => list.append(element("li", { text: humanizeFamilyCalculation(calculation) })));
+  body.append(
+    list,
+    element("p", { className: "family-calculation-sheet__independence", text: card.independentPathCount > 1 ? `${card.independentPathCount} chemins indépendants · ${card.sourceDiversity} catégories de données.` : "Une source indépendante retenue." }),
+    element("p", { className: "method-note", text: t("profiles.constellation.calculationNote") }),
+  );
+  sheet.append(header, body);
+  backdrop.append(sheet);
+  const closeSheet = () => {
+    document.removeEventListener("keydown", onKeydown);
+    document.body.classList.remove("has-family-sheet");
+    backdrop.remove();
+    opener?.focus();
+  };
+  const onKeydown = (event) => { if (event.key === "Escape") closeSheet(); };
+  close.addEventListener("click", closeSheet);
+  backdrop.addEventListener("click", (event) => { if (event.target === backdrop) closeSheet(); });
+  document.addEventListener("keydown", onKeydown);
+  document.body.classList.add("has-family-sheet");
+  document.body.append(backdrop);
+  close.focus();
+}
+
 function createObservationCard(card) {
   const article = element("article", { className: "product-card family-observation-card", attributes: { "data-observation-id": card.id, "data-category": card.category, "data-participants": card.participantNames.join("|") } });
   article.append(
@@ -52,17 +86,46 @@ function createObservationCard(card) {
     card.values.forEach((value) => values.append(element("span", { text: String(value) })));
     article.append(values);
   }
-  const details = element("details", { className: "family-calculations" });
-  details.append(element("summary", { text: t("profiles.constellation.showCalculations") }));
-  const list = element("ol");
-  card.calculations.forEach((calculation) => list.append(element("li", { text: calculation })));
-  details.append(
-    list,
-    element("p", { className: "method-note", text: card.independentPathCount > 1 ? `${card.independentPathCount} chemins indépendants retenus · ${card.sourceDiversity} domaines de données.` : "Une seule source indépendante retenue." }),
-    element("p", { className: "method-note", text: t("profiles.constellation.calculationNote") }),
-  );
-  article.append(details);
+  const calculations = element("button", { className: "family-calculation-open", text: t("profiles.constellation.showCalculations"), attributes: { type: "button", "aria-haspopup": "dialog" } });
+  calculations.addEventListener("click", () => openCalculationSheet(card, calculations));
+  article.append(calculations);
   return article;
+}
+
+function renderChronology(profiles, events) {
+  const section = element("section", { className: "product-card family-chronology" });
+  section.append(heading("Chronologie", "Les dates qui structurent la famille", "Naissances et événements saisis volontairement, dans leur ordre réel."));
+  const entries = [
+    ...profiles.map((profile) => ({ date: profile.birthDate, title: `Naissance de ${profile.firstName}`, meta: profile.birthPlace?.city ? `${profile.birthPlace.city}${profile.birthPlace.country ? `, ${profile.birthPlace.country}` : ""}` : "Lieu non renseigné" })),
+    ...events.map((event) => ({ date: event.date, title: event.title, meta: `${t(`profiles.constellation.eventTypes.${event.type}`)}${event.place ? ` · ${typeof event.place === "string" ? event.place : event.place.label}` : ""}` })),
+  ].sort((left, right) => left.date.localeCompare(right.date));
+  const list = element("ol", { className: "family-timeline" });
+  entries.forEach((entry) => { const item = element("li"); item.append(element("time", { text: formatBirthDate(entry.date), attributes: { datetime: entry.date } }), element("strong", { text: entry.title }), element("span", { text: entry.meta })); list.append(item); });
+  section.append(list);
+  return section;
+}
+
+function installFamilyViews(host) {
+  const views = Object.freeze([
+    ["summary", "Synthèse", ["family-result-hero", "family-synthesis"]],
+    ["patterns", "Motifs", ["family-deep-reading", "family-all"]],
+    ["family", "Famille", ["family-map-card", "family-pair-view"]],
+    ["chronology", "Chronologie", ["family-chronology"]],
+    ["explore", "Explorer", ["family-number-view", "family-symbolic", "family-debug"]],
+  ]);
+  const nav = element("nav", { className: "family-view-tabs", attributes: { "aria-label": "Vues de la constellation" } });
+  const sections = [...host.children];
+  for (const [viewId, label, classNames] of views) {
+    const button = element("button", { text: label, attributes: { type: "button", "aria-pressed": String(viewId === "summary") } });
+    button.addEventListener("click", () => {
+      nav.querySelectorAll("button").forEach((item) => item.setAttribute("aria-pressed", String(item === button)));
+      sections.forEach((section) => { if (section === nav) return; section.hidden = section.dataset.familyView !== viewId; });
+    });
+    nav.append(button);
+    for (const section of sections) if (classNames.some((name) => section.classList.contains(name))) section.dataset.familyView = viewId;
+  }
+  sections.forEach((section) => { if (section.dataset.familyView && section.dataset.familyView !== "summary") section.hidden = true; });
+  host.insertBefore(nav, host.children[1] ?? null);
 }
 
 function renderAnalyticalSections(host, reading) {
@@ -97,7 +160,7 @@ function renderConstellationMap(host, analysis, reading, profiles, onFilter) {
   const section = element("section", { className: "product-card family-map-card" });
   section.append(heading(t("profiles.constellation.mapEyebrow"), t("profiles.constellation.mapTitle"), t("profiles.constellation.mapCopy")));
   const map = element("div", { className: "family-star-map", attributes: { role: "group", "aria-label": t("profiles.constellation.mapAria") } });
-  const selected = profiles.slice(0, 6);
+  const selected = profiles.slice(0, 12);
   const positions = new Map();
   selected.forEach((profile, index) => {
     const angle = (Math.PI * 2 * index) / selected.length - Math.PI / 2;
@@ -169,6 +232,8 @@ function eventManager({ profiles, events, onChange }) {
   timeField.append(element("span", { text: t("profiles.constellation.eventTime") }), element("input", { attributes: { name: "time", type: "time" } }));
   const placeField = element("label");
   placeField.append(element("span", { text: "Lieu facultatif" }), element("input", { attributes: { name: "place", maxlength: "120", autocomplete: "off" } }));
+  const noteField = element("label");
+  noteField.append(element("span", { text: "Note facultative" }), element("textarea", { attributes: { name: "note", maxlength: "500", rows: "3" } }));
   const typeField = element("label");
   const typeSelect = element("select", { attributes: { name: "type" } });
   FAMILY_EVENT_TYPES.forEach((type) => typeSelect.append(element("option", { text: t(`profiles.constellation.eventTypes.${type}`), attributes: { value: type } })));
@@ -181,14 +246,14 @@ function eventManager({ profiles, events, onChange }) {
     people.append(label);
   });
   const error = element("p", { className: "form-error", attributes: { role: "alert" } });
-  form.append(titleField, dateField, timeField, placeField, typeField, people, error, element("button", { className: "product-button product-button--primary", text: t("profiles.constellation.saveEvent"), attributes: { type: "submit" } }));
+  form.append(titleField, dateField, timeField, placeField, noteField, typeField, people, error, element("button", { className: "product-button product-button--primary", text: t("profiles.constellation.saveEvent"), attributes: { type: "submit" } }));
   form.addEventListener("submit", (event) => {
     event.preventDefault();
     const data = new FormData(form);
     const profileIds = data.getAll("profileIds").map(String);
     if (!profileIds.length) return void (error.textContent = t("profiles.constellation.eventPersonError"));
     try {
-      saveFamilyEvent({ id: createFamilyEventId(), title: String(data.get("title") ?? "").trim(), date: String(data.get("date") ?? ""), time: String(data.get("time") ?? "") || null, place: String(data.get("place") ?? "").trim() || null, type: String(data.get("type") ?? "other"), profileIds });
+      saveFamilyEvent({ id: createFamilyEventId(), title: String(data.get("title") ?? "").trim(), date: String(data.get("date") ?? ""), time: String(data.get("time") ?? "") || null, place: String(data.get("place") ?? "").trim() || null, note: String(data.get("note") ?? "").trim() || null, type: String(data.get("type") ?? "other"), profileIds });
       onChange();
     } catch (caught) {
       error.textContent = caught.message;
@@ -204,7 +269,8 @@ function eventManager({ profiles, events, onChange }) {
     const eventText = element("div");
     eventText.append(
       element("strong", { text: event.title }),
-      element("span", { text: `${formatBirthDate(event.date)}${event.time ? ` · ${event.time}` : ""}${event.place ? ` · ${event.place}` : ""}` }),
+      element("span", { text: `${formatBirthDate(event.date)}${event.time ? ` · ${event.time}` : ""}${event.place ? ` · ${typeof event.place === "string" ? event.place : event.place.label}` : ""}` }),
+      ...(event.note ? [element("p", { text: event.note })] : []),
       element("small", { text: names.join(" · ") }),
     );
     card.append(eventText);
@@ -370,8 +436,10 @@ export function createFamilyConstellationModule({ profiles, onAddProfile }) {
       });
       synthesis.append(talk);
       resultHost.append(synthesis);
+      resultHost.append(renderChronology(selectedProfiles, selectedEvents));
       if (symbolicInput.checked) renderSymbolicReading(resultHost, reading);
       const debug = debugPanel(analysis, selectedProfiles, selectedRoles); if (debug) resultHost.append(debug);
+      installFamilyViews(resultHost);
       scrollResultIntoView(resultHost);
     });
 

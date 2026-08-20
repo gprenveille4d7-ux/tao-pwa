@@ -1,4 +1,4 @@
-export const FAMILY_DEEP_ENGINE_VERSION = "tao-family-deep-3.0.0";
+export const FAMILY_DEEP_ENGINE_VERSION = "tao-family-deep-3.1.0";
 
 const DAY_MS = 86_400_000;
 const LEVELS = Object.freeze({ direct: "DIRECT", strong: "STRONG", notable: "NOTABLE", secondary: "SECONDARY", exploratory: "EXPLORATORY" });
@@ -110,6 +110,20 @@ export function buildFamilyGraph({ profiles, roles = {}, events = [] }) {
     generation: ["grandparent"].includes(roles[profile.id]) ? -1 : ["child", "grandchild"].includes(roles[profile.id]) ? 1 : 0,
   }));
   const edges = [];
+  const placeNodes = new Map();
+  const ensurePlace = (place) => {
+    if (!place) return null;
+    const label = typeof place === "string" ? place.trim() : String(place.label || [place.city, place.country].filter(Boolean).join(", ")).trim();
+    if (!label) return null;
+    const rawId = typeof place === "object" && place.id ? place.id : label.toLocaleLowerCase("fr-FR");
+    const id = `place_${stableHash(rawId)}`;
+    if (!placeNodes.has(id)) placeNodes.set(id, Object.freeze({ id, type: "PLACE", label, latitude: Number.isFinite(Number(place?.latitude)) ? Number(place.latitude) : null, longitude: Number.isFinite(Number(place?.longitude)) ? Number(place.longitude) : null }));
+    return id;
+  };
+  for (const profile of profiles) {
+    const placeId = ensurePlace(profile.birthPlace);
+    if (placeId) edges.push(relationshipEdge("BORN_AT", profile.id, placeId));
+  }
   const parents = nodes.filter(({ role }) => role === "parent");
   const children = nodes.filter(({ role }) => role === "child");
   const grandparents = nodes.filter(({ role }) => role === "grandparent");
@@ -120,9 +134,12 @@ export function buildFamilyGraph({ profiles, roles = {}, events = [] }) {
   for (let index = 0; index < children.length; index += 1) for (let other = index + 1; other < children.length; other += 1) edges.push(relationshipEdge("SIBLING", children[index].id, children[other].id));
   for (const grandparent of grandparents) for (const descendant of [...children, ...grandchildren]) edges.push(relationshipEdge("GRANDPARENT_DESCENDANT", grandparent.id, descendant.id));
   for (const event of events) {
-    nodes.push(Object.freeze({ id: event.id, type: "EVENT", label: event.title, eventType: event.type }));
+    nodes.push(Object.freeze({ id: event.id, type: "EVENT", label: event.title, eventType: event.type, date: event.date, time: event.time ?? null }));
     for (const profileId of event.profileIds ?? []) if (profiles.some(({ id }) => id === profileId)) edges.push(relationshipEdge("PARTICIPATES_IN", profileId, event.id, [event.date]));
+    const placeId = ensurePlace(event.place);
+    if (placeId) edges.push(relationshipEdge("OCCURRED_AT", event.id, placeId, [event.date]));
   }
+  nodes.push(...placeNodes.values());
   return Object.freeze({ version: FAMILY_DEEP_ENGINE_VERSION, nodes: Object.freeze(nodes), edges: Object.freeze(edges) });
 }
 

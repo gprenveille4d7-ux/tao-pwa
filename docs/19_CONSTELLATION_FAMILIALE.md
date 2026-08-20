@@ -1,5 +1,13 @@
 # Constellation familiale
 
+## Interface progressive V4
+
+L’analyse n’est plus rendue comme un document vertical unique. Après sélection des personnes, cinq vues conservent la profondeur du moteur sans tout afficher simultanément : **Synthèse**, **Motifs**, **Famille**, **Chronologie** et **Explorer**. Les calculs exacts sont ouverts dans une feuille mobile dédiée ; le lexique `family-constellation-lexicon.mjs` empêche les clés techniques telles que `dateDigitSum` d’atteindre l’utilisateur.
+
+Le graphe déterministe comprend désormais trois natures de nœuds : `PERSON`, `EVENT` et `PLACE`. Les arêtes `BORN_AT`, `OCCURRED_AT` et `PARTICIPATES_IN` restent factuelles. Aucun calcul numérique n’est fabriqué à partir du nom d’un lieu.
+
+Les événements acceptent rencontre, mariage, PACS, naissance, décès, déménagement, union, séparation et événement libre. La date est obligatoire ; heure, lieu et note restent facultatifs et locaux.
+
 Versions : `tao-family-number-3.0.0`, `tao-family-pattern-2.0.0` et `tao-family-deep-3.0.0`.
 
 ## Positionnement

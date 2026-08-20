@@ -24,3 +24,10 @@ test("les préférences acceptent plusieurs profils tout en filtrant les rôles 
   assert.deepEqual(preferences.roles, { "1": "parent" });
   assert.equal(preferences.symbolicReading, true);
 });
+
+test("un décès et un lieu structuré restent des événements locaux valides", () => {
+  const storage = memoryStorage();
+  const event = { id: "event-death", title: "Souvenir de Jeanne", date: "2020-02-29", time: null, place: { label: "Caen, France", latitude: 49.18, longitude: -0.37 }, note: "Note privée", type: "death", profileIds: ["P1"] };
+  saveFamilyEvent(event, storage);
+  assert.deepEqual(getFamilyEvents(storage), [event]);
+});
