@@ -369,6 +369,8 @@
 .relationship-empty { display: grid; gap: var(--space-3); padding-top: var(--space-2); }
 .relationship-empty p { margin: 0; color: var(--product-muted); font: 400 .92rem/1.55 system-ui, sans-serif; }
 .relationship-hero { display: grid; gap: var(--space-3); scroll-margin-top: 7rem; }
+.relationship-goal-label { width: fit-content; margin: 0; padding: .38rem .65rem; border: 1px solid rgb(215 180 119 / 26%); border-radius: 999px; color: var(--product-gold); background: rgb(215 180 119 / 7%); font: 700 .7rem/1.25 system-ui, sans-serif; }
+.relationship-goal-question { margin: 0; color: var(--product-muted); font: 500 .82rem/1.5 system-ui, sans-serif; }
 .relationship-hero__summary { color: #e6edf3; font: 400 1.05rem/1.65 Georgia, serif; }
 .relationship-archetypes { display: grid; gap: var(--space-3); margin-top: var(--space-2); grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .relationship-archetypes article { display: grid; min-width: 0; gap: .35rem; padding: .9rem; border: 1px solid rgb(215 180 119 / 18%); border-radius: .8rem; background: rgb(3 10 18 / 28%); }
@@ -385,6 +387,10 @@
 .relationship-reading-card p { color: #ced8e1; font: 400 .92rem/1.62 system-ui, sans-serif; }
 .relationship-reading-list { display: grid; gap: .7rem; margin: 0; padding-left: 1.15rem; color: #ced8e1; font: 400 .9rem/1.58 system-ui, sans-serif; }
 .relationship-reading-list li::marker { color: var(--product-gold); }
+.relationship-focused-sections { display: grid; min-width: 0; gap: var(--space-4); }
+.relationship-priority-list { margin-bottom: var(--space-4); }
+.relationship-result-stale { margin: 0; padding: var(--space-3); text-align: center; }
+.relationship-technical pre { max-width: 100%; margin: var(--space-3) 0 0; padding: var(--space-3); overflow: auto; border-radius: .7rem; background: rgb(0 0 0 / 24%); color: #ced8e1; font: 500 .72rem/1.5 ui-monospace, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
 .relationship-direction-grid { display: grid; gap: var(--space-3); }
 .relationship-technical { color: #ced8e1; }
 .relationship-technical summary { min-height: 2.75rem; display: flex; align-items: center; color: var(--product-gold); font: 700 .8rem/1.35 system-ui, sans-serif; cursor: pointer; }

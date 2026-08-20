@@ -52,3 +52,17 @@ test("le contexte constellation transmet uniquement les observations vérifiées
   assert.equal(context.familyConstellation.observations[0].independentPathCount, 3);
   assert.doesNotMatch(JSON.stringify(context.familyConstellation), /1985-09-11|birthDate/);
 });
+
+test("le contexte d’explication conserve l’objectif relationnel explicite", async () => {
+  globalThis.localStorage = memoryStorage();
+  localStorage.setItem("tao.profiles.v1", JSON.stringify([profile]));
+  localStorage.setItem("tao.activeProfileId.v1", profile.id);
+  const { buildTaoAIContext } = await import(`../tao-ai-context.mjs?relationship=${Date.now()}`);
+  const context = buildTaoAIContext("explanation", { facts: [
+    { id: "relationship_goal", type: "RELATIONSHIP_GOAL", value: "communication", label: "Améliorer notre communication" },
+    { id: "relation_axis_friction", type: "RELATION_AXIS", value: "friction:present", label: "Friction : présente" },
+  ] });
+  const goal = context.today.dominantFacts.find(({ id }) => id === "relationship_goal");
+  assert.equal(goal.value, "communication");
+  assert.equal(context.today.dominantFacts.some(({ id }) => id === "relation_axis_friction"), true);
+});

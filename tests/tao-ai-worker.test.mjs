@@ -22,6 +22,14 @@ test("TAO ne transforme jamais la rareté simulée en probabilité de significat
   assert.match(TAO_SYSTEM_PROMPT, /ne mesure ni causalité ni signification surnaturelle/i);
 });
 
+test("le prompt Worker distingue les cinq objectifs relationnels sans recalculer le BaZi", () => {
+  assert.match(TAO_SYSTEM_PROMPT, /RELATIONSHIP_GOAL/);
+  for (const goal of ["overview", "differences", "communication", "difficult_period", "cooperation"]) {
+    assert.match(TAO_SYSTEM_PROMPT, new RegExp(goal));
+  }
+  assert.match(TAO_SYSTEM_PROMPT, /faits BaZi restent invariants/i);
+});
+
 function validPayload(mode = "conversation") {
   return { mode, context: { mode, profile: { profileId: "P1" }, today: { dominantFacts: [{ id: "F1", type: "DAY_STEM", value: "JIA" }] } }, messages: [{ role: "user", content: "Pourquoi ?" }] };
 }
