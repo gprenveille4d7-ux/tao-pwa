@@ -1,0 +1,25 @@
+{
+  "id": "/tao-pwa/",
+  "name": "TAO — Le Nebula",
+  "short_name": "TAO",
+  "description": "Le Nebula, demeure céleste de TAO.",
+  "lang": "fr",
+  "dir": "ltr",
+  "start_url": "/tao-pwa/#pavilion",
+  "scope": "/tao-pwa/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait-primary",
+  "background_color": "#07111f",
+  "theme_color": "#07111f",
+  "categories": ["lifestyle"],
+  "icons": [
+    { "src": "./public/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./public/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./public/icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Aujourd’hui", "short_name": "Aujourd’hui", "url": "/tao-pwa/#today" },
+    { "name": "Yi Jing", "short_name": "Yi Jing", "url": "/tao-pwa/#yijing" }
+  ]
+}

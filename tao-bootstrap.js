@@ -35,7 +35,7 @@ revealTao().catch(() => {
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js?v=tao-shell-1").catch((error) => {
+    navigator.serviceWorker.register("./sw.js", { scope: "./", updateViaCache: "none" }).catch((error) => {
       console.warn("[TAO] Cache hors ligne indisponible.", error);
     });
   }, { once: true });

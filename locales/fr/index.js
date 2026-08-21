@@ -6,6 +6,7 @@ import { profiles } from "./profiles.js?v=relationship-goals-1";
 import { yijing } from "./yijing.js";
 import { glossary } from "./glossary.js";
 import { semantics } from "./semantics.js";
+import { seasonal } from "./seasonal.js";
 
-export const fr = Object.freeze({ common, bazi, calendar, guidance, profiles, yijing, glossary, semantics });
+export const fr = Object.freeze({ common, bazi, calendar, guidance, profiles, yijing, glossary, semantics, seasonal });
 export default fr;

@@ -10,12 +10,20 @@
       name="description"
       content="Le Nebula, demeure céleste de TAO."
     />
+    <meta name="theme-color" content="#07111f" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="TAO" />
     <title>TAO — Le Nebula</title>
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" type="image/png" sizes="192x192" href="./public/icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="./public/icons/icon-192.png" />
     <link rel="preload" as="image" href="./public/assets/tao/outside/states/OUTSIDE_JOUR_CLAIR_FJORD_ALPIN.png" fetchpriority="high" />
     <link rel="preload" as="image" href="./public/assets/tao/pavilion/base/PAVILLON_BASE_FENETRES_TRANSPARENTES.png" fetchpriority="high" />
     <link rel="preload" as="image" href="./public/assets/tao/character/poses/TAO_POSE_00_NEUTRE.png" fetchpriority="high" />
     <link rel="stylesheet" href="./styles.css?v=tao-environment-4" />
-    <link rel="stylesheet" href="./product-experience.css?v=tao-family-inventory-1" />
+    <link rel="stylesheet" href="./product-experience.css?v=tao-seasonal-1" />
   </head>
   <body>
     <div class="tao-boot" data-tao-boot role="status" aria-live="polite" aria-busy="true">
@@ -312,7 +320,7 @@
     <script type="module" src="./environment-controller.js?v=tao-environment-7"></script>
     <script type="module" src="./desk-objects.js"></script>
     <script type="module" src="./onboarding.js"></script>
-    <script type="module" src="./today-view.js?v=tao-daily-personal-1"></script>
+    <script type="module" src="./today-view.js?v=tao-seasonal-1"></script>
     <script type="module" src="./bazi-theme.js?v=tao-semantics-2"></script>
       <script type="module" src="./profiles-view.js?v=tao-family-inventory-1"></script>
     <script type="module" src="./yijing-view.js?v=tao-semantics-2"></script>

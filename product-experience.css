@@ -167,6 +167,112 @@
 }
 
 .product-card { padding: var(--space-6); }
+.sr-only {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.today-carousel { min-width: 0; margin-inline: calc(var(--space-4) * -1); }
+.today-carousel__track {
+  display: flex;
+  gap: .875rem;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  padding: .25rem var(--space-4) .65rem;
+  scroll-padding-inline: var(--space-4);
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.today-carousel__track::-webkit-scrollbar { display: none; }
+.today-carousel__track:focus-visible { outline: 2px solid var(--product-gold); outline-offset: 3px; }
+.today-swipe-card {
+  position: relative;
+  display: grid;
+  flex: 0 0 calc(100% - 2.2rem);
+  align-content: start;
+  min-width: 0;
+  min-height: 25rem;
+  gap: .9rem;
+  padding: clamp(1.35rem, 5vw, 2rem);
+  overflow: hidden;
+  border: 1px solid rgb(215 180 119 / 22%);
+  border-radius: 1.65rem;
+  background: linear-gradient(145deg, rgb(27 43 63 / 97%), rgb(14 28 45 / 94%));
+  box-shadow: 0 .9rem 2.8rem rgb(0 0 0 / 18%), inset 0 1px rgb(255 255 255 / 5%);
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+.today-swipe-card::after {
+  content: "";
+  position: absolute;
+  inset: auto -20% -38% 35%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(215 180 119 / 10%), transparent 68%);
+  pointer-events: none;
+}
+.today-swipe-card h2 { margin: 0; max-width: 18ch; color: var(--product-ivory); font: 500 clamp(1.65rem, 7vw, 2.4rem)/1.06 Georgia, serif; letter-spacing: -.025em; }
+.today-swipe-card__lead { margin: 0; color: #dce2e6; font: 400 1rem/1.56 system-ui, sans-serif; }
+.today-swipe-card__meta,
+.today-swipe-card__fact { margin: 0; color: var(--product-muted); font: 500 .84rem/1.45 system-ui, sans-serif; }
+.today-swipe-card__fact { padding-top: .7rem; border-top: 1px solid rgb(255 255 255 / 8%); }
+.today-swipe-card__label { color: var(--product-gold); font: 700 .7rem/1.2 system-ui, sans-serif; letter-spacing: .12em; text-transform: uppercase; }
+.today-swipe-card__action { position: relative; z-index: 1; justify-self: start; min-height: 2.75rem; margin-top: auto; text-decoration: none; }
+.today-swipe-card--care { background: linear-gradient(145deg, rgb(28 48 55 / 97%), rgb(13 30 42 / 96%)); }
+.season-accent--wood { --season-accent: #78977a; }
+.season-accent--fire { --season-accent: #bd795d; }
+.season-accent--earth { --season-accent: #b08e5f; }
+.season-accent--metal { --season-accent: #bc835d; }
+.season-accent--water { --season-accent: #6386a4; }
+.today-swipe-card--season { border-color: color-mix(in srgb, var(--season-accent) 42%, transparent); background: linear-gradient(145deg, color-mix(in srgb, var(--season-accent) 18%, #182b40), rgb(14 27 43 / 96%)); }
+.today-carousel__dots { display: flex; justify-content: center; gap: .45rem; min-height: .55rem; }
+.today-carousel__dots span { inline-size: .38rem; block-size: .38rem; border-radius: 50%; background: rgb(243 234 219 / 25%); transition: inline-size 180ms ease, background-color 180ms ease; }
+.today-carousel__dots span.is-active { inline-size: 1.15rem; border-radius: 999px; background: var(--product-gold); }
+.seasonal-pills { display: flex; flex-wrap: wrap; gap: .5rem; margin: 0; padding: 0; list-style: none; }
+.seasonal-pills li { padding: .45rem .7rem; border: 1px solid rgb(255 255 255 / 10%); border-radius: 999px; color: var(--product-ivory); background: rgb(255 255 255 / 4%); font: 600 .76rem/1.25 system-ui, sans-serif; }
+.seasonal-advice-list { display: grid; gap: .65rem; margin: 0; padding: 0; list-style: none; }
+.seasonal-advice-list li { position: relative; padding-left: 1.15rem; color: #d7dfe5; font: 400 .9rem/1.5 system-ui, sans-serif; }
+.seasonal-advice-list li::before { content: ""; position: absolute; left: 0; top: .62em; inline-size: .36rem; block-size: .36rem; border-radius: 50%; background: var(--product-gold); }
+
+.season-detail { display: grid; gap: var(--space-6); min-width: 0; }
+.season-detail__back { justify-self: start; min-height: 2.75rem; display: inline-flex; align-items: center; color: var(--product-gold); text-decoration: none; font-weight: 650; }
+.season-detail__hero { display: grid; gap: .8rem; border-color: color-mix(in srgb, var(--season-accent) 44%, transparent); background: linear-gradient(145deg, color-mix(in srgb, var(--season-accent) 16%, #182b40), var(--product-surface)); }
+.season-detail__hero h1 { margin: 0; color: var(--product-ivory); font: 500 clamp(2rem, 9vw, 3.4rem)/1 Georgia, serif; letter-spacing: -.035em; }
+.season-detail__hero p { margin: 0; color: var(--product-muted); line-height: 1.5; }
+.season-detail__term { color: var(--product-gold) !important; }
+.season-cycle { display: grid; place-content: center; justify-self: center; inline-size: 9rem; aspect-ratio: 1; margin-top: .5rem; border-radius: 50%; background: radial-gradient(circle at center, #142538 57%, transparent 58%), conic-gradient(var(--season-accent) var(--season-progress), rgb(255 255 255 / 8%) 0); text-align: center; }
+.season-cycle strong { color: var(--product-ivory); font: 500 1.45rem/1 Georgia, serif; }
+.season-cycle span { color: var(--product-muted); font: 650 .7rem/1.2 system-ui, sans-serif; text-transform: uppercase; letter-spacing: .1em; }
+.season-detail__facts,
+.season-weather-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .65rem; margin-top: 1rem; }
+.season-detail__fact { display: grid; gap: .3rem; padding: .9rem .7rem; border: 1px solid rgb(255 255 255 / 8%); border-radius: .9rem; background: rgb(0 0 0 / 10%); }
+.season-detail__fact strong { color: var(--product-ivory); font: 500 1rem/1.2 Georgia, serif; }
+.season-detail__fact span,
+.season-detail__fact small { color: var(--product-muted); font: 500 .68rem/1.35 system-ui, sans-serif; }
+.season-detail__support { display: grid; gap: 1rem; }
+.season-detail__support > h2 { margin: 1rem 0 0; color: var(--product-ivory); font: 500 1.35rem/1.2 Georgia, serif; }
+.season-detail .symbolic-note { margin-top: 1rem; }
+
+@media (min-width: 40rem) {
+  .today-swipe-card { flex-basis: min(31rem, calc(100% - 4rem)); }
+}
+
+@media (max-width: 25rem) {
+  .today-swipe-card { min-height: 27rem; }
+  .season-detail__facts,
+  .season-weather-grid { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .today-carousel__track { scroll-behavior: auto; }
+  .today-carousel__dots span { transition: none; }
+}
 .product-section { display: grid; gap: var(--space-4); min-width: 0; }
 .product-section__header { display: grid; gap: var(--space-2); }
 .product-section__header h2,
