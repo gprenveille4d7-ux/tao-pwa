@@ -1,8 +1,8 @@
 import { getActiveProfile } from "./profile-store.js";
 import { calculateBazi } from "./bazi-engine.mjs";
 import { getCachedBazi, setCachedBazi } from "./bazi-cache.mjs";
-import { calculateDailyTao } from "./daily-tao-engine.mjs?v=2.2.0";
-import { getCachedDaily, setCachedDaily } from "./daily-cache.mjs?v=2.1.0";
+import { calculateDailyTao } from "./daily-tao-engine.mjs?v=2.3.0";
+import { getCachedDaily, setCachedDaily } from "./daily-cache.mjs?v=2.2.0";
 import { element, formatLongDate, localDateIso } from "./tao-ui.js";
 import { setTaoDailyBrief } from "./tao-dialogue.js";
 import { setTaoNarrativeState } from "./tao-narrative.js";
@@ -11,7 +11,7 @@ import { glossaryDisclosure } from "./locales/glossary-ui.js";
 import { createSectionNavigation, focusRequestedSection, markProductSection } from "./section-navigation.js";
 import { parseAppRoute } from "./navigation-routes.mjs";
 import { buildDailySemanticReading, getSemanticConcept } from "./semantic-layer.mjs?v=1.0.1";
-import { buildSeasonalProfile, selectCareAdvice } from "./seasonal-balance.mjs?v=1.0.1";
+import { buildSeasonalProfile, selectCareAdvice } from "./seasonal-balance.mjs?v=1.0.2";
 
 const root = document.querySelector("[data-today-root]");
 const semanticDebug = new URLSearchParams(location.search).get("debug") === "semantics";
@@ -111,8 +111,9 @@ function createCareCard(seasonal) {
 function createTodayCarousel(result, profile, seasonal) {
   const region = element("section", { className: "today-carousel", attributes: { "aria-label": seasonalText("carousel", "label") } });
   const track = element("div", { className: "today-carousel__track", attributes: { "data-today-carousel": "", tabindex: "0" } });
-  const cards = [createImmediateEssential(result, profile), createSeasonSummaryCard(result, seasonal), createCareCard(seasonal)];
-  if (result.solarTerm.transitionWindow) cards.unshift(cards.splice(1, 1)[0]);
+  const cards = [createImmediateEssential(result, profile)];
+  if (seasonal) cards.push(createSeasonSummaryCard(result, seasonal), createCareCard(seasonal));
+  if (seasonal && result.solarTerm.transitionWindow) cards.unshift(cards.splice(1, 1)[0]);
   track.append(...cards);
   const status = element("p", { className: "today-carousel__status sr-only", attributes: { "aria-live": "polite" } });
   const dots = element("div", { className: "today-carousel__dots", attributes: { "aria-hidden": "true" } });
@@ -514,6 +515,16 @@ export function getActiveDailyReading() {
   return { profile, natalTheme, result };
 }
 
+function getOptionalSeasonalReading(result, natalTheme, weather) {
+  try {
+    if (!result?.solarTerm?.movement || !result.solarTerm.correspondence) return null;
+    return buildSeasonalProfile({ period: result.solarTerm, natalTheme, dailyResult: result, weather });
+  } catch (error) {
+    console.warn("[TAO] Repère saisonnier ignoré sans bloquer la lecture.", error);
+    return null;
+  }
+}
+
 export async function renderTodayView() {
   if (!root) return null;
   try {
@@ -525,7 +536,7 @@ export async function renderTodayView() {
     const { profile, natalTheme, result } = reading;
     const human = createHumanGuidance(result, natalTheme, profile);
     const weather = globalThis.taoEnvironment?.getWeatherState?.() ?? null;
-    const seasonal = buildSeasonalProfile({ period: result.solarTerm, natalTheme, dailyResult: result, weather });
+    const seasonal = getOptionalSeasonalReading(result, natalTheme, weather);
     const header = element("header", { className: "product-header" });
     header.append(
       element("p", { className: "product-eyebrow", text: t("guidance.page.eyebrow") }),
@@ -533,7 +544,7 @@ export async function renderTodayView() {
       element("p", { className: "product-lead", text: "TAO commence par ce qui peut t’être utile, puis te laisse découvrir la lecture traditionnelle à ton rythme." }),
     );
     const route = parseAppRoute(location.hash);
-    if (route.section === "season") {
+    if (route.section === "season" && seasonal) {
       root.replaceChildren(createSeasonDetail(result, profile, seasonal));
       await setTaoNarrativeState("observing");
       return result;

@@ -1,4 +1,4 @@
-const CACHE_VERSION = "tao-shell-2026-08-21-v34-daily-hotfix";
+const CACHE_VERSION = "tao-shell-2026-08-21-v35-ios-hotfix";
 const SHELL = [
   "./",
   "./index.html",
@@ -26,11 +26,11 @@ const SHELL = [
   "./navigation-routes.mjs",
   "./section-navigation.js",
   "./app-navigation.js?v=tao-tree-1",
-  "./today-view.js?v=tao-seasonal-2",
-  "./daily-tao-engine.mjs?v=2.2.0",
-  "./seasonal-balance.mjs?v=1.0.1",
+  "./today-view.js?v=tao-seasonal-3-ios",
+  "./daily-tao-engine.mjs?v=2.3.0",
+  "./seasonal-balance.mjs?v=1.0.2",
   "./daily-personal-signature.mjs",
-  "./daily-cache.mjs?v=2.1.0",
+  "./daily-cache.mjs?v=2.2.0",
   "./bazi-theme.js?v=tao-semantics-2",
   "./profiles-view.js?v=tao-family-inventory-1",
   "./relationships-view.js?v=1.1.0",

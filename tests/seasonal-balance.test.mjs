@@ -64,3 +64,10 @@ test("aucun texte saisonnier n’emploie une formulation diagnostique interdite"
   const text = `${await readFile(new URL("../seasonal-balance.mjs", import.meta.url), "utf8")}\n${await readFile(new URL("../locales/fr/seasonal.js", import.meta.url), "utf8")}`.toLocaleLowerCase("fr-FR");
   for (const forbidden of ["vos poumons sont faibles", "votre foie est malade", "vous allez tomber malade", "vous empêchera d’être malade", "votre rein manque d’énergie"]) assert.equal(text.includes(forbidden), false);
 });
+
+test("un échec saisonnier ne peut plus bloquer toute la lecture du jour", async () => {
+  const source = await readFile(new URL("../today-view.js", import.meta.url), "utf8");
+  assert.match(source, /function getOptionalSeasonalReading/);
+  assert.match(source, /if \(seasonal\) cards\.push/);
+  assert.match(source, /return null;\s*\n\s*}\s*\n}\s*\n\s*export async function renderTodayView/);
+});
