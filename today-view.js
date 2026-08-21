@@ -1,7 +1,7 @@
 import { getActiveProfile } from "./profile-store.js";
 import { calculateBazi } from "./bazi-engine.mjs";
 import { getCachedBazi, setCachedBazi } from "./bazi-cache.mjs";
-import { calculateDailyTao } from "./daily-tao-engine.mjs?v=2.0.0";
+import { calculateDailyTao } from "./daily-tao-engine.mjs?v=2.1.0";
 import { getCachedDaily, setCachedDaily } from "./daily-cache.mjs?v=2.0.0";
 import { element, formatLongDate, localDateIso } from "./tao-ui.js";
 import { setTaoDailyBrief } from "./tao-dialogue.js";
@@ -11,6 +11,7 @@ import { glossaryDisclosure } from "./locales/glossary-ui.js";
 import { createSectionNavigation, focusRequestedSection, markProductSection } from "./section-navigation.js";
 import { parseAppRoute } from "./navigation-routes.mjs";
 import { buildDailySemanticReading, getSemanticConcept } from "./semantic-layer.mjs?v=1.0.1";
+import { buildSeasonalProfile, selectCareAdvice } from "./seasonal-balance.mjs";
 
 const root = document.querySelector("[data-today-root]");
 const semanticDebug = new URLSearchParams(location.search).get("debug") === "semantics";
@@ -33,6 +34,105 @@ function solarTermId(pinyin) {
 
 function lowerFirst(value) {
   return value ? `${value.charAt(0).toLocaleLowerCase("fr-FR")}${value.slice(1)}` : value;
+}
+
+function seasonalText(path, id) {
+  return t(`seasonal.${path}.${id}`);
+}
+
+function movementDetails(period) {
+  const correspondence = period.correspondence;
+  return {
+    movement: seasonalText("movements", period.movement),
+    season: seasonalText("seasons", correspondence.season),
+    organ: seasonalText("organs", correspondence.organ),
+    bowel: seasonalText("bowels", correspondence.bowel),
+    climate: seasonalText("climates", correspondence.climate),
+  };
+}
+
+function createPillList(items, className = "seasonal-pills") {
+  const list = element("ul", { className });
+  items.forEach((item) => list.append(element("li", { text: item })));
+  return list;
+}
+
+function createImmediateEssential(result, profile) {
+  const personal = result.personalSignature;
+  const card = element("article", { className: "today-swipe-card today-swipe-card--essential", attributes: { "data-swipe-card": "essential", "aria-labelledby": "today-swipe-essential", tabindex: "0" } });
+  card.append(
+    element("p", { className: "product-eyebrow", text: seasonalText("carousel", "essential") }),
+    element("h2", { text: personal?.primarySignal ?? `Aujourd’hui, ${profile.firstName}` }),
+    element("p", { className: "today-swipe-card__lead", text: personal?.concreteAdvice ?? result.dayEnergy.summary }),
+  );
+  card.querySelector("h2").id = "today-swipe-essential";
+  const axes = (personal?.supports ?? result.guidance.favor).slice(0, 2);
+  if (axes.length) card.append(element("strong", { className: "today-swipe-card__label", text: t("guidance.advice.favor") }), createPillList(axes));
+  return card;
+}
+
+function transitionCopy(period) {
+  if (period.daysUntilNext === 0) return seasonalText("transition", "today");
+  return t("seasonal.transition.inDays", { days: period.daysUntilNext });
+}
+
+function createSeasonSummaryCard(result, seasonal) {
+  const period = result.solarTerm;
+  const details = movementDetails(period);
+  const card = element("article", { className: `today-swipe-card today-swipe-card--season season-accent--${period.movement}`, attributes: { "data-swipe-card": "season", "aria-labelledby": "today-swipe-season", tabindex: "0" } });
+  card.append(
+    element("p", { className: "product-eyebrow", text: period.transitionWindow ? seasonalText("transition", period.daysSinceCurrent <= 2 ? "recent" : "approaching") : seasonalText("carousel", "season") }),
+    element("h2", { text: seasonalText("movementTitles", period.movement) }),
+    element("p", { className: "today-swipe-card__meta", text: `${getConcept("calendar.solarTerms", solarTermId(period.pinyin)).label} · ${transitionCopy(period)}` }),
+    element("p", { className: "today-swipe-card__fact", text: `${seasonalText("labels", "movement")} · ${details.movement}` }),
+    element("p", { className: "today-swipe-card__fact", text: `${seasonalText("labels", "traditional")} · ${details.organ} · ${details.bowel}` }),
+    element("p", { className: "today-swipe-card__lead", text: t(`seasonal.relation.${seasonal.relation}`) }),
+    createPillList(seasonal.axes.map((axis) => seasonalText("axes", axis))),
+    element("a", { className: "product-button today-swipe-card__action", text: seasonalText("carousel", "explore"), attributes: { href: "#today/season" } }),
+  );
+  card.querySelector("h2").id = "today-swipe-season";
+  return card;
+}
+
+function createCareCard(seasonal) {
+  const adviceIds = selectCareAdvice(seasonal);
+  const card = element("article", { className: "today-swipe-card today-swipe-card--care", attributes: { "data-swipe-card": "care", "aria-labelledby": "today-swipe-care", tabindex: "0" } });
+  card.append(
+    element("p", { className: "product-eyebrow", text: seasonalText("carousel", "care") }),
+    element("h2", { text: seasonal.axes.includes("recovery") ? "Aujourd’hui, préservez votre rythme" : "Aujourd’hui, soutenez votre équilibre" }),
+    element("p", { className: "today-swipe-card__lead", text: seasonal.weather.available ? seasonalText("weather", seasonal.weather.primary) : seasonalText("weather", "unavailable") }),
+    createPillList(adviceIds.map((id) => seasonalText("advice", id)), "seasonal-advice-list"),
+    element("a", { className: "product-button today-swipe-card__action", text: seasonalText("carousel", "advice"), attributes: { href: "#today/guidance" } }),
+  );
+  card.querySelector("h2").id = "today-swipe-care";
+  return card;
+}
+
+function createTodayCarousel(result, profile, seasonal) {
+  const region = element("section", { className: "today-carousel", attributes: { "aria-label": seasonalText("carousel", "label") } });
+  const track = element("div", { className: "today-carousel__track", attributes: { "data-today-carousel": "", tabindex: "0" } });
+  const cards = [createImmediateEssential(result, profile), createSeasonSummaryCard(result, seasonal), createCareCard(seasonal)];
+  if (result.solarTerm.transitionWindow) cards.unshift(cards.splice(1, 1)[0]);
+  track.append(...cards);
+  const status = element("p", { className: "today-carousel__status sr-only", attributes: { "aria-live": "polite" } });
+  const dots = element("div", { className: "today-carousel__dots", attributes: { "aria-hidden": "true" } });
+  cards.forEach((_, index) => dots.append(element("span", { className: index ? "" : "is-active" })));
+  const update = () => {
+    const index = Math.max(0, Math.min(cards.length - 1, Math.round(track.scrollLeft / Math.max(1, cards[0].getBoundingClientRect().width + 14))));
+    [...dots.children].forEach((dot, dotIndex) => dot.classList.toggle("is-active", dotIndex === index));
+    status.textContent = t("seasonal.carousel.position", { current: index + 1, total: cards.length });
+  };
+  let frame = 0;
+  track.addEventListener("scroll", () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(update); }, { passive: true });
+  track.addEventListener("keydown", (event) => {
+    if (!["ArrowLeft", "ArrowRight"].includes(event.key)) return;
+    event.preventDefault();
+    const current = Math.round(track.scrollLeft / Math.max(1, cards[0].getBoundingClientRect().width + 14));
+    cards[Math.max(0, Math.min(cards.length - 1, current + (event.key === "ArrowRight" ? 1 : -1)))]?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", inline: "start", block: "nearest" });
+  });
+  region.append(track, dots, status);
+  update();
+  return region;
 }
 
 function localizedResonanceReasons(result, natalTheme) {
@@ -267,6 +367,82 @@ function createSeason(result) {
   return section;
 }
 
+function seasonFact(label, value, description = "") {
+  const item = element("article", { className: "season-detail__fact" });
+  item.append(element("strong", { text: value }), element("span", { text: label }));
+  if (description) item.append(element("small", { text: description }));
+  return item;
+}
+
+function createSeasonDetail(result, profile, seasonal) {
+  const period = result.solarTerm;
+  const details = movementDetails(period);
+  const localizedTerm = getConcept("calendar.solarTerms", solarTermId(period.pinyin));
+  const wrapper = element("section", { className: `season-detail season-accent--${period.movement}`, attributes: { "aria-labelledby": "season-detail-title" } });
+  const back = element("a", { className: "season-detail__back", text: seasonalText("page", "back"), attributes: { href: "#today/guidance" } });
+  const intro = element("section", { className: "product-card season-detail__hero" });
+  const ring = element("div", { className: "season-cycle", attributes: { role: "img", "aria-label": `${seasonalText("labels", "progress")} : ${Math.round(period.progress * 100)} %` } });
+  ring.style.setProperty("--season-progress", `${Math.round(period.progress * 360)}deg`);
+  ring.append(element("strong", { text: `${Math.round(period.progress * 100)} %` }), element("span", { text: details.season }));
+  intro.append(
+    element("p", { className: "product-eyebrow", text: seasonalText("page", "now") }),
+    element("h1", { id: "season-detail-title", text: seasonalText("movementTitles", period.movement) }),
+    element("p", { className: "season-detail__term", text: `${localizedTerm.label} · ${localizedTerm.traditional}` }),
+    element("p", { text: `${transitionCopy(period)} · ${seasonalText("movements", period.movement)}` }),
+    ring,
+  );
+
+  const meaning = element("section", { className: "product-card" });
+  meaning.append(sectionHeader(null, seasonalText("page", "meaning")), element("p", { text: seasonalText("meanings", period.movement) }));
+
+  const correspondences = element("section", { className: "product-card" });
+  const factGrid = element("div", { className: "season-detail__facts" });
+  factGrid.append(
+    seasonFact(seasonalText("labels", "organ"), details.organ),
+    seasonFact(seasonalText("labels", "bowel"), details.bowel),
+    seasonFact(seasonalText("labels", "climate"), details.climate),
+  );
+  correspondences.append(sectionHeader(null, seasonalText("page", "correspondences")), factGrid, element("p", { className: "symbolic-note", text: t("seasonal.disclaimer") }));
+
+  const personal = element("section", { className: "product-card" });
+  personal.append(
+    sectionHeader(profile.firstName, seasonalText("page", "profile")),
+    element("p", { text: t(`seasonal.relation.${seasonal.relation}`) }),
+    element("p", { text: t(`seasonal.natalPresence.${seasonal.natalPresence}`) }),
+  );
+
+  const weather = element("section", { className: "product-card" });
+  weather.append(sectionHeader(null, seasonalText("page", "weather")));
+  if (seasonal.weather.available) {
+    const raw = seasonal.weather.raw;
+    const facts = [
+      ["Température", Number.isFinite(Number(raw.temperature)) ? `${Math.round(raw.temperature)} °C` : null],
+      ["Humidité", Number.isFinite(Number(raw.humidity)) ? `${Math.round(raw.humidity)} %` : null],
+      ["Vent", Number.isFinite(Number(raw.windSpeed)) ? `${Math.round(raw.windSpeed)} km/h` : null],
+    ].filter(([, value]) => value);
+    const grid = element("div", { className: "season-weather-grid" });
+    facts.forEach(([label, value]) => grid.append(seasonFact(label, value)));
+    weather.append(grid, element("p", { text: seasonalText("weather", seasonal.weather.primary) }), element("small", { text: seasonalText("labels", "source") }));
+  } else weather.append(element("p", { text: seasonalText("weather", "unavailable") }));
+
+  const support = element("section", { className: "product-card season-detail__support" });
+  support.append(
+    sectionHeader(null, seasonalText("page", "axes")),
+    createPillList(seasonal.axes.map((axis) => seasonalText("axes", axis))),
+    element("h2", { text: seasonalText("page", "habits") }),
+    createPillList(selectCareAdvice(seasonal).map((id) => seasonalText("advice", id)), "seasonal-advice-list"),
+  );
+
+  const observe = element("section", { className: "product-card season-detail__observe" });
+  observe.append(
+    sectionHeader(null, seasonalText("page", "observe")),
+    createPillList(t("seasonal.observation"), "seasonal-advice-list"),
+    element("p", { className: "symbolic-note", text: t("seasonal.healthNote") }),
+  );
+  wrapper.append(back, intro, meaning, correspondences, personal, weather, support, observe);
+  return wrapper;
+}
+
 function pillarMini(label, pillar) {
   const card = element("article", { className: "mini-pillar" });
   card.append(element("span", { text: label }), element("strong", { text: pillar.chinese }), element("small", { text: pillar.label }));
@@ -345,6 +521,8 @@ export async function renderTodayView() {
     }
     const { profile, natalTheme, result } = reading;
     const human = createHumanGuidance(result, natalTheme, profile);
+    const weather = globalThis.taoEnvironment?.getWeatherState?.() ?? null;
+    const seasonal = buildSeasonalProfile({ period: result.solarTerm, natalTheme, dailyResult: result, weather });
     const header = element("header", { className: "product-header" });
     header.append(
       element("p", { className: "product-eyebrow", text: t("guidance.page.eyebrow") }),
@@ -352,8 +530,14 @@ export async function renderTodayView() {
       element("p", { className: "product-lead", text: "TAO commence par ce qui peut t’être utile, puis te laisse découvrir la lecture traditionnelle à ton rythme." }),
     );
     const route = parseAppRoute(location.hash);
+    if (route.section === "season") {
+      root.replaceChildren(createSeasonDetail(result, profile, seasonal));
+      await setTaoNarrativeState("observing");
+      return result;
+    }
     root.replaceChildren(
       header,
+      createTodayCarousel(result, profile, seasonal),
       createSectionNavigation("today", TODAY_SECTIONS, "Explorer Aujourd’hui"),
       groupSection("guidance", human.card, createOverview(result), createGuidance(result), createDetailedGuidance(result, natalTheme)),
       groupSection("energies", createWhyDisclosure(result, natalTheme, human.semantic), createDayEnergy(result), createElementBalance(result), createDetails(result)),
@@ -402,6 +586,9 @@ window.addEventListener("tao:view-change", (event) => {
   if (event.detail?.view === "pavilion") updatePavilionDialogue();
 });
 window.addEventListener("tao:profile-changed", () => {
+  if (location.hash.startsWith("#today")) renderTodayView();
+});
+window.addEventListener("tao:environment-change", () => {
   if (location.hash.startsWith("#today")) renderTodayView();
 });
 

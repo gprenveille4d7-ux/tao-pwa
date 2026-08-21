@@ -3,7 +3,7 @@ import { resolveEnvironmentLocation } from "./environment-location.mjs?v=1.0.0";
 import { composeEnvironment } from "./environment-engine.mjs?v=1.0.2";
 import { determineDayPeriod, getSolarContext } from "./solar-engine.mjs?v=1.0.0";
 import { getZonedParts, localDateTimeToEpoch } from "./time-zone.mjs";
-import { getWeatherState } from "./weather-service.mjs?v=1.0.1";
+import { getWeatherState } from "./weather-service.mjs?v=1.1.0";
 
 const LIGHT_REFRESH_MS = 60_000;
 const WEATHER_REFRESH_MS = 30 * 60_000;

@@ -1,6 +1,6 @@
 import { parseLocalIso } from "./time-zone.mjs";
 
-export const WEATHER_CACHE_VERSION = "tao-weather-cache-1.0.0";
+export const WEATHER_CACHE_VERSION = "tao-weather-cache-1.1.0";
 export const WEATHER_STATES = Object.freeze(["CLEAR", "PARTLY_CLOUDY", "CLOUDY", "OVERCAST", "FOG", "RAIN", "HEAVY_RAIN", "SNOW", "STORM"]);
 const CACHE_PREFIX = "tao.environment.weather.v1";
 const FRESH_MS = 30 * 60_000;
@@ -36,10 +36,10 @@ function writeCache(location, value, storage) {
 }
 
 export function buildOpenMeteoUrl(location) {
-  const current = "weather_code,cloud_cover,precipitation,rain,snowfall,wind_speed_10m";
+  const current = "temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,cloud_cover,precipitation,rain,snowfall,wind_speed_10m";
   const query = new URLSearchParams({
     latitude: String(location.latitude), longitude: String(location.longitude), current,
-    daily: "sunrise,sunset", timezone: location.timezone, forecast_days: "1",
+    daily: "sunrise,sunset,temperature_2m_max,temperature_2m_min", timezone: location.timezone, forecast_days: "1",
   });
   return `https://api.open-meteo.com/v1/forecast?${query}`;
 }
@@ -50,6 +50,11 @@ function normalizeResponse(payload, location, fetchedAt) {
     weatherCode: current.weather_code, cloudCover: current.cloud_cover ?? 0,
     precipitation: current.precipitation ?? 0, rain: current.rain ?? 0,
     snowfall: current.snowfall ?? 0, windSpeed: current.wind_speed_10m ?? 0,
+    temperature: current.temperature_2m ?? null,
+    apparentTemperature: current.apparent_temperature ?? null,
+    humidity: current.relative_humidity_2m ?? null,
+    temperatureMax: payload.daily?.temperature_2m_max?.[0] ?? null,
+    temperatureMin: payload.daily?.temperature_2m_min?.[0] ?? null,
   });
   return Object.freeze({
     version: WEATHER_CACHE_VERSION, fetchedAt, source: "open-meteo",
