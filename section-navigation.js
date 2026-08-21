@@ -1,4 +1,4 @@
-import { appRoute, parseAppRoute } from "./navigation-routes.mjs";
+import { appRoute, parseAppRoute } from "./navigation-routes.mjs?v=tao-ux-2";
 import { element } from "./tao-ui.js";
 
 export function createSectionNavigation(view, items, label) {
@@ -34,4 +34,15 @@ export function focusRequestedSection(root, view, section, { scroll = true } = {
   });
   if (scroll) requestAnimationFrame(() => target.scrollIntoView({ behavior: "smooth", block: "start" }));
   return true;
+}
+
+export function showOnlyProductSection(root, section) {
+  const sections = [...(root?.children ?? [])].filter((node) => node.dataset.productSection);
+  let found = false;
+  sections.forEach((node) => {
+    const active = node.dataset.productSection === section;
+    node.hidden = !active;
+    if (active) found = true;
+  });
+  return found;
 }

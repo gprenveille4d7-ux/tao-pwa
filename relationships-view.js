@@ -9,6 +9,7 @@ import { buildRelationshipSemanticReading } from "./relationship-semantic.mjs?v=
 import { getCachedRelationshipReading, setCachedRelationshipReading } from "./relationship-cache.mjs?v=1.0.0";
 import { t } from "./locales/index.js?v=1.5.1";
 import { element } from "./tao-ui.js";
+import { createTaoCarousel, createTaoHero, openTaoSheet } from "./tao-components.js?v=1.0.0";
 
 function option(value, text, selected = false) {
   const node = element("option", { text, attributes: { value } });
@@ -42,7 +43,7 @@ function heading(eyebrow, title, copy) {
 }
 
 function listCard(title, values, className = "relationship-reading-card") {
-  const card = element("section", { className: `product-card ${className}` });
+  const card = element("section", { className: `surface-main ${className}` });
   card.append(element("h3", { text: title }));
   const list = element("ul", { className: "relationship-reading-list" });
   values.forEach((value) => list.append(element("li", { text: value })));
@@ -52,26 +53,7 @@ function listCard(title, values, className = "relationship-reading-card") {
 
 function renderReading(host, comparison, reading, profiles) {
   host.replaceChildren();
-  const hero = element("article", { className: "product-card relationship-hero" });
-  hero.append(
-    element("p", { className: "product-eyebrow", text: t("profiles.relations.readingEyebrow") }),
-    element("h2", { text: reading.title }),
-    element("p", { className: "relationship-goal-label", text: reading.contextLabel }),
-    element("p", { className: "relationship-goal-question", text: reading.goalQuestion }),
-    element("p", { className: "relationship-hero__summary", text: reading.summary }),
-    element("p", { className: "method-note", text: reading.disclaimer }),
-  );
-  const archetypes = element("div", { className: "relationship-archetypes" });
-  reading.archetypes.forEach((archetype) => {
-    const card = element("article");
-    card.append(
-      element("small", { text: archetype.name }),
-      element("strong", { text: archetype.title }),
-      element("span", { text: `${archetype.traditional} · ${archetype.technical}` }),
-    );
-    archetypes.append(card);
-  });
-  hero.append(archetypes);
+  const hero = createTaoHero({ eyebrow: t("profiles.relations.readingEyebrow"), title: reading.title, lead: reading.summary, context: `${reading.contextLabel} · ${reading.goalQuestion}` });
 
   const axes = element("section", { className: "product-card relationship-axes" });
   axes.append(heading(t("profiles.relations.axesEyebrow"), t("profiles.relations.axesTitle"), reading.axisDisclaimer));
@@ -83,17 +65,20 @@ function renderReading(host, comparison, reading, profiles) {
   });
   axes.append(axisList);
 
-  const focusedSections = element("section", { className: "relationship-focused-sections", attributes: { "aria-label": reading.goalLabel } });
-  reading.sections.forEach(({ title, values }) => focusedSections.append(listCard(title, values)));
+  const cardTitles = ["Ce qui vous rapproche", "Ce qui demande de l’ajustement", "Comment avancer ensemble"];
+  const cards = cardTitles.map((title, index) => listCard(title, (reading.sections[index]?.values ?? reading.sections.flatMap(({ values }) => values).slice(index * 3, index * 3 + 3)).slice(0, 4)));
+  const carousel = createTaoCarousel({ cards, label: "Lecture de la relation" });
 
-  const details = element("details", { className: "product-card relationship-technical" });
-  const summary = element("summary", { text: t("profiles.relations.why") });
+  const details = element("div", { className: "relationship-technical product-depth-stack" });
   const priorityList = element("ul", { className: "relationship-reading-list relationship-priority-list" });
   reading.priorityFacts.forEach(({ label, reason }) => priorityList.append(element("li", { text: `${label} — ${reason}` })));
   const technicalList = element("ul", { className: "relationship-reading-list" });
   reading.technical.forEach((value) => technicalList.append(element("li", { text: value })));
+  const completeReading = element("section", { className: "relationship-complete-reading" });
+  reading.sections.forEach(({ title, values }) => completeReading.append(listCard(title, values, "relationship-reading-card surface-soft")));
   details.append(
-    summary,
+    axes,
+    completeReading,
     element("h3", { text: t("profiles.relations.priorityFacts") }),
     priorityList,
     element("h3", { text: t("profiles.relations.stableFacts") }),
@@ -102,10 +87,10 @@ function renderReading(host, comparison, reading, profiles) {
     element("p", { className: "method-note", text: reading.cyclesNote }),
   );
 
-  const actions = element("div", { className: "product-card relationship-actions" });
-  actions.append(
-    element("p", { text: t("profiles.relations.aiCopy") }),
-  );
+  const technical = element("button", { className: "tao-quiet-action", text: t("profiles.relations.why"), attributes: { type: "button", "aria-haspopup": "dialog" } });
+  technical.addEventListener("click", () => openTaoSheet({ title: "Pourquoi TAO observe cela ?", label: "Relations BaZi", content: details, opener: technical }));
+  const actions = element("div", { className: "relationship-actions surface-soft" });
+  actions.append(element("p", { text: t("profiles.relations.aiCopy") }));
   const talk = element("button", {
     className: "product-button product-button--primary",
     text: t("profiles.relations.talk"),
@@ -124,9 +109,8 @@ function renderReading(host, comparison, reading, profiles) {
 
   host.append(
     hero,
-    axes,
-    focusedSections,
-    details,
+    carousel,
+    technical,
     actions,
   );
   const scroller = host.closest(".product-view");
@@ -165,7 +149,7 @@ function themeFor(profile) {
 
 export function createRelationshipsModule({ profiles, activeProfile, onAddProfile }) {
   const module = element("div", { className: "relationship-module" });
-  const intro = element("section", { className: "product-card relationship-intro" });
+  const intro = element("section", { className: "surface-main relationship-intro" });
   intro.append(heading(t("profiles.relations.eyebrow"), t("profiles.relations.title"), t("profiles.relations.copy")));
   intro.append(element("p", { className: "method-note", text: t("profiles.relations.noScore") }));
   intro.append(element("a", { className: "product-button product-button--quiet", text: t("profiles.constellation.openFromRelations"), attributes: { href: "#profiles/family" } }));

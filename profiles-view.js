@@ -12,12 +12,13 @@ import { clearDailyCacheForProfile } from "./daily-cache.mjs";
 import { searchBirthPlaces } from "./geocoding.js";
 import { element, formatBirthDate, formatPlace } from "./tao-ui.js";
 import { t } from "./locales/index.js?v=1.5.1";
-import { createSectionNavigation, focusRequestedSection, markProductSection } from "./section-navigation.js";
-import { parseAppRoute } from "./navigation-routes.mjs";
+import { createSectionNavigation, focusRequestedSection, markProductSection, showOnlyProductSection } from "./section-navigation.js?v=tao-ux-2";
+import { parseAppRoute } from "./navigation-routes.mjs?v=tao-ux-2";
 import { getSemanticConcept } from "./semantic-layer.mjs?v=1.0.1";
 import { clearTaoAIMemory, getTaoAISettings, setTaoAIEnabled } from "./tao-ai-memory.js";
-import { createRelationshipsModule } from "./relationships-view.js?v=1.1.0";
-import { createFamilyConstellationModule } from "./family-constellation-view.js?v=4.1.0";
+import { createRelationshipsModule } from "./relationships-view.js?v=tao-ux-2";
+import { createFamilyConstellationModule } from "./family-constellation-view.js?v=tao-ux-2";
+import { createTaoCarousel, createTaoHero, openTaoSheet } from "./tao-components.js?v=1.0.0";
 
 const root = document.querySelector("[data-profiles-root]");
 const RELATIONSHIPS = ["other", "family", "friend", "partner", "child", "parent"];
@@ -51,14 +52,17 @@ function facts(profile) {
 }
 
 function activeCard(profile) {
-  const card = element("article", { className: "product-card active-profile-product" });
-  card.append(element("p", { className: "product-eyebrow", text: t("profiles.page.active") }), element("h2", { text: profile.firstName }), facts(profile));
-  const actions = element("div", { className: "product-actions" });
-  const edit = element("button", { className: "product-button product-button--primary", text: t("profiles.actions.edit"), attributes: { type: "button" } });
+  const edit = element("button", { className: "product-button product-button--quiet", text: t("profiles.actions.edit"), attributes: { type: "button" } });
   edit.addEventListener("click", () => openEditor(profile));
-  actions.append(edit);
-  card.append(actions);
-  return card;
+  const settings = element("button", { className: "product-button product-button--quiet", text: "Réglages", attributes: { type: "button", "aria-haspopup": "dialog" } });
+  settings.addEventListener("click", () => openTaoSheet({ title: "Réglages de TAO", label: "Profils", content: aiSettingsCard(), opener: settings }));
+  return createTaoHero({
+    eyebrow: t("profiles.page.active"),
+    title: profile.firstName,
+    lead: getDayMaster(profile),
+    context: `${formatBirthDate(profile.birthDate)} · ${formatPlace(profile.birthPlace)}`,
+    actions: [edit, settings],
+  });
 }
 
 function aiSettingsCard() {
@@ -93,33 +97,45 @@ function aiSettingsCard() {
 function otherProfiles(profiles, activeId) {
   const section = element("section", { className: "product-section" });
   const header = element("header", { className: "product-section__header" });
-  header.append(element("p", { className: "product-eyebrow", text: t("profiles.page.people") }), element("h2", { text: t("profiles.page.others") }));
-  const list = element("div", { className: "profile-list" });
-  const others = profiles.filter(({ id }) => id !== activeId);
-  if (!others.length) list.append(element("p", { className: "empty-state", text: t("profiles.page.empty") }));
-  for (const profile of others) {
-    const card = element("article", { className: "product-card profile-list-card" });
-    const text = element("div");
-    text.append(element("h3", { text: profile.firstName }), element("p", { text: `${formatBirthDate(profile.birthDate)} · ${formatPlace(profile.birthPlace)}` }), element("small", { text: getDayMaster(profile) }));
-    const actions = element("div", { className: "profile-list-card__actions" });
-    const use = element("button", { className: "product-button product-button--primary", text: t("profiles.actions.use"), attributes: { type: "button" } });
-    use.addEventListener("click", () => activate(profile.id));
-    const edit = element("button", { className: "product-button product-button--quiet", text: t("profiles.actions.edit"), attributes: { type: "button" } });
-    edit.addEventListener("click", () => openEditor(profile));
-    const remove = element("button", { className: "product-button product-button--quiet product-button--danger", text: "Supprimer", attributes: { type: "button" } });
-    remove.addEventListener("click", () => {
-      if (!window.confirm(`Supprimer le profil de ${profile.firstName} ? Ses données locales seront retirées.`)) return;
-      deleteProfile(profile.id);
-      clearCachedBazi(profile.id);
-      clearDailyCacheForProfile(profile.id);
-      renderProfilesView();
-      window.dispatchEvent(new CustomEvent("tao:profile-changed", { detail: { profileId: getActiveProfile()?.id, deletedProfileId: profile.id } }));
+  header.append(element("p", { className: "product-eyebrow", text: t("profiles.page.people") }), element("h2", { text: "Changer de personne" }), element("p", { text: "Touchez un profil pour l’utiliser. Les autres actions restent dans son menu." }));
+  const cards = profiles.map((profile) => {
+    const card = element("article", { className: `surface-main profile-person-card${profile.id === activeId ? " is-active" : ""}` });
+    const select = element("button", { className: "profile-person-card__select", attributes: { type: "button", "aria-label": `${profile.id === activeId ? "Profil actif" : "Utiliser le profil"} ${profile.firstName}` } });
+    select.append(element("span", { text: profile.id === activeId ? "Profil actif" : "Profil" }), element("strong", { text: profile.firstName }), element("small", { text: getDayMaster(profile) }));
+    select.addEventListener("click", () => { if (profile.id !== activeId) activate(profile.id); });
+    const menu = element("button", { className: "profile-person-card__menu", text: "•••", attributes: { type: "button", "aria-label": `Actions pour ${profile.firstName}`, "aria-haspopup": "dialog" } });
+    menu.addEventListener("click", () => {
+      const actions = element("div", { className: "profile-sheet-actions" });
+      const edit = element("button", { className: "product-button product-button--quiet", text: t("profiles.actions.edit"), attributes: { type: "button" } });
+      let closeMenu = () => {};
+      edit.addEventListener("click", () => {
+        closeMenu();
+        openEditor(profile);
+      });
+      actions.append(edit);
+      if (profile.id !== activeId) {
+        const remove = element("button", { className: "product-button product-button--danger", text: "Supprimer", attributes: { type: "button" } });
+        remove.addEventListener("click", () => {
+          if (!window.confirm(`Supprimer le profil de ${profile.firstName} ? Ses données locales seront retirées.`)) return;
+          deleteProfile(profile.id);
+          clearCachedBazi(profile.id);
+          clearDailyCacheForProfile(profile.id);
+          document.querySelector(".tao-sheet-backdrop")?.remove();
+          document.body.classList.remove("has-tao-sheet");
+          renderProfilesView();
+        });
+        actions.append(remove);
+      }
+      closeMenu = openTaoSheet({ title: profile.firstName, label: "Profil", content: actions, opener: menu });
     });
-    actions.append(use, edit, remove);
-    card.append(text, actions);
-    list.append(card);
-  }
-  section.append(header, list);
+    card.append(select, menu);
+    return card;
+  });
+  const add = element("button", { className: "surface-main profile-add-card", attributes: { type: "button", "aria-label": t("profiles.actions.addPerson") } });
+  add.append(element("span", { text: "+" }), element("strong", { text: t("profiles.page.addPerson") }));
+  add.addEventListener("click", () => openEditor());
+  cards.push(add);
+  section.append(header, createTaoCarousel({ cards, label: "Profils enregistrés" }));
   return section;
 }
 
@@ -267,20 +283,17 @@ export function renderProfilesView() {
     root.replaceChildren(element("section", { className: "product-card product-error", text: t("profiles.errors.noProfile") }));
     return;
   }
-  const pageHeader = element("header", { className: "product-header" });
-  pageHeader.append(element("p", { className: "product-eyebrow", text: t("profiles.page.eyebrow") }), element("h1", { text: t("profiles.page.title") }), element("p", { className: "product-lead", text: t("profiles.page.lead") }));
-  const add = element("button", { className: "product-button product-button--add", text: t("profiles.actions.addPerson"), attributes: { type: "button" } });
-  add.addEventListener("click", () => openEditor());
   const me = markProductSection(element("section", { className: "product-depth-section" }), "profiles", "me");
-  me.append(activeCard(active), aiSettingsCard());
+  me.append(activeCard(active));
   const people = markProductSection(element("section", { className: "product-depth-section" }), "profiles", "people");
-  people.append(add, otherProfiles(getProfiles(), active.id));
+  people.append(otherProfiles(getProfiles(), active.id));
   const compatibility = markProductSection(element("section", { className: "product-depth-section" }), "profiles", "compatibility");
   compatibility.append(createRelationshipsModule({ profiles: getProfiles(), activeProfile: active, onAddProfile: () => openEditor() }));
   const family = markProductSection(element("section", { className: "product-depth-section" }), "profiles", "family");
   family.append(createFamilyConstellationModule({ profiles: getProfiles(), onAddProfile: () => openEditor() }));
   const route = parseAppRoute(location.hash);
-  root.replaceChildren(pageHeader, createSectionNavigation("profiles", PROFILE_SECTIONS, "Explorer Profils"), me, people, compatibility, family);
+  root.replaceChildren(me, createSectionNavigation("profiles", PROFILE_SECTIONS, "Explorer Profils"), people, compatibility, family);
+  showOnlyProductSection(root, route.section);
   focusRequestedSection(root, "profiles", route.section, { scroll: route.section !== "me" });
 }
 

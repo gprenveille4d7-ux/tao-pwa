@@ -17,7 +17,9 @@ test("la constellation utilise un inventaire progressif et une feuille de détai
   for (const label of ["Synthèse", "Inventaire", "Famille", "Chronologie", "Explorer", "Voir le détail", "Où apparaît-il", "Particularités liées"]) assert.match(view, new RegExp(label));
   assert.match(view, /data-pattern-id/);
   assert.doesNotMatch(view, /reading\.primaryCards\.forEach\(\(card\) => primary\.append/);
-  assert.match(view, /family-calculation-sheet/);
+  assert.match(view, /openTaoSheet/);
+  assert.match(view, /createTaoSegmentedControl/);
+  assert.match(view, /createTaoCarousel/);
   assert.match(css, /position:\s*fixed/);
   assert.match(css, /100dvh/);
   assert.match(css, /safe-area-inset-bottom/);

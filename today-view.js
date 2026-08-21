@@ -8,10 +8,11 @@ import { setTaoDailyBrief } from "./tao-dialogue.js";
 import { setTaoNarrativeState } from "./tao-narrative.js";
 import { formatPercent, getConcept, t } from "./locales/index.js?v=1.2.0";
 import { glossaryDisclosure } from "./locales/glossary-ui.js";
-import { createSectionNavigation, focusRequestedSection, markProductSection } from "./section-navigation.js";
-import { parseAppRoute } from "./navigation-routes.mjs";
+import { createSectionNavigation, focusRequestedSection, markProductSection, showOnlyProductSection } from "./section-navigation.js?v=tao-ux-2";
+import { parseAppRoute } from "./navigation-routes.mjs?v=tao-ux-2";
 import { buildDailySemanticReading, getSemanticConcept } from "./semantic-layer.mjs?v=1.0.1";
 import { buildSeasonalProfile, selectCareAdvice } from "./seasonal-balance.mjs?v=1.0.2";
+import { createTaoCarousel, createTaoHero } from "./tao-components.js?v=1.0.0";
 
 const root = document.querySelector("[data-today-root]");
 const semanticDebug = new URLSearchParams(location.search).get("debug") === "semantics";
@@ -21,11 +22,9 @@ const elementData = (key) => getConcept("bazi.elements", key);
 const stemData = (key) => getConcept("bazi.heavenlyStems", key);
 const branchData = (key) => getConcept("bazi.earthlyBranches", key);
 const TODAY_SECTIONS = Object.freeze([
-  { id: "guidance", label: "L’essentiel" },
-  { id: "energies", label: "Pourquoi ?" },
-  { id: "personal", label: "Pour toi" },
-  { id: "cycles", label: "Le temps" },
-  { id: "nature", label: "Ciel & nature" },
+  { id: "understand", label: "Comprendre" },
+  { id: "rhythm", label: "Mon rythme" },
+  { id: "environment", label: "Ciel & environnement" },
 ]);
 
 function solarTermId(pinyin) {
@@ -102,38 +101,17 @@ function createCareCard(seasonal) {
     element("h2", { text: seasonal.axes.includes("recovery") ? "Aujourd’hui, préservez votre rythme" : "Aujourd’hui, soutenez votre équilibre" }),
     element("p", { className: "today-swipe-card__lead", text: seasonal.weather.available ? seasonalText("weather", seasonal.weather.primary) : seasonalText("weather", "unavailable") }),
     createPillList(adviceIds.map((id) => seasonalText("advice", id)), "seasonal-advice-list"),
-    element("a", { className: "product-button today-swipe-card__action", text: seasonalText("carousel", "advice"), attributes: { href: "#today/guidance" } }),
+    element("a", { className: "product-button today-swipe-card__action", text: seasonalText("carousel", "advice"), attributes: { href: "#today/understand" } }),
   );
   card.querySelector("h2").id = "today-swipe-care";
   return card;
 }
 
 function createTodayCarousel(result, profile, seasonal) {
-  const region = element("section", { className: "today-carousel", attributes: { "aria-label": seasonalText("carousel", "label") } });
-  const track = element("div", { className: "today-carousel__track", attributes: { "data-today-carousel": "", tabindex: "0" } });
   const cards = [createImmediateEssential(result, profile)];
   if (seasonal) cards.push(createSeasonSummaryCard(result, seasonal), createCareCard(seasonal));
   if (seasonal && result.solarTerm.transitionWindow) cards.unshift(cards.splice(1, 1)[0]);
-  track.append(...cards);
-  const status = element("p", { className: "today-carousel__status sr-only", attributes: { "aria-live": "polite" } });
-  const dots = element("div", { className: "today-carousel__dots", attributes: { "aria-hidden": "true" } });
-  cards.forEach((_, index) => dots.append(element("span", { className: index ? "" : "is-active" })));
-  const update = () => {
-    const index = Math.max(0, Math.min(cards.length - 1, Math.round(track.scrollLeft / Math.max(1, cards[0].getBoundingClientRect().width + 14))));
-    [...dots.children].forEach((dot, dotIndex) => dot.classList.toggle("is-active", dotIndex === index));
-    status.textContent = t("seasonal.carousel.position", { current: index + 1, total: cards.length });
-  };
-  let frame = 0;
-  track.addEventListener("scroll", () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(update); }, { passive: true });
-  track.addEventListener("keydown", (event) => {
-    if (!["ArrowLeft", "ArrowRight"].includes(event.key)) return;
-    event.preventDefault();
-    const current = Math.round(track.scrollLeft / Math.max(1, cards[0].getBoundingClientRect().width + 14));
-    cards[Math.max(0, Math.min(cards.length - 1, current + (event.key === "ArrowRight" ? 1 : -1)))]?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", inline: "start", block: "nearest" });
-  });
-  region.append(track, dots, status);
-  update();
-  return region;
+  return createTaoCarousel({ cards, label: seasonalText("carousel", "label"), className: "today-carousel" });
 }
 
 function localizedResonanceReasons(result, natalTheme) {
@@ -490,7 +468,6 @@ function createCycles(result) {
 
 function createNature(result) {
   const section = element("section", { className: "product-depth-stack" });
-  section.append(createSeason(result));
   const astronomy = element("section", { className: "product-card engine-status" });
   astronomy.append(sectionHeader("Repère astronomique", "Lune et événements célestes"), element("p", { text: "Ces données ne sont pas calculées dans la version actuelle. Elles resteront séparées des repères BaZi lorsqu’un moteur astronomique local sera disponible." }));
   section.append(astronomy);
@@ -537,12 +514,7 @@ export async function renderTodayView() {
     const human = createHumanGuidance(result, natalTheme, profile);
     const weather = globalThis.taoEnvironment?.getWeatherState?.() ?? null;
     const seasonal = getOptionalSeasonalReading(result, natalTheme, weather);
-    const header = element("header", { className: "product-header" });
-    header.append(
-      element("p", { className: "product-eyebrow", text: t("guidance.page.eyebrow") }),
-      element("h1", { text: formatLongDate(result.date, result.timeZone) }),
-      element("p", { className: "product-lead", text: "TAO commence par ce qui peut t’être utile, puis te laisse découvrir la lecture traditionnelle à ton rythme." }),
-    );
+    const header = createTaoHero({ eyebrow: formatLongDate(result.date, result.timeZone), title: profile.firstName, lead: result.personalSignature?.primarySignal ?? result.dayEnergy.summary, context: "Votre journée, puis la profondeur seulement lorsque vous la demandez." });
     const route = parseAppRoute(location.hash);
     if (route.section === "season" && seasonal) {
       root.replaceChildren(createSeasonDetail(result, profile, seasonal));
@@ -553,13 +525,14 @@ export async function renderTodayView() {
       header,
       createTodayCarousel(result, profile, seasonal),
       createSectionNavigation("today", TODAY_SECTIONS, "Explorer Aujourd’hui"),
-      groupSection("guidance", human.card, createOverview(result), createGuidance(result), createDetailedGuidance(result, natalTheme)),
-      groupSection("energies", createWhyDisclosure(result, natalTheme, human.semantic), createDayEnergy(result), createElementBalance(result), createDetails(result)),
-      groupSection("personal", createResonance(result, natalTheme)),
-      groupSection("cycles", createCycles(result)),
-      groupSection("nature", createNature(result), glossaryDisclosure(["dayMaster", "fiveElements", "yinYang", "jieQi", "generationCycle", "controlCycle"], "Glossaire de TAO")),
+      groupSection("understand", human.card, createOverview(result), createGuidance(result), createDetailedGuidance(result, natalTheme), createWhyDisclosure(result, natalTheme, human.semantic), createDayEnergy(result), createElementBalance(result), createDetails(result)),
+      groupSection("rhythm", createResonance(result, natalTheme), createCycles(result), createSeason(result)),
+      groupSection("environment", createNature(result), glossaryDisclosure(["dayMaster", "fiveElements", "yinYang", "jieQi", "generationCycle", "controlCycle"], "Glossaire de TAO")),
     );
-    focusRequestedSection(root, "today", route.section, { scroll: route.section !== "guidance" });
+    const routeMap = { guidance: "understand", energies: "understand", personal: "rhythm", cycles: "rhythm", nature: "environment" };
+    const section = routeMap[route.section] ?? route.section;
+    showOnlyProductSection(root, section);
+    focusRequestedSection(root, "today", section, { scroll: section !== "understand" });
     await setTaoNarrativeState("observing");
     return result;
   } catch (error) {

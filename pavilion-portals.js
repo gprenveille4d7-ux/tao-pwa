@@ -1,32 +1,36 @@
 import { element } from "./tao-ui.js";
-import { createSectionNavigation, focusRequestedSection, markProductSection } from "./section-navigation.js";
-import { parseAppRoute } from "./navigation-routes.mjs";
+import { parseAppRoute } from "./navigation-routes.mjs?v=tao-ux-2";
+import { openTaoSheet } from "./tao-components.js?v=1.0.0";
 
 const root = document.querySelector("[data-pavilion-portals]");
-const PAVILION_SECTIONS = Object.freeze([
-  { id: "tao", label: "Parler avec TAO" }, { id: "sky", label: "Observer le ciel" },
-  { id: "desk", label: "Bureau" }, { id: "library", label: "Bibliothèque" }, { id: "almanac", label: "Almanach" },
+const ENTRIES = Object.freeze([
+  { id: "sky", title: "Ciel", copy: "Observer la météo et les phénomènes.", href: "#today/environment" },
+  { id: "desk", title: "Bureau", copy: "Retrouver les objets actifs et le Yi Jing.", href: "#yijing/consult" },
+  { id: "library", title: "Bibliothèque", copy: "Comprendre les fondements du thème.", href: "#theme/composition" },
+  { id: "almanac", title: "Almanach", copy: "Suivre la saison, les cycles et le temps.", href: "#today/rhythm" },
 ]);
 
-function portal(id, eyebrow, title, copy, href, action) {
-  const section = markProductSection(element("section", { className: "pavilion-portal product-card" }), "pavilion", id);
-  section.append(element("p", { className: "product-eyebrow", text: eyebrow }), element("h2", { text: title }), element("p", { text: copy }));
-  const link = element("a", { className: "product-button product-button--quiet", text: action, attributes: { href } });
-  section.append(link);
-  return section;
+function explorerContent() {
+  const list = element("nav", { className: "nebula-explorer", attributes: { "aria-label": "Raccourcis du Nebula" } });
+  ENTRIES.forEach(({ title, copy, href }) => {
+    const link = element("a", { className: "nebula-explorer__item", attributes: { href } });
+    link.append(element("strong", { text: title }), element("span", { text: copy }), element("b", { text: "›", attributes: { "aria-hidden": "true" } }));
+    list.append(link);
+  });
+  return list;
+}
+
+function openExplorer(opener) {
+  if (document.querySelector(".tao-sheet-backdrop")) return;
+  openTaoSheet({ title: "Explorer le Nebula", label: "Le Pavillon", content: explorerContent(), opener });
 }
 
 export function renderPavilionPortals(section = parseAppRoute(location.hash).section) {
   if (!root) return;
-  root.replaceChildren(
-    createSectionNavigation("pavilion", PAVILION_SECTIONS, "Explorer le Pavillon"),
-    portal("tao", "Présence", "Parler avec TAO", "Le dialogue sous la scène reste le point de rencontre principal. TAO y dépose sa lecture de la journée.", "#pavilion/tao", "Revenir à TAO"),
-    portal("sky", "Fenêtre", "Observer le ciel", "L’extérieur accompagne le Pavillon. Les repères astronomiques restent distincts des calculs BaZi.", "#today/nature", "Voir Ciel & nature"),
-    portal("desk", "Objets", "Le bureau de TAO", "Le livre du Yi Jing ouvre une consultation ; les autres objets ne deviennent actifs que lorsqu’ils servent une information réelle.", "#yijing/consult", "Ouvrir le Yi Jing"),
-    portal("library", "Comprendre", "La bibliothèque", "TAO y explique les grandes énergies, leurs rencontres et les symboles du Yi Jing. Les termes traditionnels restent disponibles pour approfondir.", "#theme/structure", "Explorer les fondements"),
-    portal("almanac", "Temps", "Calendrier & almanach", "Les piliers de l’année, du mois et du jour donnent les repères déjà calculables. Les cycles avancés restent en attente.", "#today/cycles", "Consulter les cycles"),
-  );
-  focusRequestedSection(root, "pavilion", section, { scroll: section !== "tao" });
+  const trigger = element("button", { className: "nebula-explorer-trigger", text: "Explorer le Nebula ⌃", attributes: { type: "button", "aria-haspopup": "dialog" } });
+  trigger.addEventListener("click", () => openExplorer(trigger));
+  root.replaceChildren(trigger);
+  if (section !== "tao") requestAnimationFrame(() => openExplorer(trigger));
 }
 
 window.addEventListener("tao:view-change", (event) => {

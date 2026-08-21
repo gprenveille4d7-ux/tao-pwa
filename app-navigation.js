@@ -1,6 +1,6 @@
 import { getActiveProfile } from "./profile-store.js";
 import { formatDate, formatPlace, localizeDocument, t } from "./locales/index.js";
-import { DEFAULT_VIEW, parseAppRoute } from "./navigation-routes.mjs";
+import { DEFAULT_VIEW, parseAppRoute } from "./navigation-routes.mjs?v=tao-ux-2";
 
 const VIEW_TITLES = Object.freeze({
   today: t("common.navigation.today"),
