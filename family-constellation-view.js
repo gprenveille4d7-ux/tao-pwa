@@ -16,6 +16,7 @@ import {
 import { element, formatBirthDate } from "./tao-ui.js";
 import { t } from "./locales/index.js?v=1.5.0";
 import { humanizeFamilyCalculation } from "./family-constellation-lexicon.mjs?v=1.0.0";
+import { createTaoCarousel, createTaoSegmentedControl, openTaoSheet } from "./tao-components.js?v=1.0.0";
 
 const IMPORTANCE_ORDER = ["major", "notable", "curiosity"];
 const SYMBOLS = Object.freeze({ 1: "élan et commencement", 2: "relation et réceptivité", 3: "expression et mise en mouvement", 4: "structure et stabilité", 5: "passage et mobilité", 6: "harmonie et responsabilité", 7: "recul et recherche", 8: "organisation et accomplissement", 9: "aboutissement et transmission", 11: "nombre maître associé à l’intuition dans certaines écoles", 22: "nombre maître associé à la construction dans certaines écoles" });
@@ -40,13 +41,7 @@ function scrollResultIntoView(node) {
 }
 
 function openCalculationSheet(card, opener) {
-  const backdrop = element("div", { className: "family-calculation-backdrop" });
-  const sheet = element("section", { className: "family-calculation-sheet", attributes: { role: "dialog", "aria-modal": "true", "aria-labelledby": "family-calculation-title" } });
-  const header = element("header");
-  const title = element("h2", { text: card.title, attributes: { id: "family-calculation-title" } });
-  const close = element("button", { className: "family-calculation-sheet__close", text: "×", attributes: { type: "button", "aria-label": "Fermer les calculs" } });
-  header.append(title, close);
-  const body = element("div", { className: "family-calculation-sheet__body" });
+  const body = element("div", { className: "family-calculation-detail" });
   body.append(element("p", { className: "method-note", text: card.description }));
   if (card.occurrences.length) {
     body.append(element("h3", { text: "Où apparaît-il ?" }));
@@ -68,21 +63,7 @@ function openCalculationSheet(card, opener) {
     element("p", { className: "family-calculation-sheet__independence", text: card.independentPathCount > 1 ? `${card.independentPathCount} chemins indépendants · ${card.sourceDiversity} catégories de données.` : "Une source indépendante retenue." }),
     element("p", { className: "method-note", text: t("profiles.constellation.calculationNote") }),
   );
-  sheet.append(header, body);
-  backdrop.append(sheet);
-  const closeSheet = () => {
-    document.removeEventListener("keydown", onKeydown);
-    document.body.classList.remove("has-family-sheet");
-    backdrop.remove();
-    opener?.focus();
-  };
-  const onKeydown = (event) => { if (event.key === "Escape") closeSheet(); };
-  close.addEventListener("click", closeSheet);
-  backdrop.addEventListener("click", (event) => { if (event.target === backdrop) closeSheet(); });
-  document.addEventListener("keydown", onKeydown);
-  document.body.classList.add("has-family-sheet");
-  document.body.append(backdrop);
-  close.focus();
+  openTaoSheet({ title: card.title, label: "Détail de l’observation", content: body, opener });
 }
 
 function createObservationCard(card) {
@@ -120,23 +101,21 @@ function renderChronology(profiles, events) {
 
 function installFamilyViews(host) {
   const views = Object.freeze([
-    ["summary", "Synthèse", ["family-result-hero", "family-all", "family-synthesis"]],
+    ["summary", "Synthèse", ["family-result-hero", "family-primary-carousel", "family-synthesis"]],
     ["family", "Famille", ["family-map-card", "family-pair-view"]],
     ["chronology", "Chronologie", ["family-chronology"]],
-    ["explore", "Explorer", ["family-number-view", "family-symbolic", "family-debug"]],
+    ["explore", "Explorer", ["family-all", "family-number-view", "family-symbolic", "family-debug"]],
   ]);
-  const nav = element("nav", { className: "family-view-tabs", attributes: { "aria-label": "Vues de la constellation" } });
   const sections = [...host.children];
-  for (const [viewId, label, classNames] of views) {
-    const button = element("button", { text: label, attributes: { type: "button", "aria-pressed": String(viewId === "summary") } });
-    button.addEventListener("click", () => {
-      nav.querySelectorAll("button").forEach((item) => item.setAttribute("aria-pressed", String(item === button)));
-      sections.forEach((section) => { if (section === nav) return; section.hidden = section.dataset.familyView !== viewId; });
-    });
-    nav.append(button);
-    for (const section of sections) if (classNames.some((name) => section.classList.contains(name))) section.dataset.familyView = viewId;
-  }
+  for (const [viewId, , classNames] of views) for (const section of sections) if (classNames.some((name) => section.classList.contains(name))) section.dataset.familyView = viewId;
   sections.forEach((section) => { if (section.dataset.familyView && section.dataset.familyView !== "summary") section.hidden = true; });
+  const nav = createTaoSegmentedControl({
+    items: views.map(([id, label]) => ({ id, label })),
+    selectedId: "summary",
+    label: "Vues de la constellation",
+    onChange: (viewId) => sections.forEach((section) => { if (section.dataset.familyView) section.hidden = section.dataset.familyView !== viewId; }),
+  });
+  nav.classList.add("family-view-tabs");
   host.insertBefore(nav, host.children[1] ?? null);
 }
 
@@ -286,7 +265,7 @@ export function createFamilyConstellationModule({ profiles, onAddProfile }) {
     const roles = Object.fromEntries(profiles.map((profile) => [profile.id, preferences.roles[profile.id] ?? defaultRole(profile)]));
     root.replaceChildren();
 
-    const intro = element("section", { className: "product-card family-intro" });
+    const intro = element("section", { className: "surface-main family-intro" });
     intro.append(heading(t("profiles.constellation.eyebrow"), t("profiles.constellation.title"), t("profiles.constellation.copy")), element("p", { className: "method-note", text: t("profiles.constellation.disclaimer") }));
     if (profiles.length < 2) {
       intro.append(element("p", { text: t("profiles.constellation.needTwo") }));
@@ -339,7 +318,7 @@ export function createFamilyConstellationModule({ profiles, onAddProfile }) {
       const analysis = analyzeFamilyConstellation(analysisInput);
       const reading = buildFamilyConstellationReading({ analysis, profiles: selectedProfiles, events: selectedEvents });
       resultHost.replaceChildren();
-      const hero = element("section", { className: "product-card family-result-hero" });
+      const hero = element("section", { className: "surface-main family-result-hero" });
       hero.append(
         element("p", { className: "product-eyebrow", text: t("profiles.constellation.yourConstellation") }),
         element("h2", { text: reading.headline }),
@@ -348,6 +327,10 @@ export function createFamilyConstellationModule({ profiles, onAddProfile }) {
       );
       hero.append(element("a", { className: "product-button product-button--quiet", text: "Voir l’inventaire", attributes: { href: "#family-all-observations" } }));
       resultHost.append(hero);
+
+      const primary = element("section", { className: "family-primary-carousel" });
+      primary.append(createTaoCarousel({ cards: reading.primaryCards.slice(0, 5).map(createObservationCard), label: "Observations principales de la constellation" }));
+      resultHost.append(primary);
 
       const all = element("section", { className: "product-card family-all", attributes: { id: "family-all-observations" } });
       all.append(heading("Inventaire", "Les motifs de la constellation", "Une idée n’apparaît qu’une seule fois. Ses occurrences et ses particularités sont réunies dans sa fiche."));

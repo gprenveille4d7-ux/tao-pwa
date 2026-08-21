@@ -107,8 +107,8 @@ test("les écrans normaux commencent par le sens humain", async () => {
   assert.match(today, /Pourquoi TAO me dit ça/);
   assert.match(theme, /Ton énergie fondamentale/);
   assert.match(theme, /Les grandes dynamiques de ton thème/);
-  assert.match(yiJing, /Ce que montre ton tirage/);
-  assert.match(yiJing, /Découvrir le tirage traditionnel/);
+  assert.match(yiJing, /Ce que montre votre tirage/);
+  assert.match(yiJing, /Voir le tirage traditionnel/);
 });
 
 test("tous les identifiants exposés par les moteurs actuels ont une entrée française", () => {

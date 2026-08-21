@@ -1,8 +1,8 @@
 export const DEFAULT_VIEW = "pavilion";
 
 export const SECTION_ROUTES = Object.freeze({
-  today: ["guidance", "energies", "personal", "cycles", "nature", "season"],
-  theme: ["overview", "pillars", "elements", "structure", "ten-gods", "cycles", "life"],
+  today: ["understand", "rhythm", "environment", "guidance", "energies", "personal", "cycles", "nature", "season"],
+  theme: ["essential", "composition", "journey", "overview", "pillars", "elements", "structure", "ten-gods", "cycles", "life"],
   pavilion: ["tao", "sky", "desk", "library", "almanac"],
   yijing: ["consult", "history", "learn"],
   profiles: ["me", "people", "compatibility", "family"],

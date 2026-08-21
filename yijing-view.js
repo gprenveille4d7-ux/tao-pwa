@@ -8,8 +8,9 @@ import { HEXAGRAMS, TRIGRAMS } from "./yijing-data.mjs?v=1.0.1";
 import { castThreeCoins, createCasting, interpretLineValue, resolveCasting } from "./yijing-engine.mjs?v=1.0.1";
 import { createYijingGuidance } from "./yijing-guidance.mjs?v=1.0.1";
 import { deleteYijingReading, getYijingHistory, saveYijingReading, toggleYijingFavorite } from "./yijing-history.js";
-import { createSectionNavigation, focusRequestedSection, markProductSection } from "./section-navigation.js";
-import { parseAppRoute } from "./navigation-routes.mjs";
+import { createSectionNavigation, focusRequestedSection, markProductSection, showOnlyProductSection } from "./section-navigation.js?v=tao-ux-2";
+import { parseAppRoute } from "./navigation-routes.mjs?v=tao-ux-2";
+import { createTaoCarousel, createTaoHero, openTaoSheet } from "./tao-components.js?v=1.0.0";
 
 const root = document.querySelector("[data-yijing-root]");
 const state = { phase: "question", question: "", lines: [], result: null, guidance: null, savedId: null };
@@ -54,18 +55,11 @@ function resetConsultation({ keepQuestion = false } = {}) {
 }
 
 function createPageHeader() {
-  const header = element("header", { className: "product-header yijing-header" });
-  header.append(
-    element("p", { className: "product-eyebrow", text: t("yijing.page.eyebrow") }),
-    element("h1", { text: t("yijing.page.title") }),
-    element("p", { className: "product-lead", text: t("yijing.page.intro") }),
-    element("p", { className: "symbolic-note", text: t("yijing.page.notice") }),
-  );
-  return header;
+  return createTaoHero({ eyebrow: t("yijing.page.eyebrow"), title: t("yijing.page.title"), lead: "Ce que votre tirage vous invite à regarder maintenant.", context: t("yijing.page.notice") });
 }
 
 function questionCard() {
-  const card = element("section", { className: "product-card yijing-question" });
+    const card = element("section", { className: "surface-main yijing-question" });
   card.append(sectionHeader(t("yijing.question.kicker"), t("yijing.question.title"), t("yijing.question.help")));
   const form = element("form", { className: "yijing-question__form" });
   const label = element("label", { text: t("yijing.question.label"), attributes: { for: "yijing-question" } });
@@ -88,7 +82,7 @@ function questionCard() {
 }
 
 function confirmationCard() {
-  const card = element("section", { className: "product-card yijing-confirmation" });
+  const card = element("section", { className: "surface-main yijing-confirmation" });
   card.append(sectionHeader(t("yijing.confirm.kicker"), t("yijing.confirm.title"), t("yijing.confirm.help")));
   card.append(element("blockquote", { text: state.question }));
   const actions = element("div", { className: "product-actions" });
@@ -132,10 +126,10 @@ function finishCasting(lines) {
 
 function castingCard() {
   const nextLine = state.lines.length + 1;
-  const card = element("section", { className: "product-card yijing-casting" });
+  const card = element("section", { className: "surface-main yijing-casting" });
   card.append(sectionHeader(t("yijing.casting.kicker"), t("yijing.casting.title"), t("yijing.casting.help")));
   card.append(element("p", { className: "yijing-question-reminder", text: state.question }), lineDiagram(state.lines));
-  if (state.lines.length) card.append(coinResult(state.lines.at(-1)));
+  if (state.lines.length) card.append(coinResult(state.lines[state.lines.length - 1]));
   const progress = element("p", { className: "yijing-casting__progress", text: t("yijing.casting.progress", { current: Math.min(nextLine, 6) }) });
   const actions = element("div", { className: "product-actions" });
   actions.append(button(t("yijing.casting.castLine", { line: nextLine }), () => {
@@ -177,37 +171,19 @@ function hexagramCard(hexagram, lines, kind) {
 function guidanceSection(guidance) {
   const wrap = element("section", { className: "yijing-guidance product-section" });
   wrap.append(sectionHeader(t("yijing.guidance.kicker"), t("yijing.guidance.title"), guidance.symbolicNotice));
-  const definitions = [
-    ["essential", t("yijing.guidance.essential"), guidance.essential],
-    ["movement", t("yijing.guidance.movement"), [guidance.movement]],
-    ["supports", t("yijing.guidance.supports"), guidance.supports],
-    ["cautions", t("yijing.guidance.cautions"), guidance.cautions],
-    ["actions", t("yijing.guidance.actions"), guidance.actions],
-  ];
-  for (const [id, title, paragraphs] of definitions) {
-    const card = element("article", { className: `product-card yijing-guidance__card yijing-guidance__card--${id}` });
-    card.append(element("h3", { text: title }));
-    if (["supports", "cautions", "actions"].includes(id)) {
-      const list = element("ul");
-      paragraphs.forEach((text) => list.append(element("li", { text })));
-      card.append(list);
-    } else paragraphs.forEach((text) => card.append(element("p", { text })));
-    wrap.append(card);
-  }
-  if (guidance.lineReadings.length) {
-    const card = element("article", { className: "product-card yijing-guidance__card" });
-    card.append(element("h3", { text: t("yijing.guidance.changingLines") }));
-    for (const line of guidance.lineReadings) card.append(element("h4", { text: `${t("yijing.lines.line", { line: line.line })} · ${line.title}` }), element("p", { text: line.text }));
-    wrap.append(card);
-  }
-  const rhythm = element("article", { className: "product-card yijing-guidance__card yijing-guidance__card--rhythm" });
-  rhythm.append(element("h3", { text: t("yijing.guidance.rhythm") }), element("p", { text: guidance.rhythm }), element("h3", { text: t("yijing.guidance.reflection") }), element("blockquote", { text: guidance.reflection }));
-  wrap.append(rhythm);
-  if (guidance.profile) {
-    const profile = element("article", { className: "product-card yijing-guidance__card" });
-    profile.append(element("h3", { text: guidance.profile.title }), element("p", { text: guidance.profile.text }));
-    wrap.append(profile);
-  }
+  const message = element("article", { className: "surface-main yijing-guidance__card yijing-guidance__card--essential" });
+  message.append(element("p", { className: "product-eyebrow", text: "Le message" }), element("h3", { text: guidance.essential[0] }));
+  guidance.essential.slice(1, 3).forEach((text) => message.append(element("p", { text })));
+  if (guidance.profile) message.append(element("p", { className: "method-note", text: guidance.profile.text }));
+  const change = element("article", { className: "surface-main yijing-guidance__card yijing-guidance__card--movement" });
+  change.append(element("p", { className: "product-eyebrow", text: "Ce qui change" }), element("h3", { text: t("yijing.guidance.movement") }), element("p", { text: guidance.movement }));
+  guidance.lineReadings.slice(0, 3).forEach((line) => change.append(element("p", { text: `${t("yijing.lines.line", { line: line.line })} · ${line.title} — ${line.text}` })));
+  const advance = element("article", { className: "surface-main yijing-guidance__card yijing-guidance__card--actions" });
+  advance.append(element("p", { className: "product-eyebrow", text: "Comment avancer" }), element("h3", { text: guidance.rhythm }));
+  const list = element("ul");
+  [...guidance.supports.slice(0, 1), ...guidance.cautions.slice(0, 1), ...guidance.actions.slice(0, 1)].forEach((text) => list.append(element("li", { text })));
+  advance.append(list, element("blockquote", { text: guidance.reflection }));
+  wrap.append(createTaoCarousel({ cards: [message, change, advance], label: "Les trois repères du tirage" }));
   const deepen = button("Approfondir avec TAO", () => {
     window.dispatchEvent(new CustomEvent("tao:ai-open", { detail: {
       mode: "yijing",
@@ -249,14 +225,8 @@ function saveCurrent() {
 
 function resultView() {
   const fragment = document.createDocumentFragment();
-  const heading = element("section", { className: "product-card yijing-result-heading" });
-  heading.append(
-    sectionHeader("Ce que montre ton tirage", state.guidance.essential[0], "TAO commence par la dynamique utile à ta question. Les signes traditionnels restent accessibles juste après la guidance."),
-    element("blockquote", { text: state.question }),
-  );
+  const heading = createTaoHero({ eyebrow: "Ce que montre votre tirage", title: state.guidance.essential[0], lead: "TAO commence par la dynamique utile à votre question.", context: state.question });
   fragment.append(heading, guidanceSection(state.guidance));
-  const traditional = element("details", { className: "product-disclosure yijing-traditional" });
-  traditional.append(element("summary", { text: "Découvrir le tirage traditionnel" }));
   const traditionalContent = element("div", { className: "product-disclosure__content yijing-traditional__content" });
   traditionalContent.append(hexagramCard(state.result.primary, state.result.lines, t("yijing.result.primary")));
   const mutations = element("section", { className: "product-card yijing-mutations" });
@@ -268,9 +238,10 @@ function resultView() {
   } else mutations.append(element("p", { text: t("yijing.result.noMutation") }));
   traditionalContent.append(mutations);
   if (state.result.transformed) traditionalContent.append(hexagramCard(state.result.transformed, transformedLines(state.result), t("yijing.result.transformed")));
-  traditional.append(traditionalContent);
+  const traditional = element("button", { className: "tao-quiet-action", text: "Voir le tirage traditionnel", attributes: { type: "button", "aria-haspopup": "dialog" } });
+  traditional.addEventListener("click", () => openTaoSheet({ title: "Le tirage traditionnel", label: "Yi Jing", content: traditionalContent, opener: traditional }));
   fragment.append(traditional);
-  const actions = element("section", { className: "product-card yijing-save" });
+  const actions = element("section", { className: "surface-soft yijing-save" });
   actions.append(sectionHeader(t("yijing.save.kicker"), t("yijing.save.title"), t("yijing.save.help")));
   const row = element("div", { className: "product-actions" });
   row.append(button(state.savedId ? t("yijing.save.saved") : t("yijing.save.action"), saveCurrent, { primary: !state.savedId }), button(t("yijing.actions.newReading"), () => resetConsultation()));
@@ -298,19 +269,21 @@ function historySection() {
   if (!readings.length) { section.append(element("p", { className: "empty-state", text: t("yijing.history.empty") })); return section; }
   const list = element("div", { className: "yijing-history__list" });
   for (const entry of readings) {
-    const card = element("article", { className: "product-card yijing-history__item" });
-    card.append(element("p", { className: "product-eyebrow", text: formatDate(entry.createdAt.slice(0, 10)) }), element("h3", { text: entry.question }), element("p", { text: t("yijing.history.summary", { primary: entry.primaryNumber, transformed: entry.transformedNumber ? ` → ${entry.transformedNumber}` : "" }) }));
+    const card = element("article", { className: "yijing-history__item" });
+    const open = element("button", { className: "yijing-history__open", attributes: { type: "button" } });
+    open.append(element("time", { text: formatDate(entry.createdAt.slice(0, 10)) }), element("strong", { text: entry.question }), element("span", { text: t("yijing.history.summary", { primary: entry.primaryNumber, transformed: entry.transformedNumber ? ` → ${entry.transformedNumber}` : "" }) }));
+    open.addEventListener("click", () => openHistory(entry));
     const actions = element("div", { className: "product-actions" });
-    actions.append(button(entry.favorite ? "★ Favori" : "☆ Ajouter aux favoris", () => {
+    actions.append(button(entry.favorite ? "★" : "☆", () => {
       toggleYijingFavorite(entry.id);
       render();
-    }), button(t("yijing.history.open"), () => openHistory(entry)), button(t("yijing.history.delete"), () => {
+    }), button(t("yijing.history.delete"), () => {
       if (!window.confirm(t("yijing.history.confirmDelete"))) return;
       deleteYijingReading(entry.id);
       if (state.savedId === entry.id) state.savedId = null;
       render();
     }, { danger: true }));
-    card.append(actions);
+    card.append(open, actions);
     list.append(card);
   }
   section.append(list);
@@ -363,6 +336,7 @@ export function renderYijingView() {
   if (state.phase === "casting") consult.append(castingCard());
   if (state.phase === "result") consult.append(resultView());
   root.replaceChildren(createPageHeader(), createSectionNavigation("yijing", YIJING_SECTIONS, "Explorer Yi Jing"), consult, historySection(), learningSection());
+  showOnlyProductSection(root, route.section);
   focusRequestedSection(root, "yijing", route.section, { scroll: route.section !== "consult" });
 }
 

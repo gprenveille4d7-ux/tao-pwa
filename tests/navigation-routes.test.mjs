@@ -4,6 +4,8 @@ import { appRoute, parseAppRoute, SECTION_ROUTES } from "../navigation-routes.mj
 
 test("les cinq espaces possèdent leurs sous-routes canoniques", () => {
   assert.deepEqual(Object.keys(SECTION_ROUTES), ["today", "theme", "pavilion", "yijing", "profiles"]);
+  assert.deepEqual(parseAppRoute("#today"), { view: "today", section: "understand" });
+  assert.deepEqual(parseAppRoute("#theme/composition"), { view: "theme", section: "composition" });
   assert.deepEqual(parseAppRoute("#theme/ten-gods"), { view: "theme", section: "ten-gods" });
   assert.deepEqual(parseAppRoute("#yijing/learn"), { view: "yijing", section: "learn" });
   assert.deepEqual(parseAppRoute("#profiles/family"), { view: "profiles", section: "family" });

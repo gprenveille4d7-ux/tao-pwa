@@ -6,9 +6,10 @@ import { setTaoNarrativeState } from "./tao-narrative.js";
 import { formatPercent, getConcept, t } from "./locales/index.js?v=1.2.0";
 import { glossaryDisclosure } from "./locales/glossary-ui.js";
 import { branchRelations, visibleTenGods } from "./bazi-insights.mjs?v=1.0.1";
-import { createSectionNavigation, focusRequestedSection, markProductSection } from "./section-navigation.js";
-import { parseAppRoute } from "./navigation-routes.mjs";
+import { createSectionNavigation, focusRequestedSection, markProductSection, showOnlyProductSection } from "./section-navigation.js?v=tao-ux-2";
+import { parseAppRoute } from "./navigation-routes.mjs?v=tao-ux-2";
 import { getSemanticConcept } from "./semantic-layer.mjs?v=1.0.1";
+import { createTaoCarousel, createTaoHero, openTaoSheet } from "./tao-components.js?v=1.0.0";
 
 const root = document.querySelector("[data-bazi-root]");
 const debugEnabled = new URLSearchParams(location.search).get("debug") === "bazi";
@@ -18,31 +19,21 @@ const polarityData = (key) => getConcept("bazi.polarities", key);
 const stemData = (key) => getConcept("bazi.heavenlyStems", key);
 const branchData = (key) => getConcept("bazi.earthlyBranches", key);
 const THEME_SECTIONS = Object.freeze([
-  { id: "overview", label: "En un coup d’œil" }, { id: "pillars", label: "Quatre facettes" },
-  { id: "elements", label: "Tes mouvements" }, { id: "structure", label: "Sous la surface" },
-  { id: "ten-gods", label: "Grandes dynamiques" }, { id: "cycles", label: "Cycles de vie" }, { id: "life", label: "Pistes de lecture" },
+  { id: "essential", label: "Essentiel" },
+  { id: "composition", label: "Composition" },
+  { id: "journey", label: "Parcours" },
 ]);
 const PILLAR_LABELS = Object.freeze({ year: "Année", month: "Mois", day: "Jour", hour: "Heure" });
 
-function header(profile) {
-  const node = element("header", { className: "product-header theme-header" });
-  node.append(
-    element("p", { className: "product-eyebrow", text: t("common.navigation.theme") }),
-    element("h1", { text: profile.firstName }),
-    element("p", { className: "product-lead", text: t("bazi.ui.themeLead") }),
-  );
-  const details = element("dl", { className: "profile-facts" });
-  for (const [label, value] of [
-    [t("profiles.facts.birth"), formatBirthDate(profile.birthDate)],
-    [t("profiles.facts.place"), formatPlace(profile.birthPlace)],
-    [t("profiles.facts.localTime"), profile.birthTimeKnown ? profile.birthTime : t("profiles.fields.unknownTime")],
-  ]) {
-    const item = element("div");
-    item.append(element("dt", { text: label }), element("dd", { text: value }));
-    details.append(item);
-  }
-  node.append(details);
-  return node;
+function header(profile, result) {
+  const semantic = getSemanticConcept("stems", result.dayMaster.key);
+  return createTaoHero({
+    eyebrow: `${t("common.navigation.theme")} · ${profile.firstName}`,
+    title: semantic.humanTitle,
+    symbol: semantic.icon,
+    lead: "Votre énergie fondamentale donne une direction, sans résumer à elle seule toute votre personnalité.",
+    context: `${formatBirthDate(profile.birthDate)} · ${formatPlace(profile.birthPlace)}`,
+  });
 }
 
 function dayMaster(result) {
@@ -51,7 +42,7 @@ function dayMaster(result) {
   const localizedElement = elementData(master.element);
   const localizedPolarity = polarityData(master.polarity);
   const semantic = getSemanticConcept("stems", master.key);
-  const card = element("section", { className: `product-card day-master-card element-accent--${master.element}` });
+  const card = element("section", { className: `surface-main theme-essential-card day-master-card element-accent--${master.element}` });
   card.append(
     element("p", { className: "product-eyebrow", text: "Ton énergie fondamentale" }),
     element("span", { className: "day-master-card__glyph", text: localizedStem.hanzi }),
@@ -60,14 +51,15 @@ function dayMaster(result) {
     element("p", { className: "semantic-keywords", text: semantic.keywords.join(" · ") }),
     element("p", { className: "day-master-card__copy", text: semantic.humanDescription }),
   );
-  const details = element("details", { className: "semantic-technical day-master-card__details" });
+  const details = element("div", { className: "semantic-technical day-master-card__details" });
   details.append(
-    element("summary", { text: "Comprendre mon énergie" }),
     element("p", { text: `Dans la lecture BaZi, le Maître du Jour est le point central à partir duquel les relations du thème sont observées.` }),
     element("p", { text: `${semantic.traditionalLabel} — ${localizedElement.label} ${localizedPolarity.label}` }),
     element("p", { text: "Cette énergie constitue un repère de lecture : elle ne résume pas une personne à elle seule." }),
   );
-  card.append(details);
+  const understand = element("button", { className: "tao-quiet-action", text: "Comprendre mon énergie", attributes: { type: "button", "aria-haspopup": "dialog" } });
+  understand.addEventListener("click", () => openTaoSheet({ title: semantic.humanTitle, label: "Votre nature", content: details, opener: understand }));
+  card.append(understand);
   return card;
 }
 
@@ -97,22 +89,17 @@ function pillars(result) {
   const section = element("section", { className: "product-section" });
   const head = element("header", { className: "product-section__header" });
   head.append(element("p", { className: "product-eyebrow", text: "Quatre points de vue" }), element("h2", { text: "Les quatre facettes de ton thème" }), element("p", { text: "Chaque facette éclaire un angle différent. Les signes traditionnels restent disponibles après cette première lecture." }));
-  const facets = element("div", { className: "pillar-facets" });
+  const facets = [];
   for (const id of ["year", "month", "day", "hour"]) {
     const semantic = getSemanticConcept("pillars", id);
-    const facet = element("article", { className: "insight-card" });
+    const facet = element("article", { className: "surface-main pillar-facet-card" });
     facet.append(element("span", { text: PILLAR_LABELS[id] }), element("strong", { text: semantic.humanTitle }), element("p", { text: semantic.humanDescription }));
-    facets.append(facet);
+    const reveal = element("button", { className: "tao-quiet-action", text: "Voir la lecture traditionnelle", attributes: { type: "button", "aria-haspopup": "dialog" } });
+    reveal.addEventListener("click", () => openTaoSheet({ title: `${PILLAR_LABELS[id]} · ${semantic.humanTitle}`, label: "Quatre Piliers", content: pillarCard(PILLAR_LABELS[id], result.pillars[id], id === "day"), opener: reveal }));
+    facet.append(reveal);
+    facets.push(facet);
   }
-  const traditional = element("details", { className: "product-disclosure semantic-technical" });
-  traditional.append(element("summary", { text: "Voir les Quatre Piliers traditionnels" }));
-  const grid = element("div", { className: "pillar-grid" });
-  grid.append(
-    pillarCard(t("bazi.pillars.year"), result.pillars.year), pillarCard(t("bazi.pillars.month"), result.pillars.month),
-    pillarCard(t("bazi.pillars.day"), result.pillars.day, true), pillarCard(t("bazi.pillars.hour"), result.pillars.hour),
-  );
-  traditional.append(grid);
-  section.append(head, facets, traditional);
+  section.append(head, createTaoCarousel({ cards: facets, label: "Les quatre facettes du thème" }));
   return section;
 }
 
@@ -138,8 +125,31 @@ function elements(result) {
   return section;
 }
 
+function movementSummaryCard(result) {
+  const ordered = Object.values(result.elements).slice().sort((left, right) => right.count - left.count);
+  const strongest = ordered.filter((item) => item.count === ordered[0].count).map((item) => elementData(item.key).label);
+  const quietest = ordered.filter((item) => item.count === ordered[ordered.length - 1].count).map((item) => elementData(item.key).label);
+  const card = element("article", { className: "surface-main theme-essential-card movement-summary-card" });
+  card.append(
+    element("p", { className: "product-eyebrow", text: "Vos mouvements" }),
+    element("h2", { text: strongest.join(" et ") }),
+    element("p", { text: `${strongest.join(" et ")} ${strongest.length > 1 ? "sont particulièrement présents" : "est particulièrement présent"}. ${quietest.join(" et ")} ${quietest.length > 1 ? "apparaissent plus discrets" : "apparaît plus discret"}.` }),
+  );
+  const mini = element("div", { className: "movement-mini", attributes: { "aria-label": "Répartition des cinq mouvements" } });
+  ordered.forEach((item) => {
+    const bar = element("span", { attributes: { title: `${elementData(item.key).label} ${formatPercent(item.percent)}` } });
+    bar.style.setProperty("--movement-value", `${Math.max(4, item.percent)}%`);
+    bar.style.setProperty("--movement-color", `var(--element-${item.key})`);
+    mini.append(bar);
+  });
+  const reveal = element("button", { className: "tao-quiet-action", text: "Voir la composition", attributes: { type: "button", "aria-haspopup": "dialog" } });
+  reveal.addEventListener("click", () => openTaoSheet({ title: "Vos Cinq Mouvements", label: "Composition", content: [elements(result), cycle()], opener: reveal }));
+  card.append(mini, reveal);
+  return card;
+}
+
 function yinYang(result) {
-  const section = element("section", { className: "product-card yin-yang-card" });
+  const section = element("section", { className: "surface-main theme-essential-card yin-yang-card" });
   section.append(element("p", { className: "product-eyebrow", text: t("bazi.polarities.balance") }), element("h2", { text: `${formatPercent(result.yinYang.yinPercent)} Yin · ${formatPercent(result.yinYang.yangPercent)} Yang` }));
   const bar = element("div", { className: "yin-yang-meter", attributes: { role: "img", "aria-label": `${formatPercent(result.yinYang.yinPercent)} Yin et ${formatPercent(result.yinYang.yangPercent)} Yang` } });
   const yin = element("span", { className: "yin-yang-meter__yin" });
@@ -149,8 +159,13 @@ function yinYang(result) {
   bar.append(yin, yang);
   const labels = element("div", { className: "yin-yang-labels" });
   labels.append(element("span", { text: `Yin · ${polarityData("yin").quality}` }), element("span", { text: `Yang · ${polarityData("yang").quality}` }));
-  section.append(bar, labels);
+  const tendency = result.yinYang.yin === result.yinYang.yang ? "Un équilibre proche entre intériorité et expression." : result.yinYang.yin > result.yinYang.yang ? "Votre thème privilégie davantage l’intériorité et la maturation." : "Votre thème privilégie davantage l’expression et la mise en mouvement.";
+  section.append(bar, labels, element("p", { text: tendency }));
   return section;
+}
+
+function essentialCarousel(result) {
+  return createTaoCarousel({ cards: [dayMaster(result), movementSummaryCard(result), yinYang(result)], label: "L’essentiel de votre thème" });
 }
 
 function cycle() {
@@ -165,11 +180,11 @@ function cycle() {
 }
 
 function reading(result) {
-  const section = element("section", { className: "product-card tao-reading" });
+  const section = element("section", { className: "surface-soft tao-reading" });
   section.append(element("p", { className: "product-eyebrow", text: t("bazi.ui.taoReading") }), element("h2", { text: t("bazi.ui.readingTitle") }));
   const ordered = Object.values(result.elements).sort((left, right) => right.count - left.count);
   const strongest = ordered.filter((item) => item.count === ordered[0].count).map((item) => elementData(item.key).label);
-  const weakest = ordered.filter((item) => item.count === ordered.at(-1).count).map((item) => elementData(item.key).label);
+  const weakest = ordered.filter((item) => item.count === ordered[ordered.length - 1].count).map((item) => elementData(item.key).label);
   const master = stemData(result.dayMaster.key);
   const tendency = result.yinYang.yin === result.yinYang.yang ? t("bazi.ui.equalTendency") : result.yinYang.yin > result.yinYang.yang ? t("bazi.ui.yinTendency") : t("bazi.ui.yangTendency");
   const semanticMaster = getSemanticConcept("stems", result.dayMaster.key);
@@ -260,12 +275,27 @@ function tenGods(result) {
 }
 
 function cyclesAndTimeline(result) {
-  const section = element("section", { className: "product-card" });
+  const section = element("section", { className: "surface-soft theme-journey" });
   section.append(element("p", { className: "product-eyebrow", text: "Chronologie" }), element("h2", { text: "Tes grands cycles de vie" }), element("p", { text: "Le BaZi observe aussi de longues périodes, souvent proches de dix ans, durant lesquelles certaines dynamiques prennent davantage de place. Elles sont traditionnellement appelées Da Yun · 大運." }));
   const status = element("aside", { className: "engine-status", attributes: { role: "note" } });
   status.append(element("strong", { text: "Moteur en attente" }), element("p", { text: "Aucune décennie ni période remarquable n’est affichée sans calcul déterministe vérifié." }));
-  section.append(status, cycle(result));
+  const timeline = element("ol", { className: "tao-timeline" });
+  const current = element("li");
+  current.append(element("span", { text: "Terrain natal" }), element("strong", { text: "Vos dynamiques de naissance" }), element("p", { text: "Le thème décrit le terrain symbolique actuellement vérifiable." }));
+  const future = element("li");
+  future.append(element("span", { text: "À venir" }), element("strong", { text: "Cycles de vie" }), element("p", { text: "Aucune période n’est inventée avant la disponibilité du moteur dédié." }));
+  timeline.append(current, future);
+  section.append(timeline, status, cycle(result));
   return section;
+}
+
+function underSurface(result) {
+  const disclosure = element("details", { className: "product-disclosure theme-under-surface" });
+  disclosure.append(element("summary", { text: "Sous la surface" }));
+  const content = element("div", { className: "product-disclosure__content product-depth-stack" });
+  content.append(hiddenStems(result), interactions(result), tenGods(result));
+  disclosure.append(content);
+  return disclosure;
 }
 
 function lifeReading(result) {
@@ -305,15 +335,11 @@ export async function renderActiveBaziTheme() {
     const result = getCachedBazi(profile) ?? setCachedBazi(profile, calculateBazi(profile));
     const route = parseAppRoute(location.hash);
     root.replaceChildren(
-      header(profile),
+      header(profile, result),
       createSectionNavigation("theme", THEME_SECTIONS, "Explorer Mon thème"),
-      groupSection("overview", dayMaster(result), reading(result)),
-      groupSection("pillars", pillars(result)),
-      groupSection("elements", elements(result), yinYang(result)),
-      groupSection("structure", hiddenStems(result), interactions(result)),
-      groupSection("ten-gods", tenGods(result)),
-      groupSection("cycles", cyclesAndTimeline(result)),
-      groupSection("life", lifeReading(result), glossaryDisclosure(["dayMaster", "fourPillars", "heavenlyStem", "earthlyBranch", "fiveElements", "yinYang", "tenGods", "hiddenStems"], "Glossaire de TAO")),
+      groupSection("essential", essentialCarousel(result), reading(result)),
+      groupSection("composition", pillars(result), underSurface(result)),
+      groupSection("journey", cyclesAndTimeline(result), lifeReading(result), glossaryDisclosure(["dayMaster", "fourPillars", "heavenlyStem", "earthlyBranch", "fiveElements", "yinYang", "tenGods", "hiddenStems"], "Glossaire de TAO")),
     );
     if (result.warnings.length) {
       const warning = element("aside", { className: "product-card product-warning", attributes: { role: "note" } });
@@ -326,7 +352,10 @@ export async function renderActiveBaziTheme() {
       details.append(element("summary", { text: t("bazi.ui.rawData") }), element("pre", { text: JSON.stringify({ profile, result }, null, 2) }));
       root.append(details);
     }
-    focusRequestedSection(root, "theme", route.section, { scroll: route.section !== "overview" });
+    const routeMap = { overview: "essential", pillars: "composition", elements: "essential", structure: "composition", "ten-gods": "composition", cycles: "journey", life: "journey" };
+    const section = routeMap[route.section] ?? route.section;
+    showOnlyProductSection(root, section);
+    focusRequestedSection(root, "theme", section, { scroll: section !== "essential" });
     await setTaoNarrativeState("explaining");
     root.dispatchEvent(new CustomEvent("tao:bazi-rendered", { detail: { profileId: profile.id, result } }));
     return result;
