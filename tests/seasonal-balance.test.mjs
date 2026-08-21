@@ -23,6 +23,15 @@ test("la fenêtre de transition J-5 à J+2 est calculée et testable", () => {
   assert.ok(after.daysSinceCurrent <= 2);
 });
 
+test("le calcul saisonnier reste compatible sans Array.at ni findLastIndex", async () => {
+  const source = await readFile(new URL("../seasonal-balance.mjs", import.meta.url), "utf8");
+  assert.equal(source.includes(".findLastIndex("), false);
+  assert.equal(source.includes(".at("), false);
+  const period = getSeasonalPeriod(Date.parse("2026-08-21T12:00:00Z"), 2026);
+  assert.equal(period.pinyin, "Li Qiu");
+  assert.ok(period.next.epochMs > period.epochMs);
+});
+
 test("deux profils différents ne reçoivent pas la même relation saisonnière", () => {
   const period = getSeasonalPeriod(Date.parse("2026-08-12T12:00:00Z"), 2026);
   const counts = { wood: 1, fire: 2, earth: 2, metal: 1, water: 2 };

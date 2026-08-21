@@ -5,7 +5,7 @@ import {
 import { buildDailyPersonalSignature } from "./daily-personal-signature.mjs";
 import { getSeasonalPeriod } from "./seasonal-balance.mjs";
 
-export const DAILY_CALCULATION_VERSION = "tao-daily-2.0.0";
+export const DAILY_CALCULATION_VERSION = "tao-daily-2.2.0";
 
 const ELEMENTS = Object.freeze(["wood", "fire", "earth", "metal", "water"]);
 const ELEMENT_LABELS = Object.freeze({ wood: "Bois", fire: "Feu", earth: "Terre", metal: "Métal", water: "Eau" });
