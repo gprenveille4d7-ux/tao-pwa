@@ -1,8 +1,8 @@
 import { getActiveProfile } from "./profile-store.js";
 import { calculateBazi } from "./bazi-engine.mjs";
 import { getCachedBazi, setCachedBazi } from "./bazi-cache.mjs";
-import { calculateDailyTao } from "./daily-tao-engine.mjs?v=2.1.0";
-import { getCachedDaily, setCachedDaily } from "./daily-cache.mjs?v=2.0.0";
+import { calculateDailyTao } from "./daily-tao-engine.mjs?v=2.2.0";
+import { getCachedDaily, setCachedDaily } from "./daily-cache.mjs?v=2.1.0";
 import { element, formatLongDate, localDateIso } from "./tao-ui.js";
 import { setTaoDailyBrief } from "./tao-dialogue.js";
 import { setTaoNarrativeState } from "./tao-narrative.js";
@@ -11,7 +11,7 @@ import { glossaryDisclosure } from "./locales/glossary-ui.js";
 import { createSectionNavigation, focusRequestedSection, markProductSection } from "./section-navigation.js";
 import { parseAppRoute } from "./navigation-routes.mjs";
 import { buildDailySemanticReading, getSemanticConcept } from "./semantic-layer.mjs?v=1.0.1";
-import { buildSeasonalProfile, selectCareAdvice } from "./seasonal-balance.mjs";
+import { buildSeasonalProfile, selectCareAdvice } from "./seasonal-balance.mjs?v=1.0.1";
 
 const root = document.querySelector("[data-today-root]");
 const semanticDebug = new URLSearchParams(location.search).get("debug") === "semantics";
@@ -507,7 +507,10 @@ export function getActiveDailyReading() {
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
   const date = localDateIso(timeZone);
   const input = { profile, natalTheme, timeZone, date };
-  const result = getCachedDaily(input) ?? setCachedDaily(input, calculateDailyTao(input));
+  const cached = getCachedDaily(input);
+  const result = cached?.solarTerm?.movement && cached.solarTerm.correspondence
+    ? cached
+    : setCachedDaily(input, calculateDailyTao(input));
   return { profile, natalTheme, result };
 }
 

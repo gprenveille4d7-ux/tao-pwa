@@ -49,7 +49,11 @@ export function getSeasonalPeriod(epochMs, civilYear) {
     for (const item of SOLAR_TERMS) candidates.push({ ...item, epochMs: getSolarTermInstant(year, item.longitude) });
   }
   candidates.sort((a, b) => a.epochMs - b.epochMs);
-  const index = candidates.findLastIndex((item) => item.epochMs <= epochMs);
+  let index = -1;
+  for (let candidateIndex = 0; candidateIndex < candidates.length; candidateIndex += 1) {
+    if (candidates[candidateIndex].epochMs <= epochMs) index = candidateIndex;
+    else break;
+  }
   const current = candidates[Math.max(0, index)];
   const next = candidates[Math.max(0, index) + 1];
   const duration = Math.max(1, next.epochMs - current.epochMs);
@@ -95,7 +99,7 @@ export function buildSeasonalProfile({ period, natalTheme, dailyResult, weather 
   const movement = period.movement;
   const counts = Object.fromEntries(ELEMENTS.map((key) => [key, Number(natalTheme.elements?.[key]?.count ?? 0)]));
   const ordered = ELEMENTS.slice().sort((a, b) => counts[b] - counts[a] || a.localeCompare(b));
-  const natalPresence = movement === ordered[0] ? "marked" : movement === ordered.at(-1) ? "quiet" : "present";
+  const natalPresence = movement === ordered[0] ? "marked" : movement === ordered[ordered.length - 1] ? "quiet" : "present";
   const relation = relationBetween(movement, natalTheme.dayMaster.element);
   const dailyRelation = relationBetween(movement, dailyResult.dayEnergy.stem.element);
   const weatherReading = normalizeSeasonalWeather(weather);
