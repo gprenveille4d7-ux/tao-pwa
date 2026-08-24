@@ -4,6 +4,7 @@ import { composeEnvironment } from "./environment-engine.mjs?v=1.0.2";
 import { determineDayPeriod, getSolarContext } from "./solar-engine.mjs?v=1.0.0";
 import { getZonedParts, localDateTimeToEpoch } from "./time-zone.mjs";
 import { getWeatherState } from "./weather-service.mjs?v=1.1.0";
+import { calculateCelestialContext } from "./celestial-engine.mjs?v=1.0.0";
 
 const LIGHT_REFRESH_MS = 60_000;
 const WEATHER_REFRESH_MS = 30 * 60_000;
@@ -22,6 +23,7 @@ let lastEnvironment = null;
 let requestVersion = 0;
 let debugOutput = null;
 let activeLocationKey = null;
+let authorizedCurrentPosition = null;
 
 const TIME_OPTIONS = Object.freeze([
   ["AUTO", "Heure réelle"], ["06:00", "06:00"], ["09:00", "09:00"], ["12:00", "12:00"], ["17:00", "17:00"],
@@ -43,7 +45,11 @@ function waitForExterior() {
 }
 
 function profileLocation() {
-  const location = resolveEnvironmentLocation({ profile: getActiveProfile() });
+  const location = resolveEnvironmentLocation({
+    profile: getActiveProfile(),
+    mode: authorizedCurrentPosition ? "current-position" : "residence",
+    currentPosition: authorizedCurrentPosition,
+  });
   return location.available ? location : null;
 }
 
@@ -79,6 +85,9 @@ function updateDebugOutput(context, environment) {
     `${environment.weatherState} · ${weatherReading?.source ?? "sans météo"}`,
     `Soleil ${formatClock(context.solar.sunrise, context.timeZone)} → ${formatClock(context.solar.sunset, context.timeZone)}`,
     environment.assetId,
+    `Lune ${environment.celestial?.moon?.phaseAngle?.toFixed?.(1) ?? "—"}° · ${environment.celestial?.moon?.illuminatedPercent ?? "—"} %`,
+    `Altitude ${environment.celestial?.moon?.altitude?.toFixed?.(1) ?? "—"}° · Soleil ${environment.celestial?.sky?.sunAltitude?.toFixed?.(1) ?? "—"}°`,
+    environment.celestial?.recommendation?.reason ?? "",
   ].join("\n");
 }
 
@@ -90,15 +99,18 @@ function applyCurrentEnvironment(realNow = Date.now()) {
   let context = solarWithOnlineValues(base, weatherReading, now);
   if (debugEnabled && debugState.forcedPeriod !== "AUTO") context = { ...context, period: { state: debugState.forcedPeriod, progress: 0.5 } };
   const weatherState = debugEnabled && debugState.forcedWeather !== "AUTO" ? debugState.forcedWeather : weatherReading?.state;
-  const environment = composeEnvironment({ period: context.period, weatherState, latitude: location.latitude, month: context.local.month });
+  const effectiveWeather = weatherReading ? { ...weatherReading, state: weatherState } : null;
+  const celestial = calculateCelestialContext({ now, ...location, weather: effectiveWeather, source: location.source, label: location.label });
+  const environment = composeEnvironment({ period: context.period, weatherState, latitude: location.latitude, month: context.local.month, celestial });
   exterior.setState(environment.assetId, { source: "environment" });
   scene.dataset.environmentTime = environment.timeState;
   scene.dataset.environmentWeather = environment.weatherState;
   scene.dataset.environmentSeason = environment.season;
   scene.dataset.environmentStars = environment.starsVisibility;
   if (weatherAttribution) weatherAttribution.hidden = !weatherReading || weatherReading.source === "unavailable";
-  celestialLayer.hidden = true;
-  lastEnvironment = Object.freeze({ ...environment, location, solar: context.solar, local: context.local, weatherSource: weatherReading?.source ?? "unavailable" });
+  celestialLayer.hidden = !celestial.recommendation.eligible;
+  celestialLayer.dataset.celestialAsset = celestial.recommendation.assetId ?? "none";
+  lastEnvironment = Object.freeze({ ...environment, celestial, location, solar: context.solar, local: context.local, weatherSource: weatherReading?.source ?? "unavailable" });
   globalThis.taoEnvironmentState = lastEnvironment;
   updateDebugOutput(context, environment);
   window.dispatchEvent(new CustomEvent("tao:environment-change", { detail: lastEnvironment }));
@@ -173,6 +185,14 @@ window.taoEnvironment = Object.freeze({
   refresh: (options) => refreshEnvironment(options),
   getState: () => lastEnvironment,
   getWeatherState: () => weatherReading,
+  useCurrentPosition: () => new Promise((resolve, reject) => {
+    if (!navigator.geolocation) return reject(new Error("La géolocalisation n’est pas disponible."));
+    navigator.geolocation.getCurrentPosition(async ({ coords }) => {
+      authorizedCurrentPosition = Object.freeze({ latitude: coords.latitude, longitude: coords.longitude, elevation: coords.altitude ?? 0, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, label: "Position actuelle" });
+      await refreshEnvironment({ forceWeather: true });
+      resolve(lastEnvironment);
+    }, reject, { enableHighAccuracy: false, maximumAge: 15 * 60_000, timeout: 10_000 });
+  }),
 });
 
 initializeEnvironment().catch((error) => console.error("[TAO] Environnement extérieur indisponible.", error));

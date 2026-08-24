@@ -1,5 +1,33 @@
 import { element } from "./tao-ui.js";
 
+export const TAO_SOURCES = Object.freeze({
+  natal: "Thème natal", day: "Jour calculé", combined: "Jour × thème natal",
+  season: "Saison solaire", environment: "Environnement réel", astronomy: "Astronomie réelle", yijing: "Tirage Yi Jing",
+});
+
+export function createSourceBadge(source, detail = "") {
+  const label = TAO_SOURCES[source] ?? source;
+  return element("span", { className: `tao-source tao-source--${source}`, text: detail ? `${label} · ${detail}` : label, attributes: { "aria-label": `Source : ${detail ? `${label}, ${detail}` : label}` } });
+}
+
+export function createContextBreadcrumb(parent, current) {
+  const node = element("p", { className: "tao-context", attributes: { "aria-label": `Vous êtes dans ${parent}, ${current}` } });
+  node.append(element("span", { text: parent }), element("b", { text: "›", attributes: { "aria-hidden": "true" } }), element("strong", { text: current }));
+  return node;
+}
+
+export function createReadingReferenceCard({ dailyStem, dailyBranch, natalMaster }) {
+  const card = element("aside", { className: "tao-reading-reference", attributes: { "aria-label": "Les repères de cette lecture" } });
+  card.append(element("h2", { text: "Les repères de cette lecture" }));
+  const grid = element("div");
+  for (const [title, value, note, source] of [
+    ["Aujourd’hui", dailyStem, `Tronc et Branche calculés pour cette journée · ${dailyBranch}`, "day"],
+    ["Votre thème natal", natalMaster, "Maître du Jour calculé à partir de votre naissance", "natal"],
+  ]) { const item = element("section"); item.append(createSourceBadge(source), element("strong", { text: title }), element("p", { text: value }), element("small", { text: note })); grid.append(item); }
+  card.append(grid, element("p", { text: "TAO compare ces deux repères pour construire la lecture personnalisée de votre journée." }));
+  return card;
+}
+
 export function createTaoHero({ eyebrow = "", title, lead = "", symbol = "", context = "", actions = [] }) {
   const hero = element("header", { className: "tao-hero" });
   if (eyebrow) hero.append(element("p", { className: "tao-hero__eyebrow", text: eyebrow }));

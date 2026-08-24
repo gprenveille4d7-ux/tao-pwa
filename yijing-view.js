@@ -10,7 +10,7 @@ import { createYijingGuidance } from "./yijing-guidance.mjs?v=1.0.1";
 import { deleteYijingReading, getYijingHistory, saveYijingReading, toggleYijingFavorite } from "./yijing-history.js";
 import { createSectionNavigation, focusRequestedSection, markProductSection, showOnlyProductSection } from "./section-navigation.js?v=tao-ux-2";
 import { parseAppRoute } from "./navigation-routes.mjs?v=tao-ux-2";
-import { createTaoCarousel, createTaoHero, openTaoSheet } from "./tao-components.js?v=1.0.0";
+import { createTaoCarousel, createTaoHero, createSourceBadge, openTaoSheet } from "./tao-components.js?v=1.1.0";
 
 const root = document.querySelector("[data-yijing-root]");
 const state = { phase: "question", question: "", lines: [], result: null, guidance: null, savedId: null };
@@ -172,14 +172,14 @@ function guidanceSection(guidance) {
   const wrap = element("section", { className: "yijing-guidance product-section" });
   wrap.append(sectionHeader(t("yijing.guidance.kicker"), t("yijing.guidance.title"), guidance.symbolicNotice));
   const message = element("article", { className: "surface-main yijing-guidance__card yijing-guidance__card--essential" });
-  message.append(element("p", { className: "product-eyebrow", text: "Le message" }), element("h3", { text: guidance.essential[0] }));
+  message.append(createSourceBadge("yijing"), element("p", { className: "product-eyebrow", text: "Le message" }), element("h3", { text: guidance.essential[0] }));
   guidance.essential.slice(1, 3).forEach((text) => message.append(element("p", { text })));
   if (guidance.profile) message.append(element("p", { className: "method-note", text: guidance.profile.text }));
   const change = element("article", { className: "surface-main yijing-guidance__card yijing-guidance__card--movement" });
-  change.append(element("p", { className: "product-eyebrow", text: "Ce qui change" }), element("h3", { text: t("yijing.guidance.movement") }), element("p", { text: guidance.movement }));
+  change.append(createSourceBadge("yijing", "Lignes mutantes"), element("p", { className: "product-eyebrow", text: "Ce qui change" }), element("h3", { text: t("yijing.guidance.movement") }), element("p", { text: guidance.movement }));
   guidance.lineReadings.slice(0, 3).forEach((line) => change.append(element("p", { text: `${t("yijing.lines.line", { line: line.line })} · ${line.title} — ${line.text}` })));
   const advance = element("article", { className: "surface-main yijing-guidance__card yijing-guidance__card--actions" });
-  advance.append(element("p", { className: "product-eyebrow", text: "Comment avancer" }), element("h3", { text: guidance.rhythm }));
+  advance.append(createSourceBadge("yijing", "Interprétation du tirage"), element("p", { className: "product-eyebrow", text: "Comment avancer" }), element("h3", { text: guidance.rhythm }));
   const list = element("ul");
   [...guidance.supports.slice(0, 1), ...guidance.cautions.slice(0, 1), ...guidance.actions.slice(0, 1)].forEach((text) => list.append(element("li", { text })));
   advance.append(list, element("blockquote", { text: guidance.reflection }));
@@ -226,7 +226,7 @@ function saveCurrent() {
 function resultView() {
   const fragment = document.createDocumentFragment();
   const heading = createTaoHero({ eyebrow: "Ce que montre votre tirage", title: state.guidance.essential[0], lead: "TAO commence par la dynamique utile à votre question.", context: state.question });
-  fragment.append(heading, guidanceSection(state.guidance));
+  fragment.append(heading, createSourceBadge("yijing", `Question : ${state.question}`), guidanceSection(state.guidance));
   const traditionalContent = element("div", { className: "product-disclosure__content yijing-traditional__content" });
   traditionalContent.append(hexagramCard(state.result.primary, state.result.lines, t("yijing.result.primary")));
   const mutations = element("section", { className: "product-card yijing-mutations" });

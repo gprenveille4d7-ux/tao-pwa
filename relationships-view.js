@@ -9,7 +9,7 @@ import { buildRelationshipSemanticReading } from "./relationship-semantic.mjs?v=
 import { getCachedRelationshipReading, setCachedRelationshipReading } from "./relationship-cache.mjs?v=1.0.0";
 import { t } from "./locales/index.js?v=1.5.1";
 import { element } from "./tao-ui.js";
-import { createTaoCarousel, createTaoHero, openTaoSheet } from "./tao-components.js?v=1.0.0";
+import { createTaoCarousel, createTaoHero, createSourceBadge, openTaoSheet } from "./tao-components.js?v=1.1.0";
 
 function option(value, text, selected = false) {
   const node = element("option", { text, attributes: { value } });
@@ -109,6 +109,7 @@ function renderReading(host, comparison, reading, profiles) {
 
   host.append(
     hero,
+    createSourceBadge("natal", `Comparaison : ${profiles.find(({ id }) => id === comparison.profiles.leftId)?.firstName ?? "Profil A"} × ${profiles.find(({ id }) => id === comparison.profiles.rightId)?.firstName ?? "Profil B"}`),
     carousel,
     technical,
     actions,

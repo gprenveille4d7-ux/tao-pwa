@@ -1,5 +1,6 @@
 import { appRoute, parseAppRoute } from "./navigation-routes.mjs?v=tao-ux-2";
 import { element } from "./tao-ui.js";
+import { createContextBreadcrumb } from "./tao-components.js?v=1.1.0";
 
 export function createSectionNavigation(view, items, label) {
   const route = parseAppRoute(location.hash);
@@ -14,7 +15,9 @@ export function createSectionNavigation(view, items, label) {
     if (route.view === view && route.section === item.id) link.setAttribute("aria-current", "location");
     track.append(link);
   }
-  nav.append(track);
+  const parent = label.replace(/^Explorer\s+/i, "");
+  const current = items.find((item) => item.id === route.section) ?? items[0];
+  nav.append(createContextBreadcrumb(parent, current.label), track);
   return nav;
 }
 

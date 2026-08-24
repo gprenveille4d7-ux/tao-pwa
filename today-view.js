@@ -3,7 +3,7 @@ import { calculateBazi } from "./bazi-engine.mjs";
 import { getCachedBazi, setCachedBazi } from "./bazi-cache.mjs";
 import { calculateDailyTao } from "./daily-tao-engine.mjs?v=2.3.0";
 import { getCachedDaily, setCachedDaily } from "./daily-cache.mjs?v=2.2.0";
-import { element, formatLongDate, localDateIso } from "./tao-ui.js";
+import { element, formatLongDate, formatPlace, localDateIso } from "./tao-ui.js";
 import { setTaoDailyBrief } from "./tao-dialogue.js";
 import { setTaoNarrativeState } from "./tao-narrative.js";
 import { formatPercent, getConcept, t } from "./locales/index.js?v=1.2.0";
@@ -11,8 +11,9 @@ import { glossaryDisclosure } from "./locales/glossary-ui.js";
 import { createSectionNavigation, focusRequestedSection, markProductSection, showOnlyProductSection } from "./section-navigation.js?v=tao-ux-2";
 import { parseAppRoute } from "./navigation-routes.mjs?v=tao-ux-2";
 import { buildDailySemanticReading, getSemanticConcept } from "./semantic-layer.mjs?v=1.0.1";
-import { buildSeasonalProfile, selectCareAdvice } from "./seasonal-balance.mjs?v=1.0.2";
-import { createTaoCarousel, createTaoHero } from "./tao-components.js?v=1.0.0";
+import { buildSeasonalProfile, selectCareAdvice, SOLAR_TERMS, FIVE_MOVEMENTS } from "./seasonal-balance.mjs?v=1.1.0";
+import { createTaoCarousel, createTaoHero, createSourceBadge, createReadingReferenceCard } from "./tao-components.js?v=1.1.0";
+import { calculateDaYun } from "./da-yun-engine.mjs?v=1.0.0";
 
 const root = document.querySelector("[data-today-root]");
 const semanticDebug = new URLSearchParams(location.search).get("debug") === "semantics";
@@ -60,6 +61,7 @@ function createImmediateEssential(result, profile) {
   const personal = result.personalSignature;
   const card = element("article", { className: "today-swipe-card today-swipe-card--essential", attributes: { "data-swipe-card": "essential", "aria-labelledby": "today-swipe-essential", tabindex: "0" } });
   card.append(
+    createSourceBadge("combined"),
     element("p", { className: "product-eyebrow", text: seasonalText("carousel", "essential") }),
     element("h2", { text: personal?.primarySignal ?? `Aujourd’hui, ${profile.firstName}` }),
     element("p", { className: "today-swipe-card__lead", text: personal?.concreteAdvice ?? result.dayEnergy.summary }),
@@ -80,8 +82,10 @@ function createSeasonSummaryCard(result, seasonal) {
   const details = movementDetails(period);
   const card = element("article", { className: `today-swipe-card today-swipe-card--season season-accent--${period.movement}`, attributes: { "data-swipe-card": "season", "aria-labelledby": "today-swipe-season", tabindex: "0" } });
   card.append(
+    createSourceBadge("season", "Calendrier solaire chinois · Jie Qi"),
     element("p", { className: "product-eyebrow", text: period.transitionWindow ? seasonalText("transition", period.daysSinceCurrent <= 2 ? "recent" : "approaching") : seasonalText("carousel", "season") }),
-    element("h2", { text: seasonalText("movementTitles", period.movement) }),
+    element("h2", { text: "Votre équilibre de saison" }),
+    element("strong", { text: seasonalText("movementTitles", period.movement) }),
     element("p", { className: "today-swipe-card__meta", text: `${getConcept("calendar.solarTerms", solarTermId(period.pinyin)).label} · ${transitionCopy(period)}` }),
     element("p", { className: "today-swipe-card__fact", text: `${seasonalText("labels", "movement")} · ${details.movement}` }),
     element("p", { className: "today-swipe-card__fact", text: `${seasonalText("labels", "traditional")} · ${details.organ} · ${details.bowel}` }),
@@ -303,13 +307,14 @@ function createGuidance(result) {
   return section;
 }
 
-function domainCard(title, status, text, className = "") {
+function domainCard(title, status, text, source = "combined", detail = "", className = "") {
   const card = element("article", { className: `product-card daily-domain-card ${className}`.trim() });
   card.append(
     element("div", { className: "daily-domain-card__heading" }),
     element("p", { text }),
   );
-  card.firstElementChild.append(element("h2", { text: title }), element("span", { text: status }));
+  card.prepend(createSourceBadge(source, detail));
+  card.querySelector(".daily-domain-card__heading").append(element("h2", { text: title }), element("span", { text: status }));
   return card;
 }
 
@@ -324,13 +329,13 @@ function createDetailedGuidance(result, natalTheme) {
   const master = stemData(natalTheme.dayMaster.key);
   const branch = branchData(result.dayEnergy.branch.key);
   section.append(
-    domainCard(t("guidance.detailed.support"), t("guidance.status.supportive"), t("guidance.detailed.supportCopy", { support: elementData(supportKey).of, dominant: dominant.withArticle, day: dayElement.of })),
-    domainCard(t("guidance.detailed.attention"), t("guidance.status.toModerate"), t("guidance.detailed.attentionCopy", { attention: elementData(attentionKey).withArticle, quieter: `L’élément ${quieter.label}` })),
-    domainCard(t("guidance.detailed.relationships"), t(`guidance.status.${result.domains.relations}`), t(`guidance.detailed.relationshipCopy.${result.domains.relations}`, { animal: branch.animal, echoes: result.domains.branchEchoes })),
-    domainCard(t("guidance.detailed.action"), t(`guidance.status.${result.domains.action}`), t(`guidance.detailed.actionCopy.${result.domains.action}`, { day: dayElement.label, master: master.french })),
-    domainCard(t("guidance.detailed.creativity"), t(`guidance.status.${result.domains.creativity}`), t(`guidance.detailed.creativityCopy.${result.domains.creativity}`, { day: dayElement.label })),
-    domainCard(t("guidance.detailed.rhythm"), t(`guidance.status.${result.domains.personalRhythm}`), t(`guidance.detailed.rhythmCopy.${result.domains.personalRhythm}`)),
-    domainCard(t("guidance.detailed.retreat"), t(`guidance.status.${result.domains.retreat}`), t(`guidance.detailed.retreatCopy.${result.domains.retreat}`)),
+    domainCard(t("guidance.detailed.support"), t("guidance.status.supportive"), t("guidance.detailed.supportCopy", { support: elementData(supportKey).of, dominant: dominant.withArticle, day: dayElement.of }), "combined", "Cycle des Cinq Mouvements"),
+    domainCard(t("guidance.detailed.attention"), t("guidance.status.toModerate"), t("guidance.detailed.attentionCopy", { attention: elementData(attentionKey).withArticle, quieter: `L’élément ${quieter.label}` }), "combined", "Cycle des Cinq Mouvements"),
+    domainCard(t("guidance.detailed.relationships"), t(`guidance.status.${result.domains.relations}`), `La Branche terrestre calculée pour aujourd’hui est ${branch.animal}. TAO la compare aux Branches de votre thème natal. ${t(`guidance.detailed.relationshipCopy.${result.domains.relations}`, { animal: branch.animal, echoes: result.domains.branchEchoes })}`, "combined", "Branche du Jour × Branches natales"),
+    domainCard(t("guidance.detailed.action"), t(`guidance.status.${result.domains.action}`), `Aujourd’hui, le Tronc céleste porte le ${dayElement.label}. Votre Maître du Jour natal est ${master.french}. ${t(`guidance.detailed.actionCopy.${result.domains.action}`, { day: dayElement.label, master: master.french })}`, "combined", "Tronc du Jour × Maître du Jour"),
+    domainCard(t("guidance.detailed.creativity"), t(`guidance.status.${result.domains.creativity}`), t(`guidance.detailed.creativityCopy.${result.domains.creativity}`, { day: dayElement.label }), "day", "Mouvement du Tronc du Jour"),
+    domainCard(t("guidance.detailed.rhythm"), t(`guidance.status.${result.domains.personalRhythm}`), `Le Tronc céleste calculé pour aujourd’hui est ${result.dayEnergy.stem.polarity === "yang" ? "Yang" : "Yin"}. ${t(`guidance.detailed.rhythmCopy.${result.domains.personalRhythm}`)}`, "day", "Polarité du Tronc du Jour"),
+    domainCard(t("guidance.detailed.retreat"), t(`guidance.status.${result.domains.retreat}`), t(`guidance.detailed.retreatCopy.${result.domains.retreat}`), "combined", "Lecture combinée"),
   );
   return section;
 }
@@ -353,6 +358,57 @@ function seasonFact(label, value, description = "") {
   return item;
 }
 
+function createSeasonLibrary(currentMovement) {
+  const cards = Object.entries(FIVE_MOVEMENTS).map(([movement, correspondence]) => {
+    const card = element("article", { className: `surface-main season-library-card season-accent--${movement}` });
+    card.append(element("p", { className: "product-eyebrow", text: movement === currentMovement ? "Saison actuelle" : "Bibliothèque" }), element("h3", { text: seasonalText("seasons", correspondence.season) }), element("strong", { text: seasonalText("movements", movement) }), element("p", { text: seasonalText("meanings", movement) }), element("small", { text: `Association traditionnelle : ${seasonalText("organs", correspondence.organ)} · ${seasonalText("climates", correspondence.climate)}` }));
+    return card;
+  });
+  const section = element("section", { className: "product-card" });
+  section.append(createSourceBadge("season", "Bibliothèque des Cinq Mouvements"), sectionHeader(null, "Les saisons dans TAO"), createTaoCarousel({ cards, label: "Explorer les cinq saisons traditionnelles", startIndex: Math.max(0, Object.keys(FIVE_MOVEMENTS).indexOf(currentMovement)) }));
+  const terms = element("details", { className: "semantic-technical" });
+  const list = element("ol", { className: "solar-term-library" });
+  SOLAR_TERMS.forEach((term) => list.append(element("li", { text: `${term.label} · ${term.pinyin} · ${seasonalText("movements", term.movement)}` })));
+  terms.append(element("summary", { text: "Voir les 24 périodes solaires" }), list);
+  section.append(terms);
+  return section;
+}
+
+function seasonCheckinKey(profile) {
+  return `tao.season.checkin.v1:${profile.id}`;
+}
+
+function readSeasonCheckin(profile) {
+  try { return JSON.parse(localStorage.getItem(seasonCheckinKey(profile)) ?? "{}"); } catch { return {}; }
+}
+
+function checkinFocus(profile) {
+  const saved = readSeasonCheckin(profile);
+  const labels = { energy: "l’énergie", sleep: "le sommeil", recovery: "la récupération", stress: "la régulation du stress", movement: "le mouvement" };
+  return Object.entries(labels).filter(([id]) => saved[id] === "harder").map(([, label]) => label);
+}
+
+function createSeasonCheckin(profile, seasonal) {
+  const key = seasonCheckinKey(profile);
+  const section = element("section", { className: "product-card season-checkin" });
+  section.append(sectionHeader("Facultatif · Stocké uniquement sur cet appareil", "Comment traversez-vous cette période ?", "Ce bilan aide à choisir des conseils généraux. Il ne produit aucun score ni conclusion médicale."));
+  const form = element("form", { className: "season-checkin__form" });
+  const saved = readSeasonCheckin(profile);
+  for (const [id, label] of [["energy", "Énergie"], ["sleep", "Sommeil"], ["recovery", "Récupération"], ["stress", "Stress"], ["movement", "Activité physique"]]) {
+    const field = element("label", { text: label });
+    const select = element("select", { attributes: { name: id } });
+    for (const [value, text] of [["", "Je ne souhaite pas répondre"], ["well", "Bien"], ["variable", "Variable"], ["harder", "Plus difficile que d’habitude"]]) select.append(element("option", { text, attributes: { value } }));
+    select.value = saved[id] ?? ""; field.append(select); form.append(field);
+  }
+  const status = element("p", { className: "field-status", attributes: { "aria-live": "polite" } });
+  const save = element("button", { className: "product-button product-button--primary", text: "Enregistrer localement", attributes: { type: "submit" } });
+  const clear = element("button", { className: "product-button product-button--quiet", text: "Effacer mes réponses", attributes: { type: "button" } });
+  form.addEventListener("submit", (event) => { event.preventDefault(); const values = Object.fromEntries(new FormData(form)); localStorage.setItem(key, JSON.stringify({ ...values, period: seasonal.movement, updatedAt: new Date().toISOString() })); renderTodayView(); });
+  clear.addEventListener("click", () => { localStorage.removeItem(key); form.reset(); status.textContent = "Historique local effacé."; });
+  const actions = element("div", { className: "product-actions" }); actions.append(save, clear); form.append(actions, status); section.append(form);
+  return section;
+}
+
 function createSeasonDetail(result, profile, seasonal) {
   const period = result.solarTerm;
   const details = movementDetails(period);
@@ -364,15 +420,16 @@ function createSeasonDetail(result, profile, seasonal) {
   ring.style.setProperty("--season-progress", `${Math.round(period.progress * 360)}deg`);
   ring.append(element("strong", { text: `${Math.round(period.progress * 100)} %` }), element("span", { text: details.season }));
   intro.append(
+    createSourceBadge("season", "Calendrier solaire chinois · Jie Qi"),
     element("p", { className: "product-eyebrow", text: seasonalText("page", "now") }),
     element("h1", { id: "season-detail-title", text: seasonalText("movementTitles", period.movement) }),
     element("p", { className: "season-detail__term", text: `${localizedTerm.label} · ${localizedTerm.traditional}` }),
-    element("p", { text: `${transitionCopy(period)} · ${seasonalText("movements", period.movement)}` }),
+    element("p", { text: `${new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long" }).format(new Date(period.epochMs))} → ${new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long" }).format(new Date(period.next.epochMs))} · ${transitionCopy(period)} · ${seasonalText("movements", period.movement)}` }),
     ring,
   );
 
   const meaning = element("section", { className: "product-card" });
-  meaning.append(sectionHeader(null, seasonalText("page", "meaning")), element("p", { text: seasonalText("meanings", period.movement) }));
+  meaning.append(createSourceBadge("season", "Lecture traditionnelle"), sectionHeader(null, seasonalText("page", "meaning")), element("p", { text: seasonalText("meanings", period.movement) }));
 
   const correspondences = element("section", { className: "product-card" });
   const factGrid = element("div", { className: "season-detail__facts" });
@@ -381,17 +438,20 @@ function createSeasonDetail(result, profile, seasonal) {
     seasonFact(seasonalText("labels", "bowel"), details.bowel),
     seasonFact(seasonalText("labels", "climate"), details.climate),
   );
-  correspondences.append(sectionHeader(null, seasonalText("page", "correspondences")), factGrid, element("p", { className: "symbolic-note", text: t("seasonal.disclaimer") }));
+  correspondences.append(createSourceBadge("season", "Correspondances traditionnelles"), sectionHeader(null, seasonalText("page", "correspondences")), factGrid, element("p", { text: "Dans la tradition chinoise, ces noms décrivent des systèmes fonctionnels symboliques ; ils ne correspondent pas exactement aux organes anatomiques de la médecine occidentale." }), element("p", { className: "symbolic-note", text: t("seasonal.disclaimer") }));
 
   const personal = element("section", { className: "product-card" });
+  const localFocus = checkinFocus(profile);
   personal.append(
+    createSourceBadge("natal", "Profil × saison solaire"),
     sectionHeader(profile.firstName, seasonalText("page", "profile")),
     element("p", { text: t(`seasonal.relation.${seasonal.relation}`) }),
     element("p", { text: t(`seasonal.natalPresence.${seasonal.natalPresence}`) }),
   );
+  if (localFocus.length) personal.append(element("p", { text: `Votre bilan local invite aujourd’hui à accorder une attention douce à ${localFocus.join(", ")}. Ce repère adapte seulement l’ordre des conseils généraux ; il ne constitue pas une évaluation de santé.` }));
 
   const weather = element("section", { className: "product-card" });
-  weather.append(sectionHeader(null, seasonalText("page", "weather")));
+  weather.append(createSourceBadge("environment", profile.residencePlace ? formatPlace(profile.residencePlace) : "Lieu d’habitation non renseigné"), sectionHeader(null, seasonalText("page", "weather")));
   if (seasonal.weather.available) {
     const raw = seasonal.weather.raw;
     const facts = [
@@ -418,7 +478,15 @@ function createSeasonDetail(result, profile, seasonal) {
     createPillList(t("seasonal.observation"), "seasonal-advice-list"),
     element("p", { className: "symbolic-note", text: t("seasonal.healthNote") }),
   );
-  wrapper.append(back, intro, meaning, correspondences, personal, weather, support, observe);
+  const healthSources = element("p", { className: "method-note" });
+  healthSources.append(
+    document.createTextNode("Prévention générale : "),
+    element("a", { text: "activité physique · OMS", attributes: { href: "https://www.who.int/fr/news-room/fact-sheets/detail/physical-activity", target: "_blank", rel: "noopener noreferrer" } }),
+    document.createTextNode(" · "),
+    element("a", { text: "fortes chaleurs · ministère de la Santé", attributes: { href: "https://sante.gouv.fr/sante-et-environnement/risques-climatiques/article/les-vagues-de-chaleur-et-leurs-effets-sur-la-sante", target: "_blank", rel: "noopener noreferrer" } }),
+  );
+  observe.append(healthSources);
+  wrapper.append(back, intro, createSeasonLibrary(period.movement), meaning, correspondences, personal, weather, support, observe, createSeasonCheckin(profile, seasonal));
   return wrapper;
 }
 
@@ -449,7 +517,7 @@ function groupSection(id, ...children) {
   return section;
 }
 
-function createCycles(result) {
+function createCycles(result, natalTheme, profile) {
   const section = element("section", { className: "product-card" });
   section.append(sectionHeader("Repères temporels", "Les cycles autour de cette journée", "TAO distingue ici ce que le moteur calcule déjà de ce qui demande encore un moteur dédié."));
   const grid = element("div", { className: "cycle-snapshot" });
@@ -458,19 +526,52 @@ function createCycles(result) {
     card.append(element("span", { text: label }), element("strong", { text: pillar.chinese }), element("small", { text: pillar.label }));
     grid.append(card);
   }
-  const waiting = element("aside", { className: "engine-status", attributes: { role: "note" } });
-  waiting.append(element("strong", { text: "Tes grands cycles de vie" }), element("p", { text: "Cette lecture demande encore un moteur déterministe dédié. TAO n’invente aucune période tant que ce calcul n’est pas vérifié." }));
-  const traditional = element("small", { text: "Terme traditionnel : Da Yun · 大運" });
-  waiting.append(traditional);
-  section.append(grid, waiting);
+  const daYun = calculateDaYun({ profile, natalTheme });
+  const landscape = element("aside", { className: "engine-status", attributes: { role: "note" } });
+  if (daYun.currentCycle) {
+    const current = daYun.currentCycle;
+    landscape.append(createSourceBadge("natal", "Grande période calculée"), element("strong", { text: `Votre paysage de fond · ${current.pillar.chinese} ${current.pillar.pinyin}` }), element("p", { text: `${elementData(current.stem.element).label} ${current.stem.polarity === "yang" ? "Yang" : "Yin"} et ${elementData(current.branch.element).label}. Cette période plus longue a commencé en ${new Date(current.startEpochMs).getUTCFullYear()}.` }), element("a", { className: "product-button product-button--quiet", text: "Voir mon parcours", attributes: { href: "#theme/journey" } }));
+  } else landscape.append(element("strong", { text: "Grandes périodes · Da Yun" }), element("p", { text: daYun.reason === "convention-required" ? "Choisissez la convention de calcul dans votre profil pour afficher votre parcours." : "Une heure de naissance connue est nécessaire pour calculer précisément le démarrage." }));
+  section.append(grid, landscape);
   return section;
 }
 
-function createNature(result) {
+function formatCelestialTime(epochMs, timeZone, withDate = false) {
+  if (!epochMs) return "—";
+  return new Intl.DateTimeFormat("fr-FR", { timeZone, ...(withDate ? { weekday: "long", day: "numeric", month: "long" } : {}), hour: "2-digit", minute: "2-digit" }).format(new Date(epochMs));
+}
+
+function createNature(profile) {
   const section = element("section", { className: "product-depth-stack" });
-  const astronomy = element("section", { className: "product-card engine-status" });
-  astronomy.append(sectionHeader("Repère astronomique", "Lune et événements célestes"), element("p", { text: "Ces données ne sont pas calculées dans la version actuelle. Elles resteront séparées des repères BaZi lorsqu’un moteur astronomique local sera disponible." }));
-  section.append(astronomy);
+  const state = globalThis.taoEnvironmentState;
+  if (!profile.residencePlace && !state?.location) {
+    const missing = element("section", { className: "product-card engine-status" });
+    missing.append(createSourceBadge("environment"), sectionHeader("Lieu nécessaire", "Lieu d’habitation à renseigner"), element("p", { text: "Votre lieu de naissance reste réservé au thème natal. Ajoutez votre lieu de vie actuel pour obtenir la météo, les levers et couchers et le ciel local." }), element("a", { className: "product-button product-button--primary", text: "Compléter mon profil", attributes: { href: "#profiles/me" } }));
+    section.append(missing);
+    return section;
+  }
+  const celestial = state?.celestial;
+  if (celestial) {
+    const moon = celestial.moon;
+    const astronomy = element("section", { className: "product-card celestial-now" });
+    astronomy.append(createSourceBadge("astronomy", "Calcul local"), sectionHeader(`Calculé pour ${celestial.observer.label}`, moon.name), element("p", { className: "celestial-illumination", text: `${moon.illuminatedPercent} % éclairée · Lune ${moon.waxing ? "croissante" : "décroissante"}` }), element("p", { text: celestial.visibility.explanation }), element("p", { className: "today-swipe-card__meta", text: `Lever ${formatCelestialTime(moon.rise, celestial.observer.timezone)} · Coucher ${formatCelestialTime(moon.set, celestial.observer.timezone)}` }));
+    const next = celestial.events.find((event) => event.epochMs > Date.now());
+    if (next) astronomy.append(element("h3", { text: "Prochaine étape du ciel" }), element("strong", { text: next.name }), element("p", { text: formatCelestialTime(next.epochMs, celestial.observer.timezone, true) }), ...(next.safety ? [element("p", { className: "product-warning", text: next.safety })] : []));
+    const technical = element("details", { className: "semantic-technical" });
+    technical.append(element("summary", { text: "Voir les données astronomiques" }), element("pre", { text: JSON.stringify({ phase: moon.phaseAngle, illumination: moon.illuminatedFraction, altitude: moon.altitude, azimuth: moon.azimuth, distanceKm: moon.distanceKm, sunAltitude: celestial.sky.sunAltitude, astronomicalNight: celestial.sky.astronomicalNight, coordinates: celestial.observer, sources: celestial.sources }, null, 2) }));
+    astronomy.append(technical);
+    section.append(astronomy);
+  }
+  const weather = element("section", { className: "product-card" });
+  weather.append(createSourceBadge("environment", state?.location?.label ?? formatPlace(profile.residencePlace)), sectionHeader("Conditions locales", "Météo réelle"));
+  const raw = globalThis.taoEnvironment?.getWeatherState?.()?.raw;
+  if (raw) weather.append(element("p", { text: `${Math.round(raw.temperature)} °C · Humidité ${Math.round(raw.humidity)} % · Vent ${Math.round(raw.windSpeed)} km/h` }), element("small", { text: "Météo · Open-Meteo" }));
+  else weather.append(element("p", { text: "Conditions météo momentanément indisponibles. Les calculs astronomiques restent utilisables hors ligne." }));
+  const locate = element("button", { className: "product-button product-button--quiet", text: "Utiliser ma position actuelle pour aujourd’hui", attributes: { type: "button" } });
+  const locateStatus = element("p", { className: "field-status", attributes: { "aria-live": "polite" } });
+  locate.addEventListener("click", async () => { locate.disabled = true; locateStatus.textContent = "Demande d’autorisation…"; try { await globalThis.taoEnvironment?.useCurrentPosition?.(); locateStatus.textContent = "Le ciel a été recalculé pour votre position actuelle."; renderTodayView(); } catch { locateStatus.textContent = "Position non utilisée. Votre lieu d’habitation reste sélectionné."; } finally { locate.disabled = false; } });
+  weather.append(locate, locateStatus);
+  section.append(weather);
   return section;
 }
 
@@ -524,10 +625,11 @@ export async function renderTodayView() {
     root.replaceChildren(
       header,
       createTodayCarousel(result, profile, seasonal),
+      createReadingReferenceCard({ dailyStem: `${stemData(result.dayEnergy.stem.key).french} · ${branchData(result.dayEnergy.branch.key).animal}`, dailyBranch: result.pillars.day.chinese, natalMaster: stemData(natalTheme.dayMaster.key).french }),
       createSectionNavigation("today", TODAY_SECTIONS, "Explorer Aujourd’hui"),
       groupSection("understand", human.card, createOverview(result), createGuidance(result), createDetailedGuidance(result, natalTheme), createWhyDisclosure(result, natalTheme, human.semantic), createDayEnergy(result), createElementBalance(result), createDetails(result)),
-      groupSection("rhythm", createResonance(result, natalTheme), createCycles(result), createSeason(result)),
-      groupSection("environment", createNature(result), glossaryDisclosure(["dayMaster", "fiveElements", "yinYang", "jieQi", "generationCycle", "controlCycle"], "Glossaire de TAO")),
+      groupSection("rhythm", createResonance(result, natalTheme), createCycles(result, natalTheme, profile), createSeason(result)),
+      groupSection("environment", createNature(profile), glossaryDisclosure(["dayMaster", "fiveElements", "yinYang", "jieQi", "generationCycle", "controlCycle"], "Glossaire de TAO")),
     );
     const routeMap = { guidance: "understand", energies: "understand", personal: "rhythm", cycles: "rhythm", nature: "environment" };
     const section = routeMap[route.section] ?? route.section;
