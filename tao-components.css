@@ -41,6 +41,59 @@
 .season-checkin__form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; }
 .season-checkin__form label { display: grid; gap: .32rem; font: 650 .78rem/1.3 system-ui, sans-serif; }
 .season-checkin__form select { min-inline-size: 0; inline-size: 100%; min-block-size: 2.75rem; padding: .6rem; border: 1px solid rgb(255 255 255 / 12%); border-radius: .7rem; color: #fff; background: #0e1b28; }
+
+/* Saisons, Mouvements & Corps */
+.pavilion-season { width: min(100%, 43rem); margin: .7rem auto 0; padding-inline: max(.8rem, env(safe-area-inset-left)); }
+.pavilion-season-card { display: grid; gap: .65rem; padding: 1rem; border: 1px solid rgb(215 180 119 / 20%); border-radius: 1.15rem; color: var(--product-ivory); background: linear-gradient(145deg, rgb(20 38 51 / 92%), rgb(8 19 32 / 94%)); box-shadow: 0 .8rem 2rem rgb(0 0 0 / 25%); }
+.pavilion-season-card h2, .pavilion-season-card p, .pavilion-season-card blockquote { margin: 0; }
+.pavilion-season-card h2 { font: 500 1.35rem/1.15 var(--tao-font-symbolic); }
+.pavilion-season-card blockquote { padding-left: .75rem; border-left: 2px solid var(--product-gold); color: rgb(231 237 241 / 82%); font: 400 .82rem/1.48 var(--tao-font-ui); }
+.pavilion-season-card__dates { display: flex; justify-content: space-between; color: var(--product-muted); font: 650 .68rem/1 var(--tao-font-ui); }
+.pavilion-season-card__bar, .season-progress-card__bar { position: relative; height: .38rem; overflow: hidden; border-radius: 999px; background: rgb(255 255 255 / 10%); }
+.pavilion-season-card__bar::after, .season-progress-card__bar::after { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--season-progress); border-radius: inherit; background: linear-gradient(90deg, rgb(215 180 119 / 55%), var(--product-gold)); }
+.pavilion-season-card__phase { color: var(--product-gold); font: 700 .72rem/1.25 var(--tao-font-ui); }
+
+.season-knowledge { display: grid; min-width: 0; gap: 1rem; }
+.season-knowledge__header { display: grid; gap: .55rem; padding-block: .4rem; }
+.season-knowledge__header h1 { margin: 0; font: 500 clamp(2rem, 9vw, 3.25rem)/1.02 var(--tao-font-symbolic); }
+.season-knowledge__header p { margin: 0; color: var(--product-muted); line-height: 1.55; }
+.season-progress-card { display: grid; gap: .7rem; padding: 1rem; border: 1px solid rgb(215 180 119 / 18%); border-radius: 1rem; background: rgb(255 255 255 / 4%); }
+.season-progress-card h2, .season-progress-card p { margin: 0; }
+.season-progress-card__dates { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: .5rem; color: var(--product-muted); font: 650 .7rem/1.2 var(--tao-font-ui); }
+.season-progress-card__dates span:last-child { text-align: right; }
+.season-progress-card small { color: rgb(205 216 226 / 70%); line-height: 1.5; }
+.season-library-nav { display: flex; gap: .55rem; overflow-x: auto; padding: .15rem .05rem .5rem; scroll-snap-type: x mandatory; scrollbar-width: none; }
+.season-library-nav button { flex: 0 0 7.4rem; min-height: 5.4rem; display: grid; justify-items: start; align-content: center; gap: .2rem; padding: .7rem; border: 1px solid rgb(255 255 255 / 10%); border-radius: .95rem; color: var(--product-ivory); background: rgb(255 255 255 / 4%); text-align: left; scroll-snap-align: start; }
+.season-library-nav button[aria-pressed="true"] { border-color: rgb(215 180 119 / 55%); background: rgb(215 180 119 / 10%); }
+.season-library-nav button span { font-size: 1.25rem; }
+.season-library-nav button strong { font: 650 .78rem/1.15 var(--tao-font-ui); }
+.season-library-nav button small { min-height: 1.2em; color: var(--product-gold); font: 700 .55rem/1.2 var(--tao-font-ui); letter-spacing: .05em; }
+.season-library-levels { display: grid; grid-template-columns: repeat(3, 1fr); gap: .2rem; padding: .22rem; border: 1px solid rgb(255 255 255 / 9%); border-radius: .9rem; background: rgb(0 7 15 / 42%); }
+.season-library-levels button { min-width: 0; min-height: 3rem; padding: .45rem .2rem; border: 0; border-radius: .7rem; color: var(--product-muted); background: transparent; font: 650 .66rem/1.15 var(--tao-font-ui); }
+.season-library-levels button[aria-selected="true"] { color: var(--product-ivory); background: rgb(255 255 255 / 9%); box-shadow: 0 .2rem .65rem rgb(0 0 0 / 16%); }
+.season-knowledge__panel { display: grid; gap: .8rem; }
+.season-knowledge__panel > blockquote { margin: 0; padding: .85rem 1rem; border-left: 2px solid var(--product-gold); border-radius: 0 .8rem .8rem 0; color: #e7ddd0; background: rgb(215 180 119 / 6%); line-height: 1.55; }
+.season-knowledge__block { display: grid; gap: .4rem; padding: 1rem; border: 1px solid rgb(255 255 255 / 8%); border-radius: .95rem; background: rgb(255 255 255 / 3%); }
+.season-knowledge__block h3, .season-knowledge__block p { margin: 0; }
+.season-knowledge__block p { color: #d5dfe6; line-height: 1.58; }
+.season-knowledge__signal { color: var(--product-gold); font: 750 .64rem/1.2 var(--tao-font-ui); letter-spacing: .055em; text-transform: uppercase; }
+.season-knowledge__block--science { border-color: rgb(120 161 191 / 22%); background: rgb(72 121 153 / 7%); }
+.season-organ-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem; }
+.season-organ-button { display: grid; min-width: 0; min-height: 7rem; align-content: center; gap: .3rem; padding: .85rem; border: 1px solid rgb(215 180 119 / 20%); border-radius: .9rem; color: var(--product-ivory); background: rgb(255 255 255 / 4%); text-align: left; }
+.season-organ-button span { color: var(--product-muted); font-size: .72rem; }
+.season-organ-button b { color: var(--product-gold); font-size: .7rem; }
+.season-cycle-visual { display: grid; gap: .5rem; padding: .9rem; border-radius: .9rem; background: rgb(215 180 119 / 6%); }
+.season-cycle-visual p, .season-interaction__diagram { margin: 0; text-align: center; font-weight: 700; }
+.season-interaction__diagram { color: var(--product-gold); font-size: 1.75rem; letter-spacing: .2rem; }
+.season-jieqi-list, .season-all-jieqi ol { display: grid; gap: .75rem; margin: 0; padding: .85rem 1rem .85rem 2rem; }
+.season-jieqi-list li, .season-all-jieqi li { padding-left: .2rem; }
+.season-jieqi-list span, .season-all-jieqi span { display: block; margin-top: .2rem; color: var(--product-muted); line-height: 1.45; }
+.organ-sheet { display: grid; gap: 1rem; }
+.organ-sheet__simple { margin: 0; color: #e9dfd0; font: 500 1rem/1.55 var(--tao-font-symbolic); }
+.organ-sheet__facts { display: grid; gap: .55rem; margin: 0; }
+.organ-sheet__facts div { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: .7rem; padding-bottom: .55rem; border-bottom: 1px solid rgb(255 255 255 / 7%); }
+.organ-sheet__facts dt { color: var(--product-muted); }
+.organ-sheet__facts dd { margin: 0; text-align: right; }
 .season-checkin__form .product-actions, .season-checkin__form .field-status { grid-column: 1 / -1; }
 .profile-form__section { grid-column: 1 / -1; margin: .6rem 0 0; padding-top: .8rem; border-top: 1px solid rgb(255 255 255 / 9%); font: 700 .92rem/1.3 system-ui, sans-serif; }
 

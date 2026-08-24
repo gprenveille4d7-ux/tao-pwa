@@ -11,9 +11,10 @@ import { glossaryDisclosure } from "./locales/glossary-ui.js";
 import { createSectionNavigation, focusRequestedSection, markProductSection, showOnlyProductSection } from "./section-navigation.js?v=tao-ux-3";
 import { parseAppRoute } from "./navigation-routes.mjs?v=tao-ux-2";
 import { buildDailySemanticReading, getSemanticConcept } from "./semantic-layer.mjs?v=1.0.1";
-import { buildSeasonalProfile, selectCareAdvice, SOLAR_TERMS, FIVE_MOVEMENTS } from "./seasonal-balance.mjs?v=1.1.0";
+import { buildSeasonalProfile, getSeasonCycle, selectCareAdvice, SOLAR_TERMS, FIVE_MOVEMENTS } from "./seasonal-balance.mjs?v=1.2.0";
 import { createTaoCarousel, createTaoHero, createSourceBadge, createReadingReferenceCard } from "./tao-components.js?v=1.1.0";
 import { calculateDaYun } from "./da-yun-engine.mjs?v=1.0.0";
+import { createSeasonalKnowledgeLibrary } from "./seasonal-library.js?v=1.0.0";
 
 const root = document.querySelector("[data-today-root]");
 const semanticDebug = new URLSearchParams(location.search).get("debug") === "semantics";
@@ -409,7 +410,7 @@ function createSeasonCheckin(profile, seasonal) {
   return section;
 }
 
-function createSeasonDetail(result, profile, seasonal) {
+function createSeasonDetail(result, profile, seasonal, natalTheme) {
   const period = result.solarTerm;
   const details = movementDetails(period);
   const localizedTerm = getConcept("calendar.solarTerms", solarTermId(period.pinyin));
@@ -486,7 +487,9 @@ function createSeasonDetail(result, profile, seasonal) {
     element("a", { text: "fortes chaleurs · ministère de la Santé", attributes: { href: "https://sante.gouv.fr/sante-et-environnement/risques-climatiques/article/les-vagues-de-chaleur-et-leurs-effets-sur-la-sante", target: "_blank", rel: "noopener noreferrer" } }),
   );
   observe.append(healthSources);
-  wrapper.append(back, intro, createSeasonLibrary(period.movement), meaning, correspondences, personal, weather, support, observe, createSeasonCheckin(profile, seasonal));
+  const referenceEpoch = Date.parse(`${result.date}T12:00:00Z`);
+  const cycle = getSeasonCycle(referenceEpoch, Number(result.date.slice(0, 4)));
+  wrapper.append(back, createSeasonalKnowledgeLibrary({ period, cycle, profile, natalTheme }), weather, support, observe, createSeasonCheckin(profile, seasonal));
   return wrapper;
 }
 
@@ -618,7 +621,7 @@ export async function renderTodayView() {
     const header = createTaoHero({ eyebrow: formatLongDate(result.date, result.timeZone), title: profile.firstName, lead: result.personalSignature?.primarySignal ?? result.dayEnergy.summary, context: "Votre journée, puis la profondeur seulement lorsque vous la demandez." });
     const route = parseAppRoute(location.hash);
     if (route.section === "season" && seasonal) {
-      root.replaceChildren(createSeasonDetail(result, profile, seasonal));
+      root.replaceChildren(createSeasonDetail(result, profile, seasonal, natalTheme));
       await setTaoNarrativeState("observing");
       return result;
     }

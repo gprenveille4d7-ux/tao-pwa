@@ -1,9 +1,9 @@
 import { getSolarTermInstant } from "./bazi-engine.mjs";
+import { CONTROLS, GENERATES, JIE_QI, MOVEMENT_KEYS, MOVEMENTS } from "./seasonal-knowledge.mjs?v=1.0.0";
 
-export const SEASONAL_BALANCE_VERSION = "tao-seasonal-1.0.0";
-export const ELEMENTS = Object.freeze(["wood", "fire", "earth", "metal", "water"]);
-export const GENERATES = Object.freeze({ wood: "fire", fire: "earth", earth: "metal", metal: "water", water: "wood" });
-export const CONTROLS = Object.freeze({ wood: "earth", earth: "water", water: "fire", fire: "metal", metal: "wood" });
+export const SEASONAL_BALANCE_VERSION = "tao-seasonal-1.2.0";
+export const ELEMENTS = MOVEMENT_KEYS;
+export { CONTROLS, GENERATES };
 
 export const FIVE_MOVEMENTS = Object.freeze({
   wood: Object.freeze({ season: "spring", organ: "liver", bowel: "gallbladder", climate: "wind" }),
@@ -13,37 +13,12 @@ export const FIVE_MOVEMENTS = Object.freeze({
   water: Object.freeze({ season: "winter", organ: "kidney", bowel: "bladder", climate: "cold" }),
 });
 
-const term = (longitude, pinyin, label, description, movement) => Object.freeze({ longitude, pinyin, label, description, movement });
-export const SOLAR_TERMS = Object.freeze([
-  term(285, "Xiao Han", "Petit Froid", "Le mouvement hivernal se concentre et invite à préserver les ressources.", "water"),
-  term(300, "Da Han", "Grand Froid", "La saison atteint sa profondeur avant le retour progressif du mouvement.", "earth"),
-  term(315, "Li Chun", "Début du Printemps", "Un nouveau cycle s’ouvre et favorise les premiers élans mesurés.", "wood"),
-  term(330, "Yu Shui", "Eaux de Pluie", "Ce qui était retenu recommence doucement à circuler.", "wood"),
-  term(345, "Jing Zhe", "Éveil des Insectes", "L’énergie se réveille et demande une attention souple.", "wood"),
-  term(0, "Chun Fen", "Équinoxe de Printemps", "La lumière et l’ombre cherchent un équilibre passager.", "wood"),
-  term(15, "Qing Ming", "Clarté Pure", "La période encourage la clarté, le tri et une vision plus nette.", "wood"),
-  term(30, "Gu Yu", "Pluie des Grains", "La croissance se nourrit de régularité et de patience.", "earth"),
-  term(45, "Li Xia", "Début de l’Été", "L’expansion s’affirme et invite à employer l’élan avec discernement.", "fire"),
-  term(60, "Xiao Man", "Petite Plénitude", "Les choses se remplissent sans être encore arrivées à maturité.", "fire"),
-  term(75, "Mang Zhong", "Grains en Épis", "Le moment soutient les gestes utiles et le soin porté à ce qui mûrit.", "fire"),
-  term(90, "Xia Zhi", "Solstice d’Été", "Le Yang culmine ; ménager des espaces de calme aide à garder l’équilibre.", "fire"),
-  term(105, "Xiao Shu", "Petite Chaleur", "L’intensité monte et gagne à être accompagnée avec mesure.", "fire"),
-  term(120, "Da Shu", "Grande Chaleur", "La saison demande de préserver l’énergie au cœur de l’expansion.", "earth"),
-  term(135, "Li Qiu", "Début de l’Automne", "Le mouvement commence à se recueillir et favorise le discernement.", "metal"),
-  term(150, "Chu Shu", "Fin de la Chaleur", "L’intensité décroît et laisse place à une organisation plus posée.", "metal"),
-  term(165, "Bai Lu", "Rosée Blanche", "La fraîcheur invite à simplifier et à observer les nuances.", "metal"),
-  term(180, "Qiu Fen", "Équinoxe d’Automne", "Yin et Yang se répondent dans un équilibre temporaire.", "metal"),
-  term(195, "Han Lu", "Rosée Froide", "La saison encourage le recentrage et la préparation.", "metal"),
-  term(210, "Shuang Jiang", "Descente du Givre", "Le temps du tri s’approfondit avant l’entrée dans l’hiver.", "earth"),
-  term(225, "Li Dong", "Début de l’Hiver", "L’énergie se tourne vers l’intérieur et valorise la conservation.", "water"),
-  term(240, "Xiao Xue", "Petite Neige", "Le ralentissement progressif invite à protéger l’essentiel.", "water"),
-  term(255, "Da Xue", "Grande Neige", "Le silence saisonnier soutient l’introspection et la stabilité.", "water"),
-  term(270, "Dong Zhi", "Solstice d’Hiver", "Le Yin culmine tandis qu’un nouvel élan commence discrètement.", "water"),
-]);
+export const SOLAR_TERMS = Object.freeze(JIE_QI.map((item) => Object.freeze({ ...item, description: item.beginner })));
 
 function daysBetween(a, b) { return Math.max(0, Math.ceil((b - a) / 86_400_000)); }
 
 export function getSeasonalPeriod(epochMs, civilYear) {
+  civilYear ??= new Date(epochMs).getUTCFullYear();
   const candidates = [];
   for (const year of [civilYear - 1, civilYear, civilYear + 1]) {
     for (const item of SOLAR_TERMS) candidates.push({ ...item, epochMs: getSolarTermInstant(year, item.longitude) });
@@ -69,6 +44,62 @@ export function getSeasonalPeriod(epochMs, civilYear) {
     daysSinceCurrent,
     transitionWindow: daysUntilNext <= 5 || daysSinceCurrent <= 2,
     correspondence: FIVE_MOVEMENTS[current.movement],
+  });
+}
+
+const EARTH_TRANSITION_MS = 18 * 86_400_000;
+const SEASON_ANCHORS = Object.freeze([
+  [315, "spring", "wood"], [45, "summer", "fire"], [135, "autumn", "metal"], [225, "winter", "water"],
+]);
+
+function seasonIntervals(civilYear) {
+  const anchors = [];
+  for (const year of [civilYear - 1, civilYear, civilYear + 1]) {
+    for (const [longitude, seasonId, movement] of SEASON_ANCHORS) anchors.push({ epochMs: getSolarTermInstant(year, longitude), seasonId, movement });
+  }
+  anchors.sort((a, b) => a.epochMs - b.epochMs);
+  const intervals = [];
+  for (let index = 0; index < anchors.length - 1; index += 1) {
+    const current = anchors[index];
+    const next = anchors[index + 1];
+    const transitionStart = next.epochMs - EARTH_TRANSITION_MS;
+    intervals.push(Object.freeze({ id: current.seasonId, movement: current.movement, startEpochMs: current.epochMs, endEpochMs: transitionStart }));
+    intervals.push(Object.freeze({ id: "transitions", movement: "earth", transitionTo: next.seasonId, startEpochMs: transitionStart, endEpochMs: next.epochMs }));
+  }
+  return intervals;
+}
+
+function seasonPhase(progress, isEarth) {
+  if (isEarth) return progress < 0.5 ? "transition entrante" : "transition vers la saison suivante";
+  if (progress < 0.15) return "début";
+  if (progress < 0.4) return "montée";
+  if (progress < 0.65) return "cœur";
+  if (progress < 0.85) return "déclin";
+  return "transition";
+}
+
+export function getSeasonCycle(epochMs, civilYear) {
+  civilYear ??= new Date(epochMs).getUTCFullYear();
+  const intervals = seasonIntervals(civilYear);
+  let index = intervals.findIndex(({ startEpochMs, endEpochMs }) => epochMs >= startEpochMs && epochMs < endEpochMs);
+  if (index < 0) index = Math.max(0, intervals.findIndex(({ startEpochMs }) => startEpochMs > epochMs) - 1);
+  const current = intervals[index];
+  const duration = Math.max(1, current.endEpochMs - current.startEpochMs);
+  const progress = Math.max(0, Math.min(1, (epochMs - current.startEpochMs) / duration));
+  const daysElapsed = Math.floor(Math.max(0, epochMs - current.startEpochMs) / 86_400_000);
+  const daysRemaining = Math.max(0, Math.ceil((current.endEpochMs - epochMs) / 86_400_000));
+  return Object.freeze({
+    ...current,
+    progress,
+    phase: seasonPhase(progress, current.movement === "earth"),
+    daysElapsed,
+    daysRemaining,
+    start: new Date(current.startEpochMs).toISOString(),
+    end: new Date(current.endEpochMs).toISOString(),
+    previous: intervals[index - 1] ? Object.freeze({ id: intervals[index - 1].id, movement: intervals[index - 1].movement }) : null,
+    next: intervals[index + 1] ? Object.freeze({ id: intervals[index + 1].id, movement: intervals[index + 1].movement, epochMs: current.endEpochMs }) : null,
+    knowledge: MOVEMENTS[current.movement],
+    model: "four-earth-transitions-18-days",
   });
 }
 
