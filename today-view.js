@@ -8,7 +8,7 @@ import { setTaoDailyBrief } from "./tao-dialogue.js";
 import { setTaoNarrativeState } from "./tao-narrative.js";
 import { formatPercent, getConcept, t } from "./locales/index.js?v=1.2.0";
 import { glossaryDisclosure } from "./locales/glossary-ui.js";
-import { createSectionNavigation, focusRequestedSection, markProductSection, showOnlyProductSection } from "./section-navigation.js?v=tao-ux-2";
+import { createSectionNavigation, focusRequestedSection, markProductSection, showOnlyProductSection } from "./section-navigation.js?v=tao-ux-3";
 import { parseAppRoute } from "./navigation-routes.mjs?v=tao-ux-2";
 import { buildDailySemanticReading, getSemanticConcept } from "./semantic-layer.mjs?v=1.0.1";
 import { buildSeasonalProfile, selectCareAdvice, SOLAR_TERMS, FIVE_MOVEMENTS } from "./seasonal-balance.mjs?v=1.1.0";

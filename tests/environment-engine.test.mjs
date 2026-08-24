@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { calculateSolarTimes, determineDayPeriod } from "../solar-engine.mjs";
+import { calculateSolarTimes, determineDayPeriod, determineDeviceClockPeriod } from "../solar-engine.mjs";
 import { composeEnvironment } from "../environment-engine.mjs";
 import { getZonedParts, localDateTimeToEpoch } from "../time-zone.mjs";
 
@@ -21,15 +21,21 @@ test("les heures solaires locales remplacent les seuils fixes", () => {
   assert.equal(determineDayPeriod(at(2), solar).state, "NIGHT");
 });
 
+test("sans lieu d’habitation, l’horloge de l’appareil garantit la nuit à 22 h 21", () => {
+  assert.equal(determineDeviceClockPeriod(22 + 21 / 60).state, "NIGHT");
+  assert.equal(determineDeviceClockPeriod(2).state, "NIGHT");
+  assert.equal(determineDeviceClockPeriod(12).state, "DAY");
+});
+
 test("la priorité temps puis météo reste physiquement cohérente", () => {
   const nightRain = composeEnvironment({ period: { state: "NIGHT", progress: 0.5 }, weatherState: "RAIN", latitude: 48, month: 8 });
-  assert.equal(nightRain.assetId, "OUTSIDE_PLUIE_DOUCE_VILLAGE_FJORDIQUE");
+  assert.equal(nightRain.assetId, "OUTSIDE_NUIT_ETOILEE_FJORD_ALPIN");
   assert.equal(nightRain.starsVisible, false);
   const nightClear = composeEnvironment({ period: { state: "NIGHT", progress: 0.5 }, weatherState: "CLEAR", latitude: 48, month: 8 });
   assert.equal(nightClear.assetId, "OUTSIDE_NUIT_ETOILEE_FJORD_ALPIN");
   assert.equal(nightClear.starsVisible, true);
   const nightCloudy = composeEnvironment({ period: { state: "NIGHT", progress: 0.5 }, weatherState: "OVERCAST", latitude: 48, month: 8 });
-  assert.equal(nightCloudy.assetId, "OUTSIDE_JOUR_NUAGEUX_FJORD_ALPIN");
+  assert.equal(nightCloudy.assetId, "OUTSIDE_NUIT_ETOILEE_FJORD_ALPIN");
   assert.equal(nightCloudy.starsVisible, false);
   assert.equal(nightCloudy.celestialEvent, null);
 });

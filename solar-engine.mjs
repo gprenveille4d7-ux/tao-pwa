@@ -20,6 +20,16 @@ function solarTransitJulian(approximate, meanAnomaly, longitude) { return J2000 
 
 export const DAY_PERIODS = Object.freeze(["NIGHT", "DAWN", "MORNING", "DAY", "LATE_AFTERNOON", "TWILIGHT"]);
 
+export function determineDeviceClockPeriod(hour) {
+  if (!Number.isFinite(hour) || hour < 0 || hour >= 24) throw new TypeError("Heure locale invalide.");
+  if (hour < 5 || hour >= 21) return Object.freeze({ state: "NIGHT", progress: 0.5, source: "device-clock" });
+  if (hour < 7.5) return Object.freeze({ state: "DAWN", progress: (hour - 5) / 2.5, source: "device-clock" });
+  if (hour < 11) return Object.freeze({ state: "MORNING", progress: (hour - 7.5) / 3.5, source: "device-clock" });
+  if (hour < 16.5) return Object.freeze({ state: "DAY", progress: (hour - 11) / 5.5, source: "device-clock" });
+  if (hour < 19.5) return Object.freeze({ state: "LATE_AFTERNOON", progress: (hour - 16.5) / 3, source: "device-clock" });
+  return Object.freeze({ state: "TWILIGHT", progress: (hour - 19.5) / 1.5, source: "device-clock" });
+}
+
 export function calculateSolarTimes({ date, latitude, longitude }) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date ?? "")) throw new TypeError("Date solaire invalide.");
   if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) throw new TypeError("Coordonnées solaires invalides.");

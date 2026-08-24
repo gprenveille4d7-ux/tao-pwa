@@ -7,7 +7,8 @@ const cssUrl = new URL("../tao-components.css", import.meta.url);
 
 test("TaoCarousel limite les cartes et reste utilisable sans swipe", async () => {
   const [source, css] = await Promise.all([readFile(sourceUrl, "utf8"), readFile(cssUrl, "utf8")]);
-  assert.match(source, /cards\.filter\(Boolean\)\.slice\(0, 5\)/);
+  assert.match(source, /limit = 5/);
+  assert.match(source, /cards\.filter\(Boolean\)\.slice\(0, limit\)/);
   assert.match(source, /ArrowLeft/);
   assert.match(source, /ArrowRight/);
   assert.match(source, /Afficher la carte/);

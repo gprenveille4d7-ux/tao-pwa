@@ -8,7 +8,7 @@ import { HEXAGRAMS, TRIGRAMS } from "./yijing-data.mjs?v=1.0.1";
 import { castThreeCoins, createCasting, interpretLineValue, resolveCasting } from "./yijing-engine.mjs?v=1.0.1";
 import { createYijingGuidance } from "./yijing-guidance.mjs?v=1.0.1";
 import { deleteYijingReading, getYijingHistory, saveYijingReading, toggleYijingFavorite } from "./yijing-history.js";
-import { createSectionNavigation, focusRequestedSection, markProductSection, showOnlyProductSection } from "./section-navigation.js?v=tao-ux-2";
+import { createSectionNavigation, focusRequestedSection, markProductSection, showOnlyProductSection } from "./section-navigation.js?v=tao-ux-3";
 import { parseAppRoute } from "./navigation-routes.mjs?v=tao-ux-2";
 import { createTaoCarousel, createTaoHero, createSourceBadge, openTaoSheet } from "./tao-components.js?v=1.1.0";
 
