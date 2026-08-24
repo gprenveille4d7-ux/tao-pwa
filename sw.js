@@ -1,4 +1,4 @@
-const CACHE_VERSION = "tao-shell-2026-08-24-v38-profile-ios-night";
+const CACHE_VERSION = "tao-shell-2026-08-24-v39-season-library-ai-fallback";
 const SHELL = [
   "./",
   "./index.html",
@@ -8,7 +8,7 @@ const SHELL = [
   "./public/icons/icon-512-maskable.png",
   "./styles.css?v=tao-environment-4",
   "./product-experience.css?v=tao-seasonal-1",
-  "./tao-components.css?v=clarity-2",
+  "./tao-components.css?v=season-library-1",
   "./tao-components.js?v=1.1.0",
   "./vendor/astronomy.browser.min.js?v=2.1.19",
   "./vendor/ASTRONOMY-ENGINE-LICENSE.txt",
@@ -33,9 +33,11 @@ const SHELL = [
   "./navigation-routes.mjs?v=tao-ux-2",
   "./section-navigation.js?v=tao-ux-3",
   "./app-navigation.js?v=clarity-1",
-  "./today-view.js?v=clarity-1",
+  "./today-view.js?v=season-library-1",
   "./daily-tao-engine.mjs?v=2.3.0",
-  "./seasonal-balance.mjs?v=1.1.0",
+  "./seasonal-balance.mjs?v=1.2.0",
+  "./seasonal-knowledge.mjs?v=1.0.0",
+  "./seasonal-library.js?v=1.0.0",
   "./daily-personal-signature.mjs",
   "./daily-cache.mjs?v=2.2.0",
   "./bazi-theme.js?v=clarity-1",
