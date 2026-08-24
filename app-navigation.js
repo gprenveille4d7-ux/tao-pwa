@@ -92,6 +92,20 @@ function initializeMainNavigation() {
   showView(route.view, route.section);
 }
 
+navigation.addEventListener("click", (event) => {
+  const item = event.target.closest("[data-navigation-target]");
+  if (!item) return;
+  const targetView = item.dataset.navigationTarget;
+  const route = requestedRoute();
+  if (route.view !== targetView) return;
+  event.preventDefault();
+  const defaultHash = `#${targetView}`;
+  if (location.hash !== defaultHash) {
+    location.hash = defaultHash;
+    window.setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
+  } else window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
 window.addEventListener("hashchange", () => {
   if (navigation.hidden || !getActiveProfile()) return;
   const route = requestedRoute();

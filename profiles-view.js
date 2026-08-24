@@ -41,7 +41,8 @@ function getDayMaster(profile) {
 function facts(profile) {
   const list = element("dl", { className: "profile-facts" });
   for (const [label, value] of [
-    [t("profiles.facts.birth"), formatBirthDate(profile.birthDate)], [t("profiles.facts.place"), formatPlace(profile.birthPlace)],
+    [t("profiles.facts.birth"), formatBirthDate(profile.birthDate)], ["Lieu de naissance", formatPlace(profile.birthPlace)],
+    ["Lieu d’habitation", profile.residencePlace ? formatPlace(profile.residencePlace) : "À renseigner pour la météo et le ciel"],
     [t("profiles.facts.time"), profile.birthTimeKnown ? profile.birthTime : t("profiles.fields.unknownTime")], [t("profiles.facts.dayMaster"), getDayMaster(profile)],
   ]) {
     const item = element("div");
@@ -60,7 +61,7 @@ function activeCard(profile) {
     eyebrow: t("profiles.page.active"),
     title: profile.firstName,
     lead: getDayMaster(profile),
-    context: `${formatBirthDate(profile.birthDate)} · ${formatPlace(profile.birthPlace)}`,
+    context: `Naissance · ${formatBirthDate(profile.birthDate)} · ${formatPlace(profile.birthPlace)} · Vie actuelle · ${profile.residencePlace ? formatPlace(profile.residencePlace) : "à renseigner"}`,
     actions: [edit, settings],
   });
 }
@@ -149,13 +150,13 @@ function field(form, { name, label, type = "text", value = "", required = true }
   return input;
 }
 
-function renderPlaceResults(places, list, input, state, status) {
+function renderPlaceResults(places, list, input, state, status, key = "place") {
   list.replaceChildren();
   for (const place of places) {
     const item = element("li");
     const button = element("button", { text: formatPlace(place), attributes: { type: "button" } });
     button.addEventListener("click", () => {
-      state.place = place;
+      state[key] = place;
       input.value = formatPlace(place);
       list.replaceChildren();
       status.textContent = t("profiles.editor.selected", { place: formatPlace(place) });
@@ -168,7 +169,7 @@ function renderPlaceResults(places, list, input, state, status) {
 
 function openEditor(existing = null) {
   root.querySelector("[data-profile-editor]")?.remove();
-  const state = { place: existing?.birthPlace ?? null };
+  const state = { place: existing?.birthPlace ?? null, residence: existing?.residencePlace ?? null };
   const panel = element("section", { className: "product-card profile-editor", attributes: { "data-profile-editor": "", "aria-labelledby": "profile-editor-title" } });
   const head = element("header", { className: "profile-editor__header" });
   head.append(element("div", { html: `<p class="product-eyebrow">${existing ? t("profiles.editor.editEyebrow") : t("profiles.editor.newEyebrow")}</p><h2 id="profile-editor-title">${existing ? existing.firstName : t("profiles.page.addPerson")}</h2>` }));
@@ -187,6 +188,7 @@ function openEditor(existing = null) {
     form.append(group);
   }
 
+  form.append(element("h3", { className: "profile-form__section", text: "Naissance" }));
   const placeGroup = element("div", { className: "product-field product-field--wide" });
   const placeLabel = element("label", { text: t("profiles.fields.birthPlace"), attributes: { for: "profile-place" } });
   const placeInput = element("input", { attributes: { id: "profile-place", type: "search", autocomplete: "off", value: existing ? formatPlace(existing.birthPlace) : "", role: "combobox", "aria-controls": "profile-place-results" } });
@@ -227,6 +229,46 @@ function openEditor(existing = null) {
   unknownGroup.append(unknown, element("span", { text: t("profiles.fields.unknownTimeChoice") }));
   form.append(unknownGroup);
 
+  const conventionGroup = element("div", { className: "product-field product-field--wide" });
+  const conventionLabel = element("label", { text: "Convention traditionnelle pour les Da Yun", attributes: { for: "profile-dayun-convention" } });
+  const convention = element("select", { attributes: { id: "profile-dayun-convention", name: "daYunConvention" } });
+  convention.append(
+    element("option", { text: "À choisir", attributes: { value: "" } }),
+    element("option", { text: "Convention masculine", attributes: { value: "masculine" } }),
+    element("option", { text: "Convention féminine", attributes: { value: "feminine" } }),
+  );
+  convention.value = existing?.daYunConvention ?? "";
+  conventionGroup.append(conventionLabel, convention, element("small", { text: "Paramètre technique du calcul traditionnel, indépendant de votre identité affichée." }));
+  form.append(conventionGroup, element("h3", { className: "profile-form__section", text: "Vie actuelle" }));
+
+  const residenceGroup = element("div", { className: "product-field product-field--wide" });
+  const residenceLabel = element("label", { text: "Lieu d’habitation", attributes: { for: "profile-residence" } });
+  const residenceInput = element("input", { attributes: { id: "profile-residence", type: "search", autocomplete: "off", value: existing?.residencePlace ? formatPlace(existing.residencePlace) : "", role: "combobox", "aria-controls": "profile-residence-results" } });
+  const residenceStatus = element("p", { className: "field-status", text: "Utilisé pour la météo, le ciel et l’environnement. Il ne modifie pas votre thème natal." });
+  const residenceResults = element("ul", { className: "place-result-list", attributes: { id: "profile-residence-results" } });
+  let residenceTimer = null;
+  let residenceController = null;
+  residenceInput.addEventListener("input", () => {
+    state.residence = null;
+    clearTimeout(residenceTimer);
+    residenceController?.abort();
+    residenceResults.replaceChildren();
+    const query = residenceInput.value.trim();
+    if (query.length < 3) return;
+    residenceStatus.textContent = t("profiles.editor.searching");
+    residenceTimer = setTimeout(async () => {
+      residenceController = new AbortController();
+      try {
+        const places = await searchBirthPlaces(query, { signal: residenceController.signal });
+        renderPlaceResults(places, residenceResults, residenceInput, state, residenceStatus, "residence");
+      } catch (error) {
+        if (error.name !== "AbortError") residenceStatus.textContent = t("profiles.editor.unavailable");
+      }
+    }, 280);
+  });
+  residenceGroup.append(residenceLabel, residenceInput, residenceStatus, residenceResults);
+  form.append(residenceGroup);
+
   const error = element("p", { className: "form-error", attributes: { role: "alert" } });
   const save = element("button", { className: "product-button product-button--primary", text: existing ? t("profiles.actions.saveChanges") : t("profiles.actions.addThisPerson"), attributes: { type: "submit" } });
   form.append(error, save);
@@ -243,7 +285,7 @@ function openEditor(existing = null) {
     if (!timeUnknown && !/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) return void (error.textContent = t("profiles.errors.time"));
     const now = new Date().toISOString();
     const profile = {
-      schemaVersion: 1,
+      schemaVersion: 2,
       id: existing?.id ?? createProfileId(),
       firstName: name,
       relationship: existing?.relationship ?? String(data.get("relationship") ?? "other"),
@@ -251,12 +293,17 @@ function openEditor(existing = null) {
       birthTime: time,
       birthTimeKnown: !timeUnknown,
       birthPlace: state.place,
+      residencePlace: state.residence,
+      daYunConvention: String(data.get("daYunConvention") || "") || null,
       createdAt: existing?.createdAt ?? now,
       updatedAt: now,
     };
     if (existing) {
-      clearCachedBazi(existing.id);
-      clearDailyCacheForProfile(existing.id);
+      const natalChanged = existing.birthDate !== profile.birthDate || existing.birthTime !== profile.birthTime || existing.birthTimeKnown !== profile.birthTimeKnown || JSON.stringify(existing.birthPlace) !== JSON.stringify(profile.birthPlace);
+      if (natalChanged) {
+        clearCachedBazi(existing.id);
+        clearDailyCacheForProfile(existing.id);
+      }
     }
     const active = getActiveProfile();
     saveProfile(profile, { setActive: existing?.id === active?.id });

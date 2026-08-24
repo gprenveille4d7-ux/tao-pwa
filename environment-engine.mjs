@@ -26,19 +26,21 @@ export function seasonFor(latitude, month) {
   return northern[(index + (north ? 0 : 2)) % 4];
 }
 
-export function composeEnvironment({ period, weatherState = null, latitude = 0, month = 1 }) {
+export function composeEnvironment({ period, weatherState = null, latitude = 0, month = 1, celestial = null }) {
   const timeState = period?.state ?? "DAY";
   const weather = weatherState ?? "UNKNOWN";
   let assetId;
   if (weather === "PARTLY_CLOUDY" || weather === "CLEAR" || weather === "UNKNOWN") assetId = CLEAR_BY_PERIOD[timeState];
   else assetId = WEATHER_ASSETS[weather] ?? CLEAR_BY_PERIOD[timeState];
   if (timeState === "TWILIGHT" && weather === "CLEAR" && (period?.progress ?? 0) < 0.62) assetId = "OUTSIDE_COUCHER_DE_SOLEIL_VILLAGE_FJORDIQUE";
+  if (celestial?.recommendation?.eligible && celestial.recommendation.assetId) assetId = celestial.recommendation.assetId;
   return Object.freeze({
     version: ENVIRONMENT_ENGINE_VERSION,
     timeState, weatherState: weather, assetId,
     season: seasonFor(latitude, month),
     starsVisibility: timeState !== "NIGHT" ? "none" : weather === "CLEAR" ? "full" : weather === "PARTLY_CLOUDY" ? "partial" : "none",
     starsVisible: timeState === "NIGHT" && ["CLEAR", "PARTLY_CLOUDY"].includes(weather),
-    celestialEvent: null,
+    celestialEvent: celestial?.nextMajorEvent ?? null,
+    celestial,
   });
 }

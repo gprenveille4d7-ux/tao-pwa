@@ -16,6 +16,12 @@ function isFiniteCoordinate(value) {
   return typeof value === "number" && Number.isFinite(value);
 }
 
+function isValidPlace(place) {
+  return Boolean(place && typeof place.id === "string" && typeof place.city === "string" &&
+    typeof place.country === "string" && isFiniteCoordinate(place.latitude) &&
+    isFiniteCoordinate(place.longitude) && typeof place.timezone === "string" && place.timezone.length > 0);
+}
+
 export function isValidProfile(profile) {
   const place = profile?.birthPlace;
   const timeIsValid =
@@ -32,14 +38,9 @@ export function isValidProfile(profile) {
       RELATIONSHIPS.has(profile.relationship) &&
       /^\d{4}-\d{2}-\d{2}$/.test(profile.birthDate) &&
       timeIsValid &&
-      place &&
-      typeof place.id === "string" &&
-      typeof place.city === "string" &&
-      typeof place.country === "string" &&
-      isFiniteCoordinate(place.latitude) &&
-      isFiniteCoordinate(place.longitude) &&
-      typeof place.timezone === "string" &&
-      place.timezone.length > 0,
+      isValidPlace(place) &&
+      (profile.residencePlace == null || isValidPlace(profile.residencePlace)) &&
+      (profile.daYunConvention == null || ["masculine", "feminine"].includes(profile.daYunConvention)),
   );
 }
 

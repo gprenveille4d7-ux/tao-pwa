@@ -355,7 +355,7 @@ async function handleSubmit(event) {
 async function completeFirstMeeting() {
   const now = new Date().toISOString();
   const profile = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     id: createProfileId(),
     firstName: draft.firstName.trim(),
     relationship: "self",
@@ -363,6 +363,8 @@ async function completeFirstMeeting() {
     birthTime: draft.birthTimeKnown ? draft.birthTime : null,
     birthTimeKnown: draft.birthTimeKnown,
     birthPlace: draft.birthPlace,
+    residencePlace: null,
+    daYunConvention: null,
     createdAt: now,
     updatedAt: now,
   };

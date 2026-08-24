@@ -9,7 +9,8 @@ import { branchRelations, visibleTenGods } from "./bazi-insights.mjs?v=1.0.1";
 import { createSectionNavigation, focusRequestedSection, markProductSection, showOnlyProductSection } from "./section-navigation.js?v=tao-ux-2";
 import { parseAppRoute } from "./navigation-routes.mjs?v=tao-ux-2";
 import { getSemanticConcept } from "./semantic-layer.mjs?v=1.0.1";
-import { createTaoCarousel, createTaoHero, openTaoSheet } from "./tao-components.js?v=1.0.0";
+import { createTaoCarousel, createTaoHero, createSourceBadge, openTaoSheet } from "./tao-components.js?v=1.1.0";
+import { calculateDaYun } from "./da-yun-engine.mjs?v=1.0.0";
 
 const root = document.querySelector("[data-bazi-root]");
 const debugEnabled = new URLSearchParams(location.search).get("debug") === "bazi";
@@ -44,6 +45,7 @@ function dayMaster(result) {
   const semantic = getSemanticConcept("stems", master.key);
   const card = element("section", { className: `surface-main theme-essential-card day-master-card element-accent--${master.element}` });
   card.append(
+    createSourceBadge("natal", "Données provenant uniquement de votre naissance"),
     element("p", { className: "product-eyebrow", text: "Ton énergie fondamentale" }),
     element("span", { className: "day-master-card__glyph", text: localizedStem.hanzi }),
     element("p", { className: "day-master-card__name", text: semantic.icon }),
@@ -274,18 +276,61 @@ function tenGods(result) {
   return section;
 }
 
-function cyclesAndTimeline(result) {
+function formatCycleDate(epochMs) {
+  return new Intl.DateTimeFormat("fr-FR", { year: "numeric", month: "long" }).format(new Date(epochMs));
+}
+
+function cycleDetail(daYun, cycle, opener) {
+  const relation = getSemanticConcept("tenGods", cycle.dayMasterRelationship);
+  const content = element("div", { className: "da-yun-detail" });
+  const facts = element("dl", { className: "glance-grid" });
+  for (const [label, value] of [
+    ["Dates", `${formatCycleDate(cycle.startEpochMs)} → ${formatCycleDate(cycle.endEpochMs)}`],
+    ["Pilier", `${cycle.pillar.chinese} · ${cycle.pillar.pinyin}`],
+    ["Mouvements", `${elementData(cycle.stem.element).label} ${cycle.stem.polarity === "yang" ? "Yang" : "Yin"} · ${elementData(cycle.branch.element).label} ${cycle.branch.polarity === "yang" ? "Yang" : "Yin"}`],
+    ["Relation au Maître du Jour", relation.humanLabel],
+  ]) { const row = element("div"); row.append(element("dt", { text: label }), element("dd", { text: value })); facts.append(row); }
+  content.append(
+    element("p", { text: `Cette grande période fait entrer ${elementData(cycle.stem.element).of} au premier plan. Elle décrit un paysage symbolique de fond, jamais un événement obligatoire.` }),
+    facts,
+    element("h3", { text: "Rencontre avec votre thème natal" }),
+    element("p", { text: cycle.natalInteractions.length ? `${cycle.natalInteractions.length} interaction(s) exacte(s) avec les Branches natales sont observées.` : "Aucune combinaison, opposition ou répétition directe ne domine avec les Branches natales." }),
+    element("h3", { text: "Pourquoi TAO me dit ça ?" }),
+    element("p", { text: `Votre Maître du Jour est ${stemData(daYun.dayMaster.key).french}. Le Tronc de cette période est ${stemData(cycle.stem.key).french}. Leur relation calculée correspond à ${relation.humanLabel.toLocaleLowerCase("fr-FR")}.` }),
+  );
+  const technical = element("details", { className: "semantic-technical" });
+  technical.append(element("summary", { text: "Voir le calcul Da Yun" }), element("pre", { text: JSON.stringify({ direction: daYun.direction, convention: daYun.convention, yearStem: daYun.yearStem, monthPillar: daYun.monthPillar.label, targetJie: daYun.targetJie, intervalSeconds: daYun.intervalSeconds, startAgeExact: daYun.startAgeExact, formula: daYun.calculationMethod, cycle }, null, 2) }));
+  content.append(technical);
+  openTaoSheet({ title: `${cycle.pillar.chinese} · ${cycle.pillar.pinyin}`, label: "Grande période · Da Yun", content, opener });
+}
+
+function cyclesAndTimeline(result, profile) {
   const section = element("section", { className: "surface-soft theme-journey" });
-  section.append(element("p", { className: "product-eyebrow", text: "Chronologie" }), element("h2", { text: "Tes grands cycles de vie" }), element("p", { text: "Le BaZi observe aussi de longues périodes, souvent proches de dix ans, durant lesquelles certaines dynamiques prennent davantage de place. Elles sont traditionnellement appelées Da Yun · 大運." }));
-  const status = element("aside", { className: "engine-status", attributes: { role: "note" } });
-  status.append(element("strong", { text: "Moteur en attente" }), element("p", { text: "Aucune décennie ni période remarquable n’est affichée sans calcul déterministe vérifié." }));
+  section.append(element("p", { className: "product-eyebrow", text: "Thème natal › Parcours" }), element("h2", { text: "Grandes périodes · Da Yun 大运" }), element("p", { text: "Votre thème natal décrit une structure de départ. Les Da Yun montrent comment de grandes dynamiques se succèdent ensuite. Elles ne prédisent pas des événements obligatoires." }));
+  const daYun = calculateDaYun({ profile, natalTheme: result });
+  if (!daYun.available) {
+    const status = element("aside", { className: "engine-status", attributes: { role: "note" } });
+    status.append(element("strong", { text: daYun.reason === "birth-time-required" ? "Heure de naissance nécessaire" : "Convention Da Yun à choisir" }), element("p", { text: daYun.reason === "birth-time-required" ? "Le démarrage précis dépend de l’intervalle entre votre naissance et un terme solaire Jie. TAO n’invente pas d’heure." : "Choisissez la convention traditionnelle masculine ou féminine dans votre profil. Ce paramètre technique est indépendant de votre identité affichée." }), element("a", { className: "product-button product-button--quiet", text: "Compléter mon profil", attributes: { href: "#profiles/me" } }));
+    section.append(status, cycle(result));
+    return section;
+  }
+  const current = daYun.currentCycle;
+  const status = element("article", { className: "product-card da-yun-current" });
+  if (current) {
+    const relation = getSemanticConcept("tenGods", current.dayMasterRelationship);
+    const explore = element("button", { className: "product-button product-button--primary", text: "Explorer cette période", attributes: { type: "button" } });
+    explore.addEventListener("click", () => cycleDetail(daYun, current, explore));
+    status.append(element("p", { className: "product-eyebrow", text: "Votre grande période actuelle" }), element("h3", { text: `${current.pillar.chinese} · ${current.pillar.pinyin}` }), element("p", { text: `${Math.floor(current.startAge)} ans → ${Math.floor(current.endAge)} ans · ${elementData(current.stem.element).label} ${current.stem.polarity === "yang" ? "Yang" : "Yin"} + ${elementData(current.branch.element).label}` }), element("strong", { text: relation.humanLabel }), element("p", { text: `Commencée en ${formatCycleDate(current.startEpochMs)}, cette période forme le paysage de fond sur lequel viennent se superposer l’année, le mois et la journée.` }), explore);
+  } else status.append(element("p", { text: `Les grandes périodes commencent à ${daYun.startAge.years} ans et ${daYun.startAge.months} mois. Avant cela, le thème natal constitue le cadre principal.` }));
   const timeline = element("ol", { className: "tao-timeline" });
-  const current = element("li");
-  current.append(element("span", { text: "Terrain natal" }), element("strong", { text: "Vos dynamiques de naissance" }), element("p", { text: "Le thème décrit le terrain symbolique actuellement vérifiable." }));
-  const future = element("li");
-  future.append(element("span", { text: "À venir" }), element("strong", { text: "Cycles de vie" }), element("p", { text: "Aucune période n’est inventée avant la disponibilité du moteur dédié." }));
-  timeline.append(current, future);
-  section.append(timeline, status, cycle(result));
+  const natal = element("li"); natal.append(element("span", { text: "Phase natale" }), element("strong", { text: `Naissance → ${daYun.startAge.years} ans ${daYun.startAge.months} mois` })); timeline.append(natal);
+  daYun.cycles.forEach((item) => {
+    const li = element("li", { className: `da-yun-cycle is-${item.temporalStatus}` });
+    const button = element("button", { attributes: { type: "button", "aria-label": `Explorer ${item.pillar.pinyin}, ${item.temporalStatus === "current" ? "période actuelle" : item.temporalStatus === "past" ? "passée" : "à venir"}` } });
+    button.append(element("span", { text: item.temporalStatus === "current" ? "Actuel" : item.temporalStatus === "past" ? "Passé" : "À venir" }), element("strong", { text: `${item.pillar.chinese} · ${item.pillar.pinyin}` }), element("small", { text: `${formatCycleDate(item.startEpochMs)} → ${formatCycleDate(item.endEpochMs)}` }));
+    button.addEventListener("click", () => cycleDetail(daYun, item, button)); li.append(button); timeline.append(li);
+  });
+  section.append(status, timeline, element("p", { className: "method-note", text: `${daYun.directionLabel} · Entrée calculée à ${daYun.startAge.years} ans, ${daYun.startAge.months} mois et ${daYun.startAge.days} jours.` }), cycle(result));
   return section;
 }
 
@@ -300,14 +345,14 @@ function underSurface(result) {
 
 function lifeReading(result) {
   const section = element("section", { className: "product-card" });
-  section.append(element("p", { className: "product-eyebrow", text: "Lecture thématique" }), element("h2", { text: "Ce que le thème permet déjà d’explorer" }), element("p", { text: "Ces portes de lecture s’appuient actuellement sur ton énergie fondamentale, les mouvements visibles et leur équilibre. Elles resteront nuancées jusqu’à l’arrivée des cycles complets." }));
+  section.append(element("p", { className: "product-eyebrow", text: "Lecture thématique" }), element("h2", { text: "Ce que le thème permet d’explorer" }), element("p", { text: "Ces portes de lecture s’appuient sur votre énergie fondamentale, les mouvements visibles et leur équilibre. Les grandes périodes calculées ajoutent désormais un paysage temporel de fond." }));
   const grid = element("div", { className: "topic-grid" });
   const master = stemData(result.dayMaster.key);
   for (const [title, copy] of [
     ["Personnalité", `${master.french} sert de centre de lecture : une qualité à cultiver, pas une étiquette définitive.`],
     ["Relations", "Les grandes dynamiques relationnelles donnent des repères de coopération, d’expression et de limites."],
     ["Activité & créativité", "La répartition visible des éléments permet d’observer les ressources déjà présentes et celles à soutenir."],
-    ["Évolution personnelle", "Les tendances natales décrivent un terrain. Les périodes de vie demanderont le futur moteur de cycles."],
+    ["Évolution personnelle", "Les tendances natales décrivent un terrain ; les Da Yun calculés montrent comment de grandes dynamiques s’y succèdent."],
   ]) {
     const card = element("article", { className: "insight-card" });
     card.append(element("strong", { text: title }), element("p", { text: copy }));
@@ -315,6 +360,13 @@ function lifeReading(result) {
   }
   section.append(grid);
   return section;
+}
+
+function profileAcrossSeasons(result) {
+  const ordered = Object.values(result.elements).slice().sort((a, b) => b.count - a.count || a.key.localeCompare(b.key));
+  const card = element("section", { className: "product-card" });
+  card.append(createSourceBadge("natal", "Cinq Mouvements du thème"), element("p", { className: "product-eyebrow", text: "Tendance de fond" }), element("h2", { text: "Votre profil face aux saisons" }), element("p", { text: `Le Mouvement ${elementData(ordered[0].key).label} est davantage présent dans votre thème, tandis que le Mouvement ${elementData(ordered[ordered.length - 1].key).label} est plus discret. Une saison ne produit donc pas la même rencontre pour chaque personne.` }), element("p", { text: "TAO compare cette structure natale au Mouvement de chaque saison, sans transformer une faible représentation en problème de santé." }), element("a", { className: "product-button product-button--quiet", text: "Explorer le Cycle des saisons", attributes: { href: "#today/season" } }));
+  return card;
 }
 
 function renderError(message) {
@@ -339,7 +391,7 @@ export async function renderActiveBaziTheme() {
       createSectionNavigation("theme", THEME_SECTIONS, "Explorer Mon thème"),
       groupSection("essential", essentialCarousel(result), reading(result)),
       groupSection("composition", pillars(result), underSurface(result)),
-      groupSection("journey", cyclesAndTimeline(result), lifeReading(result), glossaryDisclosure(["dayMaster", "fourPillars", "heavenlyStem", "earthlyBranch", "fiveElements", "yinYang", "tenGods", "hiddenStems"], "Glossaire de TAO")),
+      groupSection("journey", cyclesAndTimeline(result, profile), profileAcrossSeasons(result), lifeReading(result), glossaryDisclosure(["dayMaster", "fourPillars", "heavenlyStem", "earthlyBranch", "fiveElements", "yinYang", "tenGods", "hiddenStems"], "Glossaire de TAO")),
     );
     if (result.warnings.length) {
       const warning = element("aside", { className: "product-card product-warning", attributes: { role: "note" } });

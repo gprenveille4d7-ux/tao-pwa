@@ -7,7 +7,7 @@ const ENTRIES = Object.freeze([
   { id: "sky", title: "Ciel", copy: "Observer la météo et les phénomènes.", href: "#today/environment" },
   { id: "desk", title: "Bureau", copy: "Retrouver les objets actifs et le Yi Jing.", href: "#yijing/consult" },
   { id: "library", title: "Bibliothèque", copy: "Comprendre les fondements du thème.", href: "#theme/composition" },
-  { id: "almanac", title: "Almanach", copy: "Suivre la saison, les cycles et le temps.", href: "#today/rhythm" },
+  { id: "almanac", title: "Almanach", copy: "Ouvrir le Cycle des saisons et les 24 périodes solaires.", href: "#today/season" },
 ]);
 
 function explorerContent() {
