@@ -12,7 +12,7 @@ import { clearDailyCacheForProfile } from "./daily-cache.mjs";
 import { searchBirthPlaces } from "./geocoding.js";
 import { element, formatBirthDate, formatPlace } from "./tao-ui.js";
 import { t } from "./locales/index.js?v=1.5.1";
-import { createSectionNavigation, focusRequestedSection, markProductSection, showOnlyProductSection } from "./section-navigation.js?v=tao-ux-2";
+import { createSectionNavigation, focusRequestedSection, markProductSection, showOnlyProductSection } from "./section-navigation.js?v=tao-ux-3";
 import { parseAppRoute } from "./navigation-routes.mjs?v=tao-ux-2";
 import { getSemanticConcept } from "./semantic-layer.mjs?v=1.0.1";
 import { clearTaoAIMemory, getTaoAISettings, setTaoAIEnabled } from "./tao-ai-memory.js";
@@ -23,7 +23,10 @@ import { createTaoCarousel, createTaoHero, openTaoSheet } from "./tao-components
 const root = document.querySelector("[data-profiles-root]");
 const RELATIONSHIPS = ["other", "family", "friend", "partner", "child", "parent"];
 const PROFILE_SECTIONS = Object.freeze([
-  { id: "me", label: "Mon profil" }, { id: "people", label: "Mes proches" }, { id: "compatibility", label: "Relations & harmonie" }, { id: "family", label: "Constellation familiale" },
+  { id: "me", label: "Profil", breadcrumb: "Mon profil", icon: "profile" },
+  { id: "people", label: "Proches", breadcrumb: "Mes proches", icon: "people" },
+  { id: "compatibility", label: "Harmonie", breadcrumb: "Relations & harmonie", icon: "harmony" },
+  { id: "family", label: "Constellation", breadcrumb: "Constellation familiale", icon: "constellation" },
 ]);
 let searchTimer = null;
 let searchController = null;
@@ -132,11 +135,10 @@ function otherProfiles(profiles, activeId) {
     card.append(select, menu);
     return card;
   });
-  const add = element("button", { className: "surface-main profile-add-card", attributes: { type: "button", "aria-label": t("profiles.actions.addPerson") } });
-  add.append(element("span", { text: "+" }), element("strong", { text: t("profiles.page.addPerson") }));
+  const add = element("button", { className: "profile-add-action", attributes: { type: "button", "aria-label": t("profiles.actions.addPerson") } });
+  add.append(element("span", { text: "+", attributes: { "aria-hidden": "true" } }), element("strong", { text: t("profiles.page.addPerson") }));
   add.addEventListener("click", () => openEditor());
-  cards.push(add);
-  section.append(header, createTaoCarousel({ cards, label: "Profils enregistrés" }));
+  section.append(header, add, createTaoCarousel({ cards, label: "Profils enregistrés", dots: false, limit: Number.POSITIVE_INFINITY, className: "profile-carousel" }));
   return section;
 }
 

@@ -30,7 +30,8 @@ export function composeEnvironment({ period, weatherState = null, latitude = 0, 
   const timeState = period?.state ?? "DAY";
   const weather = weatherState ?? "UNKNOWN";
   let assetId;
-  if (weather === "PARTLY_CLOUDY" || weather === "CLEAR" || weather === "UNKNOWN") assetId = CLEAR_BY_PERIOD[timeState];
+  if (timeState === "NIGHT") assetId = CLEAR_BY_PERIOD.NIGHT;
+  else if (weather === "PARTLY_CLOUDY" || weather === "CLEAR" || weather === "UNKNOWN") assetId = CLEAR_BY_PERIOD[timeState];
   else assetId = WEATHER_ASSETS[weather] ?? CLEAR_BY_PERIOD[timeState];
   if (timeState === "TWILIGHT" && weather === "CLEAR" && (period?.progress ?? 0) < 0.62) assetId = "OUTSIDE_COUCHER_DE_SOLEIL_VILLAGE_FJORDIQUE";
   if (celestial?.recommendation?.eligible && celestial.recommendation.assetId) assetId = celestial.recommendation.assetId;

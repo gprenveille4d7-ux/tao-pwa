@@ -52,8 +52,8 @@ function cardStep(track) {
   return first.getBoundingClientRect().width + Number.parseFloat(styles.columnGap || styles.gap || "0");
 }
 
-export function createTaoCarousel({ cards, label, dots = true, className = "", startIndex = 0 }) {
-  const items = cards.filter(Boolean).slice(0, 5);
+export function createTaoCarousel({ cards, label, dots = true, className = "", startIndex = 0, limit = 5 }) {
+  const items = cards.filter(Boolean).slice(0, limit);
   const region = element("section", { className: `tao-carousel ${className}`.trim(), attributes: { "aria-label": label } });
   const track = element("div", { className: "tao-carousel__track", attributes: { tabindex: "0" } });
   items.forEach((card, index) => {

@@ -23,3 +23,15 @@ test("les écrans séparent astronomie, environnement et Yi Jing", async () => {
   assert.match(today, /createSourceBadge\("environment"/);
   assert.match(yijing, /createSourceBadge\("yijing"/);
 });
+
+test("Profils propose une navigation mobile illustrée et un nombre illimité de proches", async () => {
+  const [profiles, navigation, styles] = await Promise.all([
+    readFile(new URL("../profiles-view.js", import.meta.url), "utf8"),
+    readFile(new URL("../section-navigation.js", import.meta.url), "utf8"),
+    readFile(new URL("../tao-components.css", import.meta.url), "utf8"),
+  ]);
+  assert.match(profiles, /limit:\s*Number\.POSITIVE_INFINITY/);
+  assert.match(profiles, /profile-add-action/);
+  assert.match(navigation, /section-navigation__icon/);
+  assert.match(styles, /grid-template-columns:\s*repeat\(4, minmax\(0, 1fr\)\)/);
+});

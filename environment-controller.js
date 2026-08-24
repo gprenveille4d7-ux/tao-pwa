@@ -1,7 +1,7 @@
 import { getActiveProfile } from "./profile-store.js";
 import { resolveEnvironmentLocation } from "./environment-location.mjs?v=1.0.0";
-import { composeEnvironment } from "./environment-engine.mjs?v=1.0.2";
-import { determineDayPeriod, getSolarContext } from "./solar-engine.mjs?v=1.0.0";
+import { composeEnvironment } from "./environment-engine.mjs?v=1.0.3";
+import { determineDayPeriod, determineDeviceClockPeriod, getSolarContext } from "./solar-engine.mjs?v=1.0.1";
 import { getZonedParts, localDateTimeToEpoch } from "./time-zone.mjs";
 import { getWeatherState } from "./weather-service.mjs?v=1.1.0";
 import { calculateCelestialContext } from "./celestial-engine.mjs?v=1.0.0";
@@ -91,9 +91,29 @@ function updateDebugOutput(context, environment) {
   ].join("\n");
 }
 
+function applyDeviceClockFallback(realNow = Date.now()) {
+  if (!exterior || !scene) return null;
+  const date = new Date(realNow);
+  const hour = date.getHours() + date.getMinutes() / 60;
+  const period = determineDeviceClockPeriod(hour);
+  const environment = composeEnvironment({ period, weatherState: null, latitude: 0, month: date.getMonth() + 1 });
+  exterior.setState(environment.assetId, { source: "device-clock" });
+  scene.dataset.environmentTime = environment.timeState;
+  scene.dataset.environmentWeather = "UNKNOWN";
+  scene.dataset.environmentSeason = environment.season;
+  scene.dataset.environmentStars = environment.starsVisibility;
+  if (weatherAttribution) weatherAttribution.hidden = true;
+  if (celestialLayer) celestialLayer.hidden = true;
+  lastEnvironment = Object.freeze({ ...environment, location: { available: false, source: "device-clock", label: "Horloge de l’appareil", timezone: Intl.DateTimeFormat().resolvedOptions().timeZone }, local: { hour: date.getHours(), minute: date.getMinutes(), month: date.getMonth() + 1 }, weatherSource: "unavailable" });
+  globalThis.taoEnvironmentState = lastEnvironment;
+  window.dispatchEvent(new CustomEvent("tao:environment-change", { detail: lastEnvironment }));
+  return lastEnvironment;
+}
+
 function applyCurrentEnvironment(realNow = Date.now()) {
   const location = profileLocation();
-  if (!location || !exterior || !scene) return null;
+  if (!exterior || !scene) return null;
+  if (!location) return applyDeviceClockFallback(realNow);
   const base = getSolarContext({ now: realNow, ...location });
   const now = simulatedEpoch(realNow, base, location.timezone);
   let context = solarWithOnlineValues(base, weatherReading, now);
@@ -120,7 +140,7 @@ function applyCurrentEnvironment(realNow = Date.now()) {
 async function refreshEnvironment({ forceWeather = false } = {}) {
   if (manualExteriorMode) return null;
   const location = profileLocation();
-  if (!location) return null;
+  if (!location) return applyDeviceClockFallback();
   const locationKey = `${location.latitude}:${location.longitude}:${location.timezone}`;
   if (activeLocationKey !== locationKey) {
     activeLocationKey = locationKey;
