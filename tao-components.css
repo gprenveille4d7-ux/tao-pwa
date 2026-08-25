@@ -187,6 +187,41 @@ body.has-tao-sheet { overflow: hidden; }
 
 /* Mon thème */
 .theme-essential-card { display: grid; align-content: start; gap: .8rem; min-height: 24rem; }
+.day-master-card__personal { padding-top: .75rem; border-top: 1px solid var(--tao-line-soft); color: var(--product-muted); font-size: .82rem; line-height: 1.55; }
+.archetype-sheet { display: grid; gap: .75rem; }
+.tao-guide-copy { padding: .85rem 1rem; border-left: 2px solid var(--product-gold); border-radius: 0 .75rem .75rem 0; background: rgb(215 180 119 / 7%); color: var(--product-ivory); }
+.archetype-tagline { margin: .15rem 0 .4rem; color: var(--product-gold); font: italic 500 1.05rem/1.55 Georgia, serif; }
+.archetype-chapter { margin: 0; }
+.archetype-chapter__content { display: grid; gap: .75rem; }
+.archetype-chapter__content h3 { margin: .35rem 0 0; color: var(--product-ivory); font: 650 .9rem/1.35 var(--tao-font-ui); }
+.archetype-list { display: grid; gap: .5rem; margin: 0; padding-left: 1.15rem; color: var(--product-muted); }
+.archetype-relationship-grid { display: grid; gap: .7rem; }
+.archetype-relationship-grid article { padding: .75rem; border: 1px solid var(--tao-line-soft); border-radius: .75rem; background: rgb(255 255 255 / 3%); }
+.archetype-relationship-grid p { margin-bottom: 0; }
+.archetype-proof { display: grid; gap: .7rem; }
+.archetype-proof section { padding-left: .75rem; border-left: 1px solid rgb(215 180 119 / 35%); }
+.archetype-dimensions { display: grid; gap: 0; margin: 0; }
+.archetype-dimensions > div { display: grid; grid-template-columns: minmax(5.5rem, .7fr) minmax(0, 1.3fr); gap: .7rem; padding: .65rem 0; border-bottom: 1px solid var(--tao-line-soft); }
+.archetype-dimensions dt { color: var(--product-gold); font-weight: 700; }
+.archetype-dimensions dd { margin: 0; color: var(--product-muted); }
+.archetype-other-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem; }
+.archetype-other-list span { min-width: 0; padding: .6rem; border: 1px solid var(--tao-line-soft); border-radius: .65rem; color: var(--product-muted); overflow-wrap: anywhere; }
+
+:where(button, [href], summary):not(:disabled) { -webkit-tap-highlight-color: transparent; transition: transform 140ms ease, filter 140ms ease, background-color 180ms ease, border-color 180ms ease; touch-action: manipulation; }
+:where(button, [href], summary):not(:disabled):active { transform: scale(.985); filter: brightness(1.12); }
+
+@media (min-width: 36rem) {
+  .archetype-relationship-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 21rem) {
+  .archetype-other-list { grid-template-columns: minmax(0, 1fr); }
+  .archetype-dimensions > div { grid-template-columns: minmax(0, 1fr); gap: .2rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(button, [href], summary) { transition: none; }
+}
 .theme-essential-card h2 { margin: 0; font: 500 clamp(1.7rem, 7vw, 2.35rem)/1.05 var(--tao-font-symbolic); }
 .theme-essential-card > p:not(.product-eyebrow) { margin: 0; color: #dce4ea; line-height: 1.55; }
 .theme-essential-card .day-master-card__glyph { font-size: 3.25rem; }

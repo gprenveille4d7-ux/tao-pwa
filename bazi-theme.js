@@ -11,6 +11,7 @@ import { parseAppRoute } from "./navigation-routes.mjs?v=tao-ux-2";
 import { getSemanticConcept } from "./semantic-layer.mjs?v=1.0.1";
 import { createTaoCarousel, createTaoHero, createSourceBadge, openTaoSheet } from "./tao-components.js?v=1.1.0";
 import { calculateDaYun } from "./da-yun-engine.mjs?v=1.0.0";
+import { getDayMasterArchetype, listDayMasterArchetypes, personalizeDayMasterArchetype } from "./day-master-archetypes.mjs?v=1.0.0";
 
 const root = document.querySelector("[data-bazi-root]");
 const debugEnabled = new URLSearchParams(location.search).get("debug") === "bazi";
@@ -27,14 +28,88 @@ const THEME_SECTIONS = Object.freeze([
 const PILLAR_LABELS = Object.freeze({ year: "Année", month: "Mois", day: "Jour", hour: "Heure" });
 
 function header(profile, result) {
+  const archetype = getDayMasterArchetype(result.dayMaster.key);
   const semantic = getSemanticConcept("stems", result.dayMaster.key);
   return createTaoHero({
     eyebrow: `${t("common.navigation.theme")} · ${profile.firstName}`,
-    title: semantic.humanTitle,
-    symbol: semantic.icon,
-    lead: "Votre énergie fondamentale donne une direction, sans résumer à elle seule toute votre personnalité.",
+    title: `Votre archétype : ${archetype?.name.replace(/^(Le|La) /, "") ?? semantic.humanTitle}`,
+    symbol: archetype?.icon ?? semantic.icon,
+    lead: archetype?.tagline ?? "Votre énergie fondamentale donne une direction, sans résumer à elle seule toute votre personnalité.",
     context: `${formatBirthDate(profile.birthDate)} · ${formatPlace(profile.birthPlace)}`,
   });
+}
+
+function textList(items) {
+  const ul = element("ul", { className: "archetype-list" });
+  items.forEach((text) => ul.append(element("li", { text })));
+  return ul;
+}
+
+function archetypeChapter(title, ...children) {
+  const details = element("details", { className: "product-disclosure archetype-chapter" });
+  details.append(element("summary", { text: title }));
+  const content = element("div", { className: "product-disclosure__content archetype-chapter__content" });
+  content.append(...children);
+  details.append(content);
+  return details;
+}
+
+function relationshipGrid(archetype) {
+  const grid = element("div", { className: "archetype-relationship-grid" });
+  for (const [title, copy] of [
+    ["Dans le couple", archetype.relationships.couple],
+    ["En amitié", archetype.relationships.friendship],
+    ["Comme parent ou enfant", archetype.relationships.parentChild],
+    ["Dans la famille", archetype.relationships.family],
+  ]) {
+    const card = element("article");
+    card.append(element("h3", { text: title }), element("p", { text: copy }));
+    grid.append(card);
+  }
+  return grid;
+}
+
+function personalizedExplanation(archetype, personalized) {
+  const content = element("div", { className: "archetype-proof" });
+  for (const [title, copy] of [
+    ["Ce que TAO observe", personalized.observation],
+    ["Pourquoi c’est important", `Le Maître du Jour ${archetype.hanzi} est traditionnellement représenté par ${archetype.image.toLocaleLowerCase("fr-FR")}. Le reste du thème modifie la façon dont cette image s’exprime.`],
+    ["Concrètement", personalized.summary],
+    ["Nuance", `${personalized.balance} ${personalized.confidence}`],
+  ]) {
+    const section = element("section");
+    section.append(element("h3", { text: title }), element("p", { text: copy }));
+    content.append(section);
+  }
+  return content;
+}
+
+function archetypeSheet(result) {
+  const archetype = getDayMasterArchetype(result.dayMaster.key);
+  const personalized = personalizeDayMasterArchetype(result);
+  const intro = element("div", { className: "archetype-sheet" });
+  intro.append(
+    element("p", { className: "tao-guide-copy", text: `Votre Maître du Jour est ${archetype.hanzi}. Les anciens l’ont comparé à ${archetype.image.toLocaleLowerCase("fr-FR")}. Avant de parler de fonctionnement humain, regardons ce que fait réellement cette image.` }),
+    element("p", { className: "archetype-tagline", text: `« ${archetype.tagline} »` }),
+    archetypeChapter("Comprendre le symbole", element("h3", { text: "L’image naturelle" }), element("p", { text: archetype.naturalPhenomenon }), element("h3", { text: "Votre mouvement fondamental" }), element("p", { text: archetype.coreDynamic }), element("p", { className: "method-note", text: "Il s’agit d’une métaphore pédagogique issue de la tradition BaZi, pas d’un profil psychologique scientifique." })),
+    archetypeChapter("Votre fonctionnement", element("h3", { text: "Quand cette dynamique est équilibrée" }), textList(archetype.balancedTraits), element("h3", { text: "Votre manière de réfléchir" }), element("p", { text: archetype.thinkingStyle }), element("h3", { text: "Votre monde émotionnel" }), element("p", { text: archetype.emotionalStyle })),
+    archetypeChapter("Relations proches", relationshipGrid(archetype)),
+    archetypeChapter("Travail et conflit", element("h3", { text: "Au travail" }), element("p", { text: archetype.workStyle }), element("h3", { text: "Dans le conflit" }), element("p", { text: archetype.conflictStyle })),
+    archetypeChapter("Forces, excès et équilibre", element("h3", { text: "Forces naturelles possibles" }), textList(archetype.strengths), element("h3", { text: "Lorsque cette dynamique est très sollicitée" }), textList(archetype.excesses), element("h3", { text: "Ce qui nourrit symboliquement" }), element("p", { text: archetype.needs }), element("h3", { text: "Ce qui peut déséquilibrer" }), element("p", { text: archetype.imbalanceFactors }), element("h3", { text: "Axes d’évolution" }), textList(archetype.growthAxes)),
+    archetypeChapter("Votre expression personnelle", element("p", { className: "tao-guide-copy", text: "Maintenant que vous connaissez l’image, regardons ce que votre propre thème calculé en fait." }), element("p", { text: personalized.summary }), element("p", { text: personalized.balance }), element("p", { className: "method-note", text: personalized.confidence }), personalizedExplanation(archetype, personalized)),
+    archetypeChapter(archetype.comparison.question, element("p", { text: archetype.comparison.answer }), element("p", { className: "method-note", text: "Cette comparaison explique une polarité symbolique ; elle ne classe pas les personnes et ne prédit pas leur compatibilité." })),
+  );
+  const dimensions = element("dl", { className: "archetype-dimensions" });
+  for (const [label, key] of [["Expression", "expression"], ["Décision", "decision"], ["Conflit", "conflict"], ["Structure", "structure"], ["Adaptation", "adaptation"]]) {
+    const row = element("div");
+    row.append(element("dt", { text: label }), element("dd", { text: archetype.dimensions[key] }));
+    dimensions.append(row);
+  }
+  intro.append(archetypeChapter("Repères symboliques communs", dimensions, element("p", { className: "method-note", text: "Lecture symbolique issue de l’archétype BaZi — ce ne sont pas des scores psychométriques." })));
+  const other = element("div", { className: "archetype-other-list" });
+  listDayMasterArchetypes().filter((item) => item.id !== archetype.id).forEach((item) => other.append(element("span", { text: `${item.hanzi} · ${item.name}` })));
+  intro.append(archetypeChapter("Comprendre les autres archétypes", other, element("p", { text: "Chaque image décrit un mouvement différent. Les ressemblances ne constituent ni un classement ni une compatibilité automatique." })), element("a", { className: "product-button product-button--quiet", text: `Comprendre le Mouvement ${elementData(archetype.element).label}`, attributes: { href: "#today/season" } }));
+  return { archetype, intro };
 }
 
 function dayMaster(result) {
@@ -43,24 +118,24 @@ function dayMaster(result) {
   const localizedElement = elementData(master.element);
   const localizedPolarity = polarityData(master.polarity);
   const semantic = getSemanticConcept("stems", master.key);
+  const archetype = getDayMasterArchetype(master.key);
+  const personalized = personalizeDayMasterArchetype(result);
   const card = element("section", { className: `surface-main theme-essential-card day-master-card element-accent--${master.element}` });
   card.append(
     createSourceBadge("natal", "Données provenant uniquement de votre naissance"),
-    element("p", { className: "product-eyebrow", text: "Ton énergie fondamentale" }),
+    element("p", { className: "product-eyebrow", text: "Ton énergie fondamentale · Votre archétype" }),
     element("span", { className: "day-master-card__glyph", text: localizedStem.hanzi }),
     element("p", { className: "day-master-card__name", text: semantic.icon }),
-    element("h2", { text: semantic.humanTitle }),
+    element("h2", { text: `${localizedStem.hanzi} · ${archetype?.name ?? semantic.humanTitle}` }),
     element("p", { className: "semantic-keywords", text: semantic.keywords.join(" · ") }),
-    element("p", { className: "day-master-card__copy", text: semantic.humanDescription }),
+    element("p", { className: "day-master-card__copy", text: archetype?.tagline ?? semantic.humanDescription }),
+    element("p", { className: "day-master-card__personal", text: personalized?.summary }),
   );
-  const details = element("div", { className: "semantic-technical day-master-card__details" });
-  details.append(
-    element("p", { text: `Dans la lecture BaZi, le Maître du Jour est le point central à partir duquel les relations du thème sont observées.` }),
-    element("p", { text: `${semantic.traditionalLabel} — ${localizedElement.label} ${localizedPolarity.label}` }),
-    element("p", { text: "Cette énergie constitue un repère de lecture : elle ne résume pas une personne à elle seule." }),
-  );
-  const understand = element("button", { className: "tao-quiet-action", text: "Comprendre mon énergie", attributes: { type: "button", "aria-haspopup": "dialog" } });
-  understand.addEventListener("click", () => openTaoSheet({ title: semantic.humanTitle, label: "Votre nature", content: details, opener: understand }));
+  const understand = element("button", { className: "tao-quiet-action", text: "Explorer mon archétype", attributes: { type: "button", "aria-haspopup": "dialog" } });
+  understand.addEventListener("click", () => {
+    const sheet = archetypeSheet(result);
+    openTaoSheet({ title: `${sheet.archetype.hanzi} · ${sheet.archetype.name}`, label: `${sheet.archetype.pinyin} · ${localizedElement.label} ${localizedPolarity.label}`, content: sheet.intro, opener: understand });
+  });
   card.append(understand);
   return card;
 }
