@@ -2,6 +2,7 @@ const freeze = (value) => Object.freeze(value);
 const list = (...values) => freeze(values);
 
 const ELEMENT_LABELS = freeze({ wood: "Bois", fire: "Feu", earth: "Terre", metal: "Métal", water: "Eau" });
+const ELEMENT_SUBJECTS = freeze({ wood: "le Bois", fire: "le Feu", earth: "la Terre", metal: "le Métal", water: "l’Eau" });
 const ELEMENT_EFFECTS = freeze({
   wood: "la croissance, l’initiative et la capacité à ouvrir une voie",
   fire: "l’expression, la visibilité et la mise en relation",
@@ -232,7 +233,7 @@ export function personalizeDayMasterArchetype(theme) {
   const strongestLabel = ELEMENT_LABELS[strongest?.key] ?? "un Mouvement non déterminé";
   const quietestLabel = ELEMENT_LABELS[quietest?.key] ?? "un Mouvement non déterminé";
   return freeze({
-    summary: `L’archétype ${archetypeData.name.toLocaleLowerCase("fr-FR")} est votre point de référence. Dans les ${visiblePillars} piliers déterminés, le ${strongestLabel} est le Mouvement le plus visible : il met davantage l’accent sur ${ELEMENT_EFFECTS[strongest?.key] ?? "une nuance encore à préciser"}.`,
+    summary: `Votre point de référence est l’archétype « ${archetypeData.name} ». Dans les ${visiblePillars} piliers déterminés, ${ELEMENT_SUBJECTS[strongest?.key] ?? "le Mouvement principal"} est le Mouvement le plus visible : il met davantage l’accent sur ${ELEMENT_EFFECTS[strongest?.key] ?? "une nuance encore à préciser"}.`,
     balance: `La composante ${quietestLabel} est plus discrète dans ce comptage visible et la répartition globale est ${polarity}. Cela nuance l’archétype sans permettre, à elle seule, de conclure à un manque ou à un trait de personnalité.`,
     observation: `${archetypeData.hanzi} ${archetypeData.pinyin} · ${ELEMENT_LABELS[archetypeData.element]} ${archetypeData.polarity === "yang" ? "Yang" : "Yin"}. ${strongestLabel} compte ${strongest?.count ?? 0} composante(s) visible(s) et ${quietestLabel} ${quietest?.count ?? 0}.`,
     confidence: theme.metadata?.birthTimeKnown ? "Lecture de structure sur quatre piliers. Les Troncs cachés et la force saisonnière détaillée ne sont pas encore pondérés ici." : "Lecture partielle sur trois piliers : l’heure de naissance n’est pas connue, aucune influence horaire n’a été inventée.",

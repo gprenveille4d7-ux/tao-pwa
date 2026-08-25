@@ -11,7 +11,7 @@ import { parseAppRoute } from "./navigation-routes.mjs?v=tao-ux-2";
 import { getSemanticConcept } from "./semantic-layer.mjs?v=1.0.1";
 import { createTaoCarousel, createTaoHero, createSourceBadge, openTaoSheet } from "./tao-components.js?v=1.1.0";
 import { calculateDaYun } from "./da-yun-engine.mjs?v=1.0.0";
-import { getDayMasterArchetype, listDayMasterArchetypes, personalizeDayMasterArchetype } from "./day-master-archetypes.mjs?v=1.0.0";
+import { getDayMasterArchetype, listDayMasterArchetypes, personalizeDayMasterArchetype } from "./day-master-archetypes.mjs?v=1.0.1";
 
 const root = document.querySelector("[data-bazi-root]");
 const debugEnabled = new URLSearchParams(location.search).get("debug") === "bazi";
