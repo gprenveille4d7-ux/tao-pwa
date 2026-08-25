@@ -12,13 +12,13 @@ import { clearDailyCacheForProfile } from "./daily-cache.mjs";
 import { searchBirthPlaces } from "./geocoding.js";
 import { element, formatBirthDate, formatPlace } from "./tao-ui.js";
 import { t } from "./locales/index.js?v=1.5.1";
-import { createSectionNavigation, focusRequestedSection, markProductSection, showOnlyProductSection } from "./section-navigation.js?v=tao-ux-4";
-import { parseAppRoute } from "./navigation-routes.mjs?v=tao-ux-2";
+import { createSectionNavigation, focusRequestedSection, markProductSection, showOnlyProductSection } from "./section-navigation.js?v=tao-ux-5";
+import { parseAppRoute } from "./navigation-routes.mjs?v=tao-ux-3";
 import { getSemanticConcept } from "./semantic-layer.mjs?v=1.0.1";
 import { clearTaoAIMemory, getTaoAISettings, setTaoAIEnabled } from "./tao-ai-memory.js";
-import { createRelationshipsModule } from "./relationships-view.js?v=tao-ux-2";
-import { createFamilyConstellationModule } from "./family-constellation-view.js?v=tao-ux-2";
-import { createTaoCarousel, createTaoHero, openTaoSheet } from "./tao-components.js?v=1.0.0";
+import { createRelationshipsModule } from "./relationships-view.js?v=navigation-3";
+import { createFamilyConstellationModule } from "./family-constellation-view.js?v=navigation-3";
+import { createTaoCarousel, createTaoHero, openTaoSheet } from "./tao-components.js?v=navigation-2";
 
 const root = document.querySelector("[data-profiles-root]");
 const RELATIONSHIPS = ["other", "family", "friend", "partner", "child", "parent"];
@@ -170,15 +170,8 @@ function renderPlaceResults(places, list, input, state, status, key = "place") {
 }
 
 function openEditor(existing = null) {
-  root.querySelector("[data-profile-editor]")?.remove();
   const state = { place: existing?.birthPlace ?? null, residence: existing?.residencePlace ?? null };
-  const panel = element("section", { className: "product-card profile-editor", attributes: { "data-profile-editor": "", "aria-labelledby": "profile-editor-title" } });
-  const head = element("header", { className: "profile-editor__header" });
-  head.append(element("div", { html: `<p class="product-eyebrow">${existing ? t("profiles.editor.editEyebrow") : t("profiles.editor.newEyebrow")}</p><h2 id="profile-editor-title">${existing ? existing.firstName : t("profiles.page.addPerson")}</h2>` }));
-  const close = element("button", { className: "product-button product-button--quiet", text: t("common.actions.close"), attributes: { type: "button", "aria-label": t("profiles.actions.closeEditor") } });
-  close.addEventListener("click", () => panel.remove());
-  head.append(close);
-  const form = element("form", { className: "profile-form", attributes: { novalidate: "" } });
+  const form = element("form", { className: "profile-form profile-editor", attributes: { novalidate: "", "data-profile-editor": "" } });
   const firstName = field(form, { name: "firstName", label: t("profiles.fields.firstName"), value: existing?.firstName ?? "" });
 
   if (!existing) {
@@ -309,14 +302,17 @@ function openEditor(existing = null) {
     }
     const active = getActiveProfile();
     saveProfile(profile, { setActive: existing?.id === active?.id });
-    panel.remove();
+    closeEditor({ restoreFocus: false });
     renderProfilesView();
     window.dispatchEvent(new CustomEvent("tao:profile-changed", { detail: { profileId: getActiveProfile()?.id, updatedProfileId: profile.id } }));
   });
-  panel.append(head, form);
-  root.append(panel);
-  firstName.focus({ preventScroll: true });
-  panel.scrollIntoView({ behavior: "smooth", block: "start" });
+  const closeEditor = openTaoSheet({
+    title: existing ? existing.firstName : t("profiles.page.addPerson"),
+    label: existing ? t("profiles.editor.editEyebrow") : t("profiles.editor.newEyebrow"),
+    content: form,
+    opener: document.activeElement,
+  });
+  requestAnimationFrame(() => firstName.focus({ preventScroll: true }));
 }
 
 function activate(profileId) {

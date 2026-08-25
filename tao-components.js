@@ -1,5 +1,14 @@
 import { element } from "./tao-ui.js";
 
+const activeSheetClosers = new Set();
+
+export function closeAllTaoSheets({ restoreFocus = false } = {}) {
+  [...activeSheetClosers].forEach((closeSheet) => closeSheet({ restoreFocus }));
+}
+
+window.addEventListener("hashchange", () => closeAllTaoSheets());
+window.addEventListener("tao:view-change", () => closeAllTaoSheets());
+
 export const TAO_SOURCES = Object.freeze({
   natal: "Thème natal", day: "Jour calculé", combined: "Jour × thème natal",
   season: "Saison solaire", environment: "Environnement réel", astronomy: "Astronomie réelle", yijing: "Tirage Yi Jing",
@@ -14,6 +23,21 @@ export function createContextBreadcrumb(parent, current) {
   const node = element("p", { className: "tao-context", attributes: { "aria-label": `Vous êtes dans ${parent}, ${current}` } });
   node.append(element("span", { text: parent }), element("b", { text: "›", attributes: { "aria-hidden": "true" } }), element("strong", { text: current }));
   return node;
+}
+
+export function createTaoBackLink({ label, href }) {
+  return element("a", { className: "tao-back-link", text: `‹ ${label}`, attributes: { href, "aria-label": `Revenir à ${label}` } });
+}
+
+export function createTaoNavigationRow({ title, description = "", href = "", eyebrow = "", onClick = null }) {
+  const link = element(href ? "a" : "button", { className: "tao-navigation-row", attributes: href ? { href } : { type: "button" } });
+  const copy = element("span", { className: "tao-navigation-row__copy" });
+  if (eyebrow) copy.append(element("small", { className: "tao-navigation-row__eyebrow", text: eyebrow }));
+  copy.append(element("strong", { className: "tao-navigation-row__title", text: title }));
+  if (description) copy.append(element("span", { className: "tao-navigation-row__description", text: description }));
+  link.append(copy, element("b", { className: "tao-navigation-row__chevron", text: "›", attributes: { "aria-hidden": "true" } }));
+  if (onClick) link.addEventListener("click", onClick);
+  return link;
 }
 
 export function createReadingReferenceCard({ dailyStem, dailyBranch, natalMaster }) {
@@ -125,6 +149,7 @@ export function createTaoSegmentedControl({ items, selectedId = items[0]?.id, la
 }
 
 export function openTaoSheet({ title, content, opener = document.activeElement, label = "Détails" }) {
+  closeAllTaoSheets();
   const backdrop = element("div", { className: "tao-sheet-backdrop" });
   const sheet = element("section", { className: "tao-sheet", attributes: { role: "dialog", "aria-modal": "true", "aria-labelledby": "tao-sheet-title" } });
   const header = element("header", { className: "tao-sheet__header" });
@@ -136,11 +161,15 @@ export function openTaoSheet({ title, content, opener = document.activeElement, 
   sheet.append(header, body);
   backdrop.append(sheet);
   const focusableSelector = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), details > summary, [tabindex]:not([tabindex="-1"])';
-  const closeSheet = () => {
+  let closed = false;
+  const closeSheet = ({ restoreFocus = true } = {}) => {
+    if (closed) return;
+    closed = true;
     document.removeEventListener("keydown", onKeydown);
     document.body.classList.remove("has-tao-sheet");
+    activeSheetClosers.delete(closeSheet);
     backdrop.remove();
-    opener?.focus?.();
+    if (restoreFocus && opener?.isConnected && !opener.closest("[hidden]")) opener?.focus?.();
   };
   const onKeydown = (event) => {
     if (event.key === "Escape") return closeSheet();
@@ -155,6 +184,7 @@ export function openTaoSheet({ title, content, opener = document.activeElement, 
   close.addEventListener("click", closeSheet);
   backdrop.addEventListener("click", (event) => { if (event.target === backdrop) closeSheet(); });
   document.addEventListener("keydown", onKeydown);
+  activeSheetClosers.add(closeSheet);
   document.body.classList.add("has-tao-sheet");
   document.body.append(backdrop);
   requestAnimationFrame(() => close.focus());

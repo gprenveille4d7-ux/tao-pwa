@@ -1,6 +1,6 @@
-import { appRoute, parseAppRoute } from "./navigation-routes.mjs?v=tao-ux-2";
+import { appRoute, parseAppRoute } from "./navigation-routes.mjs?v=tao-ux-3";
 import { element } from "./tao-ui.js";
-import { createContextBreadcrumb } from "./tao-components.js?v=1.1.0";
+import { createContextBreadcrumb } from "./tao-components.js?v=navigation-2";
 
 const ICON_PATHS = Object.freeze({
   profile: ["M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z", "M4.5 21a7.5 7.5 0 0 1 15 0"],

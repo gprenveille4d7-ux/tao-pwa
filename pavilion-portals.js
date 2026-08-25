@@ -1,6 +1,5 @@
 import { element } from "./tao-ui.js";
-import { parseAppRoute } from "./navigation-routes.mjs?v=tao-ux-2";
-import { openTaoSheet } from "./tao-components.js?v=1.0.0";
+import { openTaoSheet } from "./tao-components.js?v=navigation-2";
 
 const root = document.querySelector("[data-pavilion-portals]");
 const ENTRIES = Object.freeze([
@@ -25,12 +24,11 @@ function openExplorer(opener) {
   openTaoSheet({ title: "Explorer le Nebula", label: "Le Pavillon", content: explorerContent(), opener });
 }
 
-export function renderPavilionPortals(section = parseAppRoute(location.hash).section) {
+export function renderPavilionPortals() {
   if (!root) return;
   const trigger = element("button", { className: "nebula-explorer-trigger", text: "Explorer le Nebula ⌃", attributes: { type: "button", "aria-haspopup": "dialog" } });
   trigger.addEventListener("click", () => openExplorer(trigger));
   root.replaceChildren(trigger);
-  if (section !== "tao") requestAnimationFrame(() => openExplorer(trigger));
 }
 
 window.addEventListener("tao:view-change", (event) => {

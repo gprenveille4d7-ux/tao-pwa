@@ -1,6 +1,6 @@
 import { getActiveProfile } from "./profile-store.js";
 import { formatDate, formatPlace, localizeDocument, t } from "./locales/index.js";
-import { DEFAULT_VIEW, parseAppRoute } from "./navigation-routes.mjs?v=tao-ux-2";
+import { DEFAULT_VIEW, parseAppRoute, resolveAppRoute } from "./navigation-routes.mjs?v=tao-ux-3";
 
 const VIEW_TITLES = Object.freeze({
   today: t("common.navigation.today"),
@@ -17,6 +17,7 @@ const profileName = document.querySelector("[data-active-profile-name]");
 const profileDate = document.querySelector("[data-active-profile-date]");
 const profilePlace = document.querySelector("[data-active-profile-place]");
 const profileTime = document.querySelector("[data-active-profile-time]");
+const routeRecovery = document.querySelector("[data-route-recovery]");
 
 function renderActiveProfile(profile) {
   if (!profile) return;
@@ -28,6 +29,20 @@ function renderActiveProfile(profile) {
 
 function requestedRoute() {
   return parseAppRoute(location.hash);
+}
+
+function canonicalizeRequestedRoute() {
+  const resolved = resolveAppRoute(location.hash);
+  if ((resolved.isAlias || resolved.isInvalid) && location.hash !== resolved.canonicalHash) {
+    history.replaceState(null, "", `${location.pathname}${location.search}${resolved.canonicalHash}`);
+  }
+  if (routeRecovery) {
+    routeRecovery.hidden = !resolved.isInvalid;
+    routeRecovery.textContent = resolved.isInvalid
+      ? `Cette destination n’existe plus. TAO vous a ramené vers ${VIEW_TITLES[resolved.view]}.`
+      : "";
+  }
+  return Object.freeze({ view: resolved.view, section: resolved.section });
 }
 
 function scrollViewToTop(viewId, behavior = "smooth") {
@@ -90,11 +105,11 @@ function initializeMainNavigation() {
     return;
   }
 
-  const route = requestedRoute();
   if (!location.hash) {
     openDefaultView();
     return;
   }
+  const route = canonicalizeRequestedRoute();
   showView(route.view, route.section);
 }
 
@@ -114,7 +129,7 @@ navigation.addEventListener("click", (event) => {
 
 window.addEventListener("hashchange", () => {
   if (navigation.hidden || !getActiveProfile()) return;
-  const route = requestedRoute();
+  const route = canonicalizeRequestedRoute();
   showView(route.view, route.section);
 });
 
@@ -135,4 +150,4 @@ window.addEventListener("tao:profile-changed", (event) => {
 
 initializeMainNavigation();
 
-export { initializeMainNavigation, scrollViewToTop, showView };
+export { canonicalizeRequestedRoute, initializeMainNavigation, scrollViewToTop, showView };

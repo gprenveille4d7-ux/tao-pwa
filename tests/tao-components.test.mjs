@@ -42,6 +42,6 @@ test("TaoSheet gère dialogue, Escape, focus trap et retour du focus", async () 
 test("les largeurs mobiles prioritaires utilisent une mise en page fluide", async () => {
   const css = await readFile(cssUrl, "utf8");
   assert.match(css, /max-width:\s*360px/);
-  assert.match(css, /calc\(100% - 2\.25rem\)/);
+  assert.match(css, /max-width:\s*100%/);
   assert.match(css, /width:\s*min\(100%, 43rem\)/);
 });

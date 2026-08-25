@@ -627,8 +627,8 @@ img {
 
 .tao-dialogue__control {
   display: grid;
-  width: 2.15rem;
-  min-height: 2.15rem;
+  width: 2.75rem;
+  min-height: 2.75rem;
   place-items: center;
   padding: 0;
   border: 1px solid rgb(207 166 111 / 28%);
@@ -638,6 +638,21 @@ img {
   font: 500 1.25rem/1 system-ui, sans-serif;
   cursor: pointer;
 }
+
+.tao-onboarding__back {
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  margin: -.25rem 0 .5rem;
+  padding: .55rem .2rem;
+  border: 0;
+  color: #e1bb80;
+  background: transparent;
+  font: 650 .82rem/1.2 system-ui, sans-serif;
+  text-align: left;
+  cursor: pointer;
+}
+
+.tao-onboarding__back:focus-visible { outline: 2px solid #e1bb80; outline-offset: 2px; }
 
 .tao-dialogue__control:hover,
 .tao-dialogue__control:focus-visible {
