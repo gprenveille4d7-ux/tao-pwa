@@ -88,12 +88,26 @@ function primaryButton(label) {
   });
 }
 
+const PREVIOUS_STEP = Object.freeze({ birthPlace: "firstName", birthDate: "birthPlace", birthTime: "birthDate", confirm: "birthTime" });
+
+function appendBackControl(step) {
+  if (step === "firstName") return;
+  const back = element("button", { className: "tao-onboarding__back", text: "‹ Étape précédente", type: "button" });
+  back.addEventListener("click", async () => {
+    const destination = editingExistingAnswer ? "confirm" : PREVIOUS_STEP[step];
+    editingExistingAnswer = false;
+    await renderStep(destination ?? "firstName");
+  });
+  control.append(back);
+}
+
 async function renderStep(step) {
   currentStep = step;
   showError("");
   control.replaceChildren();
   root.hidden = false;
   document.body.classList.add("is-onboarding");
+  appendBackControl(step);
 
   if (step === "firstName") {
     await setTaoNarrativeState("welcome");

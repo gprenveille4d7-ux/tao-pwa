@@ -6,10 +6,10 @@ import { setTaoNarrativeState } from "./tao-narrative.js";
 import { formatPercent, getConcept, t } from "./locales/index.js?v=1.2.0";
 import { glossaryDisclosure } from "./locales/glossary-ui.js";
 import { branchRelations, visibleTenGods } from "./bazi-insights.mjs?v=1.0.1";
-import { createSectionNavigation, focusRequestedSection, markProductSection, showOnlyProductSection } from "./section-navigation.js?v=tao-ux-4";
-import { parseAppRoute } from "./navigation-routes.mjs?v=tao-ux-2";
+import { createSectionNavigation, focusRequestedSection, markProductSection, showOnlyProductSection } from "./section-navigation.js?v=tao-ux-5";
+import { parseAppRoute } from "./navigation-routes.mjs?v=tao-ux-3";
 import { getSemanticConcept } from "./semantic-layer.mjs?v=1.0.1";
-import { createTaoCarousel, createTaoHero, createSourceBadge, openTaoSheet } from "./tao-components.js?v=1.1.0";
+import { createTaoCarousel, createTaoHero, createTaoNavigationRow, createSourceBadge, openTaoSheet } from "./tao-components.js?v=navigation-2";
 import { calculateDaYun } from "./da-yun-engine.mjs?v=1.0.0";
 import { getDayMasterArchetype, listDayMasterArchetypes, personalizeDayMasterArchetype } from "./day-master-archetypes.mjs?v=1.0.1";
 
@@ -23,6 +23,7 @@ const branchData = (key) => getConcept("bazi.earthlyBranches", key);
 const THEME_SECTIONS = Object.freeze([
   { id: "essential", label: "Essentiel" },
   { id: "composition", label: "Composition" },
+  { id: "structure", label: "Relations internes" },
   { id: "journey", label: "Parcours" },
 ]);
 const PILLAR_LABELS = Object.freeze({ year: "Année", month: "Mois", day: "Jour", hour: "Heure" });
@@ -108,7 +109,7 @@ function archetypeSheet(result) {
   intro.append(archetypeChapter("Repères symboliques communs", dimensions, element("p", { className: "method-note", text: "Lecture symbolique issue de l’archétype BaZi — ce ne sont pas des scores psychométriques." })));
   const other = element("div", { className: "archetype-other-list" });
   listDayMasterArchetypes().filter((item) => item.id !== archetype.id).forEach((item) => other.append(element("span", { text: `${item.hanzi} · ${item.name}` })));
-  intro.append(archetypeChapter("Comprendre les autres archétypes", other, element("p", { text: "Chaque image décrit un mouvement différent. Les ressemblances ne constituent ni un classement ni une compatibilité automatique." })), element("a", { className: "product-button product-button--quiet", text: `Comprendre le Mouvement ${elementData(archetype.element).label}`, attributes: { href: "#today/season" } }));
+  intro.append(archetypeChapter("Comprendre les autres archétypes", other, element("p", { text: "Chaque image décrit un mouvement différent. Les ressemblances ne constituent ni un classement ni une compatibilité automatique." })), createTaoNavigationRow({ title: `Comprendre le Mouvement ${elementData(archetype.element).label}`, description: "Voir sa relation avec les saisons", href: "#today/season" }));
   return { archetype, intro };
 }
 
@@ -243,6 +244,18 @@ function yinYang(result) {
 
 function essentialCarousel(result) {
   return createTaoCarousel({ cards: [dayMaster(result), movementSummaryCard(result), yinYang(result)], label: "L’essentiel de votre thème" });
+}
+
+function movementComposition(result) {
+  const section = element("section", { className: "surface-soft product-depth-stack theme-movement-composition" });
+  const header = element("header", { className: "product-section__header" });
+  header.append(
+    element("p", { className: "product-eyebrow", text: "Composition de votre thème" }),
+    element("h2", { text: "Comprendre vos Cinq Mouvements" }),
+    element("p", { text: "La tradition parle de Wu Xing. TAO commence par leur sens humain : cinq manières de circuler, transformer, structurer, rayonner et approfondir." }),
+  );
+  section.append(header, elements(result), cycle(), pillars(result));
+  return section;
 }
 
 function cycle() {
@@ -385,7 +398,7 @@ function cyclesAndTimeline(result, profile) {
   const daYun = calculateDaYun({ profile, natalTheme: result });
   if (!daYun.available) {
     const status = element("aside", { className: "engine-status", attributes: { role: "note" } });
-    status.append(element("strong", { text: daYun.reason === "birth-time-required" ? "Heure de naissance nécessaire" : "Convention Da Yun à choisir" }), element("p", { text: daYun.reason === "birth-time-required" ? "Le démarrage précis dépend de l’intervalle entre votre naissance et un terme solaire Jie. TAO n’invente pas d’heure." : "Choisissez la convention traditionnelle masculine ou féminine dans votre profil. Ce paramètre technique est indépendant de votre identité affichée." }), element("a", { className: "product-button product-button--quiet", text: "Compléter mon profil", attributes: { href: "#profiles/me" } }));
+    status.append(element("strong", { text: daYun.reason === "birth-time-required" ? "Heure de naissance nécessaire" : "Convention Da Yun à choisir" }), element("p", { text: daYun.reason === "birth-time-required" ? "Le démarrage précis dépend de l’intervalle entre votre naissance et un terme solaire Jie. TAO n’invente pas d’heure." : "Choisissez la convention traditionnelle masculine ou féminine dans votre profil. Ce paramètre technique est indépendant de votre identité affichée." }), createTaoNavigationRow({ title: "Compléter mon profil", description: "Renseigner les données nécessaires au calcul", href: "#profiles/me" }));
     section.append(status, cycle(result));
     return section;
   }
@@ -410,12 +423,15 @@ function cyclesAndTimeline(result, profile) {
 }
 
 function underSurface(result) {
-  const disclosure = element("details", { className: "product-disclosure theme-under-surface" });
-  disclosure.append(element("summary", { text: "Sous la surface" }));
-  const content = element("div", { className: "product-disclosure__content product-depth-stack" });
-  content.append(hiddenStems(result), interactions(result), tenGods(result));
-  disclosure.append(content);
-  return disclosure;
+  const section = element("section", { className: "surface-soft product-depth-stack theme-internal-structure" });
+  const header = element("header", { className: "product-section__header" });
+  header.append(
+    element("p", { className: "product-eyebrow", text: "Structure du thème" }),
+    element("h2", { text: "Comprendre vos relations internes" }),
+    element("p", { text: "TAO présente d’abord les fonctions humaines de ces relations. Les termes traditionnels — Troncs cachés et Dix Dieux — restent disponibles ensuite comme repères d’approfondissement." }),
+  );
+  section.append(header, hiddenStems(result), interactions(result), tenGods(result));
+  return section;
 }
 
 function lifeReading(result) {
@@ -440,14 +456,14 @@ function lifeReading(result) {
 function profileAcrossSeasons(result) {
   const ordered = Object.values(result.elements).slice().sort((a, b) => b.count - a.count || a.key.localeCompare(b.key));
   const card = element("section", { className: "product-card" });
-  card.append(createSourceBadge("natal", "Cinq Mouvements du thème"), element("p", { className: "product-eyebrow", text: "Tendance de fond" }), element("h2", { text: "Votre profil face aux saisons" }), element("p", { text: `Le Mouvement ${elementData(ordered[0].key).label} est davantage présent dans votre thème, tandis que le Mouvement ${elementData(ordered[ordered.length - 1].key).label} est plus discret. Une saison ne produit donc pas la même rencontre pour chaque personne.` }), element("p", { text: "TAO compare cette structure natale au Mouvement de chaque saison, sans transformer une faible représentation en problème de santé." }), element("a", { className: "product-button product-button--quiet", text: "Explorer le Cycle des saisons", attributes: { href: "#today/season" } }));
+  card.append(createSourceBadge("natal", "Cinq Mouvements du thème"), element("p", { className: "product-eyebrow", text: "Tendance de fond" }), element("h2", { text: "Votre profil face aux saisons" }), element("p", { text: `Le Mouvement ${elementData(ordered[0].key).label} est davantage présent dans votre thème, tandis que le Mouvement ${elementData(ordered[ordered.length - 1].key).label} est plus discret. Une saison ne produit donc pas la même rencontre pour chaque personne.` }), element("p", { text: "TAO compare cette structure natale au Mouvement de chaque saison, sans transformer une faible représentation en problème de santé." }), createTaoNavigationRow({ title: "Explorer le cycle des saisons", description: "Voir la saison actuelle et les 24 périodes solaires", href: "#today/season" }));
   return card;
 }
 
 function renderError(message) {
   root.replaceChildren();
   const panel = element("section", { className: "product-card product-error", attributes: { role: "alert" } });
-  panel.append(element("p", { className: "product-eyebrow", text: t("common.navigation.theme") }), element("h1", { text: t("bazi.ui.themeUnavailable") }), element("p", { text: message }), element("a", { text: t("bazi.ui.checkProfile"), attributes: { href: "#profiles" } }));
+  panel.append(element("p", { className: "product-eyebrow", text: t("common.navigation.theme") }), element("h1", { text: t("bazi.ui.themeUnavailable") }), element("p", { text: message }), createTaoNavigationRow({ title: t("bazi.ui.checkProfile"), description: "Vérifier les informations de naissance", href: "#profiles" }));
   root.append(panel);
 }
 
@@ -465,7 +481,8 @@ export async function renderActiveBaziTheme() {
       header(profile, result),
       createSectionNavigation("theme", THEME_SECTIONS, "Explorer Mon thème"),
       groupSection("essential", essentialCarousel(result), reading(result)),
-      groupSection("composition", pillars(result), underSurface(result)),
+      groupSection("composition", movementComposition(result)),
+      groupSection("structure", underSurface(result)),
       groupSection("journey", cyclesAndTimeline(result, profile), profileAcrossSeasons(result), lifeReading(result), glossaryDisclosure(["dayMaster", "fourPillars", "heavenlyStem", "earthlyBranch", "fiveElements", "yinYang", "tenGods", "hiddenStems"], "Glossaire de TAO")),
     );
     if (result.warnings.length) {
@@ -479,10 +496,8 @@ export async function renderActiveBaziTheme() {
       details.append(element("summary", { text: t("bazi.ui.rawData") }), element("pre", { text: JSON.stringify({ profile, result }, null, 2) }));
       root.append(details);
     }
-    const routeMap = { overview: "essential", pillars: "composition", elements: "essential", structure: "composition", "ten-gods": "composition", cycles: "journey", life: "journey" };
-    const section = routeMap[route.section] ?? route.section;
-    showOnlyProductSection(root, section);
-    focusRequestedSection(root, "theme", section, { scroll: section !== "essential" });
+    showOnlyProductSection(root, route.section);
+    focusRequestedSection(root, "theme", route.section, { scroll: route.section !== "essential" });
     await setTaoNarrativeState("explaining");
     root.dispatchEvent(new CustomEvent("tao:bazi-rendered", { detail: { profileId: profile.id, result } }));
     return result;

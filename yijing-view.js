@@ -8,9 +8,9 @@ import { HEXAGRAMS, TRIGRAMS } from "./yijing-data.mjs?v=1.0.1";
 import { castThreeCoins, createCasting, interpretLineValue, resolveCasting } from "./yijing-engine.mjs?v=1.0.1";
 import { createYijingGuidance } from "./yijing-guidance.mjs?v=1.0.1";
 import { deleteYijingReading, getYijingHistory, saveYijingReading, toggleYijingFavorite } from "./yijing-history.js";
-import { createSectionNavigation, focusRequestedSection, markProductSection, showOnlyProductSection } from "./section-navigation.js?v=tao-ux-4";
-import { parseAppRoute } from "./navigation-routes.mjs?v=tao-ux-2";
-import { createTaoCarousel, createTaoHero, createSourceBadge, openTaoSheet } from "./tao-components.js?v=1.1.0";
+import { createSectionNavigation, focusRequestedSection, markProductSection, showOnlyProductSection } from "./section-navigation.js?v=tao-ux-5";
+import { appRoute, parseAppRoute } from "./navigation-routes.mjs?v=tao-ux-3";
+import { createTaoCarousel, createTaoHero, createSourceBadge, openTaoSheet } from "./tao-components.js?v=navigation-2";
 
 const root = document.querySelector("[data-yijing-root]");
 const state = { phase: "question", question: "", lines: [], result: null, guidance: null, savedId: null };
@@ -257,8 +257,10 @@ function openHistory(entry) {
   state.guidance = entry.guidance ?? createYijingGuidance({ question: state.question, result: state.result, profileContext: null });
   state.savedId = entry.id;
   state.phase = "result";
-  render();
-  root.scrollIntoView({ behavior: "smooth", block: "start" });
+  const destination = appRoute("yijing", "consult");
+  if (location.hash !== destination) location.hash = destination;
+  else render();
+  requestAnimationFrame(() => root.scrollIntoView({ behavior: "smooth", block: "start" }));
 }
 
 function historySection() {

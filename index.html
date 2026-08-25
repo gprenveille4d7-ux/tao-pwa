@@ -22,9 +22,9 @@
     <link rel="preload" as="image" href="./public/assets/tao/outside/states/OUTSIDE_JOUR_CLAIR_FJORD_ALPIN.png" fetchpriority="high" />
     <link rel="preload" as="image" href="./public/assets/tao/pavilion/base/PAVILLON_BASE_FENETRES_TRANSPARENTES.png" fetchpriority="high" />
     <link rel="preload" as="image" href="./public/assets/tao/character/poses/TAO_POSE_00_NEUTRE.png" fetchpriority="high" />
-    <link rel="stylesheet" href="./styles.css?v=tao-environment-4" />
-    <link rel="stylesheet" href="./product-experience.css?v=mobile-fixes-1" />
-    <link rel="stylesheet" href="./tao-components.css?v=archetypes-1" />
+    <link rel="stylesheet" href="./styles.css?v=navigation-1" />
+    <link rel="stylesheet" href="./product-experience.css?v=navigation-1" />
+    <link rel="stylesheet" href="./tao-components.css?v=navigation-2" />
   </head>
   <body>
     <div class="tao-boot" data-tao-boot role="status" aria-live="polite" aria-busy="true">
@@ -268,6 +268,8 @@
       </section>
     </main>
 
+    <p class="route-recovery" data-route-recovery role="status" aria-live="polite" hidden></p>
+
     <nav class="main-navigation" data-main-navigation aria-label="Navigation principale" data-i18n-aria-label="common.navigation.label" hidden>
       <a class="main-navigation__item" data-navigation-target="today" href="#today">
         <span class="main-navigation__icon nav-icon--today" aria-hidden="true"></span>
@@ -322,16 +324,16 @@
     <script type="module" src="./exterior-states.js?v=outside-environment-1"></script>
     <script type="module" src="./environment-controller.js?v=clarity-2"></script>
     <script type="module" src="./desk-objects.js"></script>
-    <script type="module" src="./onboarding.js?v=clarity-1"></script>
-    <script type="module" src="./today-view.js?v=mobile-fixes-2"></script>
-    <script type="module" src="./bazi-theme.js?v=archetypes-2"></script>
-    <script type="module" src="./profiles-view.js?v=clarity-2"></script>
-    <script type="module" src="./yijing-view.js?v=clarity-1"></script>
-    <script type="module" src="./pavilion-portals.js?v=clarity-1"></script>
-    <script type="module" src="./seasonal-library.js?v=1.0.0"></script>
+    <script type="module" src="./onboarding.js?v=navigation-1"></script>
+    <script type="module" src="./today-view.js?v=navigation-3"></script>
+    <script type="module" src="./bazi-theme.js?v=navigation-3"></script>
+    <script type="module" src="./profiles-view.js?v=navigation-3"></script>
+    <script type="module" src="./yijing-view.js?v=navigation-2"></script>
+    <script type="module" src="./pavilion-portals.js?v=navigation-2"></script>
+    <script type="module" src="./seasonal-library.js?v=navigation-2"></script>
     <script type="module" src="./tao-presence.js?v=tao-speaking-1"></script>
-    <script type="module" src="./tao-ai-conversation.js?v=tao-conversation-sheet-1"></script>
-    <script type="module" src="./app-navigation.js?v=mobile-fixes-1"></script>
+    <script type="module" src="./tao-ai-conversation.js?v=navigation-2"></script>
+    <script type="module" src="./app-navigation.js?v=navigation-3"></script>
     <script type="module" src="./scene-calibration.js?v=modular-desk-responsive-1"></script>
   </body>
 </html>

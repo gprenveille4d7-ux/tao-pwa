@@ -446,6 +446,7 @@
 .profile-list-card__actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-4); }
 .product-button { min-height: 2.75rem; padding: 0.7rem 1rem; border: 1px solid rgb(215 180 119 / 30%); border-radius: 0.8rem; color: var(--product-ivory); background: rgb(255 255 255 / 4%); font: 650 0.78rem/1.2 system-ui, sans-serif; cursor: pointer; }
 .product-button:hover { background: rgb(255 255 255 / 8%); }
+.touch-link { display: inline-flex; min-height: 2.75rem; align-items: center; padding-block: .45rem; }
 .product-button:focus-visible,
 .profile-form :focus-visible,
 .relationship-form :focus-visible { outline: 2px solid var(--product-gold); outline-offset: 2px; }

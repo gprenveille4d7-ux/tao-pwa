@@ -14,6 +14,7 @@ let busy = false;
 let scrollSnapshot = null;
 let focusBeforeOpen = null;
 let closingTimer = null;
+let routeAtOpen = null;
 
 function node(tag, className, text) {
   const element = document.createElement(tag);
@@ -286,6 +287,7 @@ function openPanel(detail = {}) {
   if (ui.panel.hidden) {
     rememberScrollPosition();
     focusBeforeOpen = document.activeElement;
+    routeAtOpen = location.hash;
   }
   const nextMode = detail.mode ?? "conversation";
   if (nextMode !== requestContext.mode) {
@@ -294,7 +296,6 @@ function openPanel(detail = {}) {
     renderSuggestions([]);
   }
   requestContext = { mode: nextMode, contextOptions: detail.contextOptions ?? {}, prompt: detail.prompt ?? "" };
-  if (document.body.dataset.currentView !== "pavilion") location.hash = "#pavilion/tao";
   window.clearTimeout(closingTimer);
   ui.backdrop.hidden = false;
   ui.panel.hidden = false;
@@ -327,6 +328,7 @@ function finishClosingPanel() {
   restoreScrollPosition();
   const focusTarget = focusBeforeOpen?.isConnected ? focusBeforeOpen : ui.launch;
   focusBeforeOpen = null;
+  routeAtOpen = null;
   focusTarget.focus?.({ preventScroll: true });
 }
 
@@ -385,6 +387,9 @@ window.visualViewport?.addEventListener("scroll", syncConversationViewport);
 window.addEventListener("resize", syncConversationViewport);
 window.addEventListener("online", syncComposerState);
 window.addEventListener("offline", syncComposerState);
+window.addEventListener("hashchange", () => {
+  if (!ui.panel.hidden && routeAtOpen && location.hash !== routeAtOpen) closePanel();
+});
 window.addEventListener("tao:ai-open", (event) => openPanel(event.detail));
 window.addEventListener("tao:profile-created", syncAvailability);
 window.addEventListener("tao:profile-changed", () => {

@@ -16,7 +16,7 @@ import {
 import { element, formatBirthDate } from "./tao-ui.js";
 import { t } from "./locales/index.js?v=1.5.0";
 import { humanizeFamilyCalculation } from "./family-constellation-lexicon.mjs?v=1.0.0";
-import { createTaoCarousel, createTaoSegmentedControl, openTaoSheet } from "./tao-components.js?v=1.0.0";
+import { createTaoCarousel, createTaoNavigationRow, createTaoSegmentedControl, openTaoSheet } from "./tao-components.js?v=navigation-2";
 
 const IMPORTANCE_ORDER = ["major", "notable", "curiosity"];
 const SYMBOLS = Object.freeze({ 1: "élan et commencement", 2: "relation et réceptivité", 3: "expression et mise en mouvement", 4: "structure et stabilité", 5: "passage et mobilité", 6: "harmonie et responsabilité", 7: "recul et recherche", 8: "organisation et accomplissement", 9: "aboutissement et transmission", 11: "nombre maître associé à l’intuition dans certaines écoles", 22: "nombre maître associé à la construction dans certaines écoles" });
@@ -325,7 +325,14 @@ export function createFamilyConstellationModule({ profiles, onAddProfile }) {
         element("p", { className: "family-overview", text: reading.overview }),
         element("p", { className: "method-note", text: reading.disclaimer }),
       );
-      hero.append(element("a", { className: "product-button product-button--quiet", text: "Voir l’inventaire", attributes: { href: "#family-all-observations" } }));
+      hero.append(createTaoNavigationRow({
+        title: "Voir tous les motifs",
+        description: "Ouvrir l’inventaire complet de cette constellation",
+        onClick: () => {
+          resultHost.querySelector('[data-segment-id="explore"]')?.click();
+          requestAnimationFrame(() => all.scrollIntoView({ behavior: "smooth", block: "start" }));
+        },
+      }));
       resultHost.append(hero);
 
       const primary = element("section", { className: "family-primary-carousel" });

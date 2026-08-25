@@ -8,13 +8,13 @@ import { setTaoDailyBrief } from "./tao-dialogue.js";
 import { setTaoNarrativeState } from "./tao-narrative.js";
 import { formatPercent, getConcept, t } from "./locales/index.js?v=1.2.0";
 import { glossaryDisclosure } from "./locales/glossary-ui.js";
-import { createSectionNavigation, focusRequestedSection, markProductSection, showOnlyProductSection } from "./section-navigation.js?v=tao-ux-4";
-import { parseAppRoute } from "./navigation-routes.mjs?v=tao-ux-2";
+import { createSectionNavigation, focusRequestedSection, markProductSection, showOnlyProductSection } from "./section-navigation.js?v=tao-ux-5";
+import { parseAppRoute } from "./navigation-routes.mjs?v=tao-ux-3";
 import { buildDailySemanticReading, getSemanticConcept } from "./semantic-layer.mjs?v=1.0.1";
 import { buildSeasonalProfile, getSeasonCycle, selectCareAdvice, SOLAR_TERMS, FIVE_MOVEMENTS } from "./seasonal-balance.mjs?v=1.2.0";
-import { createTaoCarousel, createTaoHero, createSourceBadge, createReadingReferenceCard } from "./tao-components.js?v=1.1.0";
+import { createTaoBackLink, createTaoCarousel, createTaoHero, createTaoNavigationRow, createSourceBadge, createReadingReferenceCard } from "./tao-components.js?v=navigation-2";
 import { calculateDaYun } from "./da-yun-engine.mjs?v=1.0.0";
-import { createSeasonalKnowledgeLibrary } from "./seasonal-library.js?v=1.0.0";
+import { createSeasonalKnowledgeLibrary } from "./seasonal-library.js?v=navigation-2";
 
 const root = document.querySelector("[data-today-root]");
 const semanticDebug = new URLSearchParams(location.search).get("debug") === "semantics";
@@ -24,8 +24,9 @@ const elementData = (key) => getConcept("bazi.elements", key);
 const stemData = (key) => getConcept("bazi.heavenlyStems", key);
 const branchData = (key) => getConcept("bazi.earthlyBranches", key);
 const TODAY_SECTIONS = Object.freeze([
-  { id: "understand", label: "Comprendre" },
+  { id: "understand", label: "L’essentiel" },
   { id: "rhythm", label: "Mon rythme" },
+  { id: "season", label: "Ma saison" },
   { id: "environment", label: "Ciel & environnement" },
 ]);
 
@@ -412,7 +413,7 @@ function createSeasonDetail(result, profile, seasonal, natalTheme) {
   const details = movementDetails(period);
   const localizedTerm = getConcept("calendar.solarTerms", solarTermId(period.pinyin));
   const wrapper = element("section", { className: `season-detail season-accent--${period.movement}`, attributes: { "aria-labelledby": "season-detail-title" } });
-  const back = element("a", { className: "season-detail__back", text: seasonalText("page", "back"), attributes: { href: "#today/guidance" } });
+  const back = createTaoBackLink({ label: "Aujourd’hui", href: "#today" });
   const intro = element("section", { className: "product-card season-detail__hero" });
   const ring = element("div", { className: "season-cycle", attributes: { role: "img", "aria-label": `${seasonalText("labels", "progress")} : ${Math.round(period.progress * 100)} %` } });
   ring.style.setProperty("--season-progress", `${Math.round(period.progress * 360)}deg`);
@@ -479,9 +480,9 @@ function createSeasonDetail(result, profile, seasonal, natalTheme) {
   const healthSources = element("p", { className: "method-note" });
   healthSources.append(
     document.createTextNode("Prévention générale : "),
-    element("a", { text: "activité physique · OMS", attributes: { href: "https://www.who.int/fr/news-room/fact-sheets/detail/physical-activity", target: "_blank", rel: "noopener noreferrer" } }),
+    element("a", { className: "touch-link", text: "activité physique · OMS", attributes: { href: "https://www.who.int/fr/news-room/fact-sheets/detail/physical-activity", target: "_blank", rel: "noopener noreferrer" } }),
     document.createTextNode(" · "),
-    element("a", { text: "fortes chaleurs · ministère de la Santé", attributes: { href: "https://sante.gouv.fr/sante-et-environnement/risques-climatiques/article/les-vagues-de-chaleur-et-leurs-effets-sur-la-sante", target: "_blank", rel: "noopener noreferrer" } }),
+    element("a", { className: "touch-link", text: "fortes chaleurs · ministère de la Santé", attributes: { href: "https://sante.gouv.fr/sante-et-environnement/risques-climatiques/article/les-vagues-de-chaleur-et-leurs-effets-sur-la-sante", target: "_blank", rel: "noopener noreferrer" } }),
   );
   observe.append(healthSources);
   const referenceEpoch = Date.parse(`${result.date}T12:00:00Z`);
@@ -530,7 +531,7 @@ function createCycles(result, natalTheme, profile) {
   const landscape = element("aside", { className: "engine-status", attributes: { role: "note" } });
   if (daYun.currentCycle) {
     const current = daYun.currentCycle;
-    landscape.append(createSourceBadge("natal", "Grande période calculée"), element("strong", { text: `Votre paysage de fond · ${current.pillar.chinese} ${current.pillar.pinyin}` }), element("p", { text: `${elementData(current.stem.element).label} ${current.stem.polarity === "yang" ? "Yang" : "Yin"} et ${elementData(current.branch.element).label}. Cette période plus longue a commencé en ${new Date(current.startEpochMs).getUTCFullYear()}.` }), element("a", { className: "product-button product-button--quiet", text: "Voir mon parcours", attributes: { href: "#theme/journey" } }));
+    landscape.append(createSourceBadge("natal", "Grande période calculée"), element("strong", { text: `Votre paysage de fond · ${current.pillar.chinese} ${current.pillar.pinyin}` }), element("p", { text: `${elementData(current.stem.element).label} ${current.stem.polarity === "yang" ? "Yang" : "Yin"} et ${elementData(current.branch.element).label}. Cette période plus longue a commencé en ${new Date(current.startEpochMs).getUTCFullYear()}.` }), createTaoNavigationRow({ title: "Voir mes grandes périodes", description: "Parcours de vie et Da Yun", href: "#theme/journey" }));
   } else landscape.append(element("strong", { text: "Grandes périodes · Da Yun" }), element("p", { text: daYun.reason === "convention-required" ? "Choisissez la convention de calcul dans votre profil pour afficher votre parcours." : "Une heure de naissance connue est nécessaire pour calculer précisément le démarrage." }));
   section.append(grid, landscape);
   return section;
@@ -546,7 +547,7 @@ function createNature(profile) {
   const state = globalThis.taoEnvironmentState;
   if (!profile.residencePlace && !state?.location) {
     const missing = element("section", { className: "product-card engine-status" });
-    missing.append(createSourceBadge("environment"), sectionHeader("Lieu nécessaire", "Lieu d’habitation à renseigner"), element("p", { text: "Votre lieu de naissance reste réservé au thème natal. Ajoutez votre lieu de vie actuel pour obtenir la météo, les levers et couchers et le ciel local." }), element("a", { className: "product-button product-button--primary", text: "Compléter mon profil", attributes: { href: "#profiles/me" } }));
+    missing.append(createSourceBadge("environment"), sectionHeader("Lieu nécessaire", "Lieu d’habitation à renseigner"), element("p", { text: "Votre lieu de naissance reste réservé au thème natal. Ajoutez votre lieu de vie actuel pour obtenir la météo, les levers et couchers et le ciel local." }), createTaoNavigationRow({ title: "Compléter mon profil", description: "Renseigner mon lieu d’habitation", href: "#profiles/me" }));
     section.append(missing);
     return section;
   }
@@ -631,8 +632,7 @@ export async function renderTodayView() {
       groupSection("rhythm", createResonance(result, natalTheme), createCycles(result, natalTheme, profile), createSeason(result)),
       groupSection("environment", createNature(profile), glossaryDisclosure(["dayMaster", "fiveElements", "yinYang", "jieQi", "generationCycle", "controlCycle"], "Glossaire de TAO")),
     );
-    const routeMap = { guidance: "understand", energies: "understand", personal: "rhythm", cycles: "rhythm", nature: "environment" };
-    const section = routeMap[route.section] ?? route.section;
+    const section = route.section;
     showOnlyProductSection(root, section);
     focusRequestedSection(root, "today", section, { scroll: section !== "understand" });
     await setTaoNarrativeState("observing");

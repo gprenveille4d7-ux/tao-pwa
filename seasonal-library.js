@@ -3,7 +3,7 @@ import { getCachedBazi, setCachedBazi } from "./bazi-cache.mjs";
 import { getActiveProfile } from "./profile-store.js";
 import { getSeasonCycle, getSeasonalPeriod } from "./seasonal-balance.mjs?v=1.2.0";
 import { JIE_QI, MOVEMENT_KEYS, MOVEMENTS, ORGAN_SYSTEMS, SEASON_MOVEMENT_INTERACTIONS, YIN_YANG_PAIRS, getJieQiByPinyin } from "./seasonal-knowledge.mjs?v=1.0.0";
-import { createSourceBadge, openTaoSheet } from "./tao-components.js?v=1.1.0";
+import { createTaoNavigationRow, createSourceBadge, openTaoSheet } from "./tao-components.js?v=navigation-2";
 import { element } from "./tao-ui.js";
 
 const pavilionRoot = document.querySelector("[data-seasonal-pavilion]");
@@ -190,7 +190,7 @@ export function createPavilionSeasonCard(now = Date.now()) {
     element("p", { className: "pavilion-season-card__phase", text: `${cycle.phase} · ${Math.round(cycle.progress * 100)} % · ${cycle.daysRemaining} jours restants` }),
     element("p", { text: `Période solaire : ${current?.pinyin ?? period.pinyin} · ${current?.chinese ?? ""} · « ${current?.label ?? period.label} »` }),
     element("blockquote", { text: `« ${cycle.knowledge.nature} La tradition décrit cette dynamique par le Mouvement ${cycle.knowledge.label}. »` }),
-    element("div", { className: "product-actions", html: `<a class="product-button product-button--primary" href="#today/season">Comprendre cette saison</a><a class="product-button product-button--quiet" href="#today/season">Voir toutes les saisons</a>` }),
+    createTaoNavigationRow({ title: "Comprendre ma saison", description: "Cycle actuel, 24 périodes solaires et conseils généraux", href: "#today/season" }),
   );
   return card;
 }
