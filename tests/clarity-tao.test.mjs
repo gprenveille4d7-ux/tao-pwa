@@ -11,9 +11,15 @@ test("les composants de provenance et de repères sont factorisés", async () =>
 });
 
 test("retoucher un onglet actif revient à sa racine et en haut", async () => {
-  const source = await readFile(new URL("../app-navigation.js", import.meta.url), "utf8");
+  const [source, sections] = await Promise.all([
+    readFile(new URL("../app-navigation.js", import.meta.url), "utf8"),
+    readFile(new URL("../section-navigation.js", import.meta.url), "utf8"),
+  ]);
   assert.match(source, /route\.view !== targetView/);
-  assert.match(source, /window\.scrollTo\(\{ top: 0, behavior: "smooth" \}\)/);
+  assert.match(source, /view\?\.scrollTo/);
+  assert.match(source, /scrollViewToTop\(targetView\)/);
+  assert.match(sections, /currentRoute\.view !== view \|\| currentRoute\.section !== item\.id/);
+  assert.match(sections, /scrollHost\?\.scrollTo/);
 });
 
 test("les écrans séparent astronomie, environnement et Yi Jing", async () => {
@@ -22,6 +28,12 @@ test("les écrans séparent astronomie, environnement et Yi Jing", async () => {
   assert.match(today, /createSourceBadge\("astronomy"/);
   assert.match(today, /createSourceBadge\("environment"/);
   assert.match(yijing, /createSourceBadge\("yijing"/);
+});
+
+test("les restitutions quotidiennes reprennent la phrase grammaticale du moteur", async () => {
+  const today = await readFile(new URL("../today-view.js", import.meta.url), "utf8");
+  assert.equal((today.match(/dayEnergy\.summary/g) ?? []).length >= 4, true);
+  assert.doesNotMatch(today, /dailySummaryYin/);
 });
 
 test("Profils propose une navigation mobile illustrée et un nombre illimité de proches", async () => {

@@ -104,3 +104,14 @@ test("un même profil change de signature lorsque le pilier du jour change", () 
   assert.notEqual(first.personalSignature.fingerprint, next.personalSignature.fingerprint);
   assert.notEqual(first.personalSignature.facts.find(({ type }) => type === "DAY_STEM").value, next.personalSignature.facts.find(({ type }) => type === "DAY_STEM").value);
 });
+
+test("les cinq Mouvements utilisent une préposition française correcte", () => {
+  const summaries = [];
+  for (let day = 1; day <= 12; day += 1) {
+    summaries.push(calculateDailyTao(input({ date: `2026-08-${String(day).padStart(2, "0")}` })).dayEnergy.summary);
+  }
+  assert.doesNotMatch(summaries.join(" "), /\bde le\b|\bde lEau\b/i);
+  for (const expected of ["du Bois", "du Feu", "de la Terre", "du Métal", "de l’Eau"]) {
+    assert.ok(summaries.some((summary) => summary.includes(expected)), `${expected} doit apparaître`);
+  }
+});

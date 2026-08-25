@@ -39,6 +39,14 @@ export function createSectionNavigation(view, items, label) {
     if (icon) link.append(icon);
     link.append(element("span", { text: item.label }));
     if (route.view === view && route.section === item.id) link.setAttribute("aria-current", "location");
+    link.addEventListener("click", (event) => {
+      const currentRoute = parseAppRoute(location.hash);
+      if (currentRoute.view !== view || currentRoute.section !== item.id) return;
+      event.preventDefault();
+      const scrollHost = link.closest("[data-app-view]");
+      if (scrollHost?.scrollTo) scrollHost.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+      else window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+    });
     track.append(link);
   }
   const parent = label.replace(/^Explorer\s+/i, "");

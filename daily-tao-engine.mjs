@@ -5,10 +5,11 @@ import {
 import { buildDailyPersonalSignature } from "./daily-personal-signature.mjs";
 import { getSeasonalPeriod } from "./seasonal-balance.mjs?v=1.0.2";
 
-export const DAILY_CALCULATION_VERSION = "tao-daily-2.3.0";
+export const DAILY_CALCULATION_VERSION = "tao-daily-2.3.1";
 
 const ELEMENTS = Object.freeze(["wood", "fire", "earth", "metal", "water"]);
 const ELEMENT_LABELS = Object.freeze({ wood: "Bois", fire: "Feu", earth: "Terre", metal: "Métal", water: "Eau" });
+const ELEMENT_GENITIVES = Object.freeze({ wood: "du Bois", fire: "du Feu", earth: "de la Terre", metal: "du Métal", water: "de l’Eau" });
 const GENERATES = Object.freeze({ wood: "fire", fire: "earth", earth: "metal", metal: "water", water: "wood" });
 const CONTROLS = Object.freeze({ wood: "earth", earth: "water", water: "fire", fire: "metal", metal: "wood" });
 
@@ -128,8 +129,8 @@ export function calculateDailyTao({ date, timeZone, profile, natalTheme }) {
       branch: day.branch,
       animal: day.branch.animal,
       summary: day.stem.polarity === "yang"
-        ? `Une journée qui invite à mobiliser l’énergie de ${day.stem.elementLabel.toLowerCase()} avec présence, sans forcer le rythme.`
-        : `Une journée qui invite à écouter les nuances de ${day.stem.elementLabel.toLowerCase()} et à progresser avec finesse.`,
+        ? `Une journée qui invite à mobiliser l’énergie ${ELEMENT_GENITIVES[day.stem.element]} avec présence, sans forcer le rythme.`
+        : `Une journée qui invite à écouter les nuances ${ELEMENT_GENITIVES[day.stem.element]} et à progresser avec finesse.`,
     },
     overview: {
       energy: `${day.stem.elementLabel} ${polarity}`,
