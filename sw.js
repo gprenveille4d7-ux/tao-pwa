@@ -1,4 +1,4 @@
-const CACHE_VERSION = "tao-shell-2026-08-25-v40-day-master-archetypes";
+const CACHE_VERSION = "tao-shell-2026-08-25-v41-day-master-archetypes-copy";
 const SHELL = [
   "./",
   "./index.html",
@@ -40,8 +40,8 @@ const SHELL = [
   "./seasonal-library.js?v=1.0.0",
   "./daily-personal-signature.mjs",
   "./daily-cache.mjs?v=2.2.0",
-  "./bazi-theme.js?v=archetypes-1",
-  "./day-master-archetypes.mjs?v=1.0.0",
+  "./bazi-theme.js?v=archetypes-2",
+  "./day-master-archetypes.mjs?v=1.0.1",
   "./profiles-view.js?v=clarity-2",
   "./onboarding.js?v=clarity-1",
   "./profile-store.js",
