@@ -11,7 +11,7 @@ export const guidance = Object.freeze({
   methodology: "Indicateur symbolique interne fondé sur les relations des Cinq Éléments et la polarité du Tronc du Jour avec le Maître du Jour natal.",
   greeting: "Bonjour {firstName}. Voici les repères symboliques de ta journée.",
   dailySummaryYang: "Une journée qui invite à mobiliser {energy} avec présence, sans forcer le rythme.",
-  dailySummaryYin: "Une journée qui invite à écouter les nuances de {element} et à progresser avec finesse.",
+  dailySummaryYin: "Une journée qui invite à écouter les nuances {element} et à progresser avec finesse.",
   pavilionSummary: "{element} est au cœur de la journée. {summary}",
   dailyBrief: Object.freeze({
     context: "Aujourd’hui",

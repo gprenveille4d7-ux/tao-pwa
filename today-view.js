@@ -1,14 +1,14 @@
 import { getActiveProfile } from "./profile-store.js";
 import { calculateBazi } from "./bazi-engine.mjs";
 import { getCachedBazi, setCachedBazi } from "./bazi-cache.mjs";
-import { calculateDailyTao } from "./daily-tao-engine.mjs?v=2.3.0";
-import { getCachedDaily, setCachedDaily } from "./daily-cache.mjs?v=2.2.0";
+import { calculateDailyTao } from "./daily-tao-engine.mjs?v=2.3.1";
+import { getCachedDaily, setCachedDaily } from "./daily-cache.mjs?v=2.3.1";
 import { element, formatLongDate, formatPlace, localDateIso } from "./tao-ui.js";
 import { setTaoDailyBrief } from "./tao-dialogue.js";
 import { setTaoNarrativeState } from "./tao-narrative.js";
 import { formatPercent, getConcept, t } from "./locales/index.js?v=1.2.0";
 import { glossaryDisclosure } from "./locales/glossary-ui.js";
-import { createSectionNavigation, focusRequestedSection, markProductSection, showOnlyProductSection } from "./section-navigation.js?v=tao-ux-3";
+import { createSectionNavigation, focusRequestedSection, markProductSection, showOnlyProductSection } from "./section-navigation.js?v=tao-ux-4";
 import { parseAppRoute } from "./navigation-routes.mjs?v=tao-ux-2";
 import { buildDailySemanticReading, getSemanticConcept } from "./semantic-layer.mjs?v=1.0.1";
 import { buildSeasonalProfile, getSeasonCycle, selectCareAdvice, SOLAR_TERMS, FIVE_MOVEMENTS } from "./seasonal-balance.mjs?v=1.2.0";
@@ -221,10 +221,7 @@ function createWhyDisclosure(result, natalTheme, semantic) {
 function createDayEnergy(result) {
   const stem = stemData(result.dayEnergy.stem.key);
   const branch = branchData(result.dayEnergy.branch.key);
-  const energy = elementData(result.dayEnergy.stem.element);
-  const summary = result.dayEnergy.stem.polarity === "yang"
-    ? t("guidance.dailySummaryYang", { energy: energy.energyOf })
-    : t("guidance.dailySummaryYin", { element: energy.withArticle });
+  const summary = result.dayEnergy.summary;
   const card = element("section", { className: `product-card hero-card element-accent--${result.dayEnergy.stem.element}` });
   card.append(
     element("p", { className: "product-eyebrow", text: "Lecture traditionnelle de la journée" }),
@@ -652,9 +649,7 @@ async function updatePavilionDialogue() {
     const reading = getActiveDailyReading();
     if (!reading) return;
     const key = reading.result.dayEnergy.stem.element;
-    const summary = reading.result.dayEnergy.stem.polarity === "yang"
-      ? t("guidance.dailySummaryYang", { energy: elementData(key).energyOf })
-      : t("guidance.dailySummaryYin", { element: elementData(key).withArticle });
+    const summary = reading.result.dayEnergy.summary;
     const localizedTerm = getConcept("calendar.solarTerms", solarTermId(reading.result.solarTerm.pinyin));
     const advice = getConcept("guidance.elementAdvice", key);
     const resonanceLevel = t(`guidance.resonance.${reading.result.resonance.level}`).toLocaleLowerCase("fr-FR");

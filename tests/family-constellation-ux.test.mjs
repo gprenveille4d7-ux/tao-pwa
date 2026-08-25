@@ -24,3 +24,11 @@ test("la constellation utilise un inventaire progressif et une feuille de détai
   assert.match(css, /100dvh/);
   assert.match(css, /safe-area-inset-bottom/);
 });
+
+test("la constellation contient ses cartes et son carrousel dans la largeur iPhone", async () => {
+  const css = await readFile(new URL("../product-experience.css", import.meta.url), "utf8");
+  assert.match(css, /\.family-results[^}]*max-width:\s*100%[^}]*overflow-x:\s*clip/s);
+  assert.match(css, /\.family-result-hero[^}]*overflow:\s*hidden/s);
+  assert.match(css, /\.family-primary-carousel \.tao-carousel[^}]*margin-inline:\s*0/s);
+  assert.match(css, /\.family-result-hero h2[^{]*\{[^}]*overflow-wrap:\s*anywhere/s);
+});

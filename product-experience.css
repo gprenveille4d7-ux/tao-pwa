@@ -1057,7 +1057,7 @@ body.tao-ai-panel-open .main-navigation {
 
 /* Constellation familiale : une lecture locale, sobre et mobile-first. */
 .family-constellation-module,
-.family-results { display: grid; min-width: 0; gap: var(--space-6); }
+.family-results { display: grid; width: 100%; min-width: 0; max-width: 100%; gap: var(--space-6); overflow-x: clip; }
 .family-results:empty { display: none; }
 .family-intro,
 .family-selection,
@@ -1109,7 +1109,13 @@ body.tao-ai-panel-open .main-navigation {
 .family-event-list strong { color: var(--product-ivory); overflow-wrap: anywhere; }
 .family-event-list span,
 .family-event-list small { color: var(--product-muted); font: 500 .72rem/1.35 system-ui, sans-serif; }
-.family-result-hero { scroll-margin-top: 7rem; }
+.family-result-hero { width: 100%; max-width: 100%; overflow: hidden; scroll-margin-top: 7rem; }
+.family-result-hero > *,
+.family-result-hero h2,
+.family-result-hero p { min-width: 0; max-width: 100%; overflow-wrap: anywhere; hyphens: auto; }
+.family-primary-carousel { width: 100%; max-width: 100%; overflow: hidden; }
+.family-primary-carousel .tao-carousel { width: 100%; max-width: 100%; margin-inline: 0; }
+.family-primary-carousel .tao-carousel__track { width: 100%; max-width: 100%; padding-inline: 0; scroll-padding-inline: 0; }
 .family-primary-grid,
 .family-observation-list,
 .family-pair-results,

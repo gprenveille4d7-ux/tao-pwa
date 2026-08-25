@@ -30,6 +30,12 @@ function requestedRoute() {
   return parseAppRoute(location.hash);
 }
 
+function scrollViewToTop(viewId, behavior = "smooth") {
+  const view = views.find((candidate) => candidate.dataset.appView === viewId);
+  if (view?.scrollTo) view.scrollTo({ top: 0, left: 0, behavior });
+  else window.scrollTo({ top: 0, left: 0, behavior });
+}
+
 function showView(id, section = null) {
   const safeId = Object.hasOwn(VIEW_TITLES, id) ? id : DEFAULT_VIEW;
 
@@ -102,8 +108,8 @@ navigation.addEventListener("click", (event) => {
   const defaultHash = `#${targetView}`;
   if (location.hash !== defaultHash) {
     location.hash = defaultHash;
-    window.setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
-  } else window.scrollTo({ top: 0, behavior: "smooth" });
+    window.setTimeout(() => scrollViewToTop(targetView), 0);
+  } else scrollViewToTop(targetView);
 });
 
 window.addEventListener("hashchange", () => {
@@ -129,4 +135,4 @@ window.addEventListener("tao:profile-changed", (event) => {
 
 initializeMainNavigation();
 
-export { initializeMainNavigation, showView };
+export { initializeMainNavigation, scrollViewToTop, showView };
